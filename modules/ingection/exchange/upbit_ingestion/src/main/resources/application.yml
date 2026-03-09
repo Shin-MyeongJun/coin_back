@@ -1,0 +1,280 @@
+spring:
+    main:
+      web-application-type: none
+    session:
+      store-type: none
+    application:
+        name: demo
+    docker:
+      compose:
+        enabled: false
+    kafka:
+      bootstrap-servers: localhost:9092
+      admin:
+        properties:
+          bootstrap.servers: localhost:9092
+    cloud:
+      stream:
+        defaultBinder: null
+    flyway:
+      enabled: false
+      locations: classpath:db/migration
+      baseline-on-migrate: true
+
+    datasource:
+      url: jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true
+      username: db_manager
+      password: "10200411"
+      hikari:
+        maximum-pool-size: 12
+  #      driver-class-name: org.postgresql.Driver
+
+    jpa:
+        hibernate:
+          ddl-auto: update # 또는 update, create, create-drop
+
+        show-sql: false
+        properties:
+          hibernate:
+            jdbc:
+              batch_size: 1000
+            order_inserts: true
+            format_sql: true
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    profiles:
+        active: local
+    task:
+      scheduling:
+        pool:
+          size: 8
+
+    autoconfigure:
+      exclude: #에외 나중에 제거하기
+#        - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration #jdbc
+        - org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration #cassandra
+        - org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration
+        - org.springframework.boot.autoconfigure.data.cassandra.CassandraReactiveDataAutoConfiguration
+        - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration #kafka
+
+        - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration #redis
+        - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+management:
+  datadog:
+    metrics:
+      export:
+        enabled: false
+
+upbit:
+  # Base URLs
+  base-url: "https://api.upbit.com"
+  websockets:
+    public-url: "wss://api.upbit.com/websocket/v1"
+    private-url: "wss://api.upbit.com/websocket/v1/private"
+
+  access-key:     ${UPBIT_OPEN_API_ACCESS_KEY}
+  secret-key:     ${UPBIT_OPEN_API_SECRET_KEY}
+
+  # Quotation (시세) API Endpoints
+  quotation:
+    markets-all:  "${upbit.base-url}/v1/market/all"
+    ticker:       "${upbit.base-url}/v1/ticker"
+    orderbook:    "${upbit.base-url}/v1/orderbook"
+    trades-ticks: "${upbit.base-url}/v1/trades/ticks"
+    candles:
+      minutes:   "${upbit.base-url}/v1/candles/minutes/{unit}"
+      days:      "${upbit.base-url}/v1/candles/days"
+      weeks:     "${upbit.base-url}/v1/candles/weeks"
+      months:    "${upbit.base-url}/v1/candles/months"
+
+  # Account (계좌) API
+  accounts:
+    list:        "${upbit.base-url}/v1/accounts"
+
+  # Order (주문) API
+  orders:
+    create:      "${upbit.base-url}/v1/orders"
+    cancel:      "${upbit.base-url}/v1/orders/{uuid}"
+    list:        "${upbit.base-url}/v1/orders"
+    chance:      "${upbit.base-url}/v1/orders/chance"
+
+  # Withdrawal (출금) API
+  withdraws:
+    chance:      "${upbit.base-url}/v1/withdraws/chance"
+    list:        "${upbit.base-url}/v1/withdraws"
+    create:      "${upbit.base-url}/v1/withdraws"
+
+  # Deposit (입금) API
+  deposits:
+    chance:      "${upbit.base-url}/v1/deposits/chance"
+    list:        "${upbit.base-url}/v1/deposits"
+
+bithumb:
+  # Base URLs
+  base-url: https://api.bithumb.com
+  websocket:
+    public-url:  wss://ws-api.bithumb.com/websocket/v1        # 공개 WebSocket 엔드포인트 :contentReference[oaicite:0]{index=0}
+    private-url: wss://ws-api.bithumb.com/websocket/v1/private # 인증 WebSocket 엔드포인트 :contentReference[oaicite:1]{index=1}
+
+  # PUBLIC REST API
+  public:
+    market-all:    "${bithumb.base-url}/v1/market/all"                      # 마켓 코드 조회 :contentReference[oaicite:2]{index=2}
+    ticker:        "${bithumb.base-url}/v1/ticker"                          # 현재가 정보 :contentReference[oaicite:3]{index=3}
+    orderbook:     "${bithumb.base-url}/v1/orderbook"                       # 호가 정보 :contentReference[oaicite:4]{index=4}
+    trades-ticks:  "${bithumb.base-url}/v1/trades/ticks"                    # 최근 체결 내역 :contentReference[oaicite:5]{index=5}
+    candles:
+      minutes:    "${bithumb.base-url}/v1/candles/minutes/{unit}"           # 분(Minute) 캔들 :contentReference[oaicite:6]{index=6}
+      days:       "${bithumb.base-url}/v1/candles/days"                     # 일(Day) 캔들 :contentReference[oaicite:7]{index=7}
+      weeks:      "${bithumb.base-url}/v1/candles/weeks"                    # 주(Week) 캔들 :contentReference[oaicite:8]{index=8}
+      months:     "${bithumb.base-url}/v1/candles/months"                   # 월(Month) 캔들 :contentReference[oaicite:9]{index=9}
+
+  # PRIVATE REST API (인증 필요)
+  private:
+    accounts:
+      list:        "${bithumb.base-url}/v1/accounts"                        # 전체 계좌 조회 :contentReference[oaicite:10]{index=10}
+    orders:
+      chance:      "${bithumb.base-url}/v1/orders/chance"                  # 주문 가능 정보 :contentReference[oaicite:11]{index=11}
+      get:         "${bithumb.base-url}/v1/order"                          # 개별 주문 조회 :contentReference[oaicite:12]{index=12}
+      list:        "${bithumb.base-url}/v1/orders"                         # 주문 리스트 조회 :contentReference[oaicite:13]{index=13}
+      create:      "${bithumb.base-url}/v2/orders"                         # 주문하기 (BETA) :contentReference[oaicite:14]{index=14}
+      cancel:      "${bithumb.base-url}/v2/order"                          # 주문 취소 접수 (BETA) :contentReference[oaicite:15]{index=15}
+    withdraws:
+      list:        "${bithumb.base-url}/v1/withdraws"                      # 코인 출금 리스트 조회 :contentReference[oaicite:16]{index=16}
+      krw:         "${bithumb.base-url}/v1/withdraws/krw"                  # 원화 출금 리스트 조회 :contentReference[oaicite:17]{index=17}
+      get:         "${bithumb.base-url}/v1/withdraw"                       # 개별 출금 조회 :contentReference[oaicite:18]{index=18}
+      chance:      "${bithumb.base-url}/v1/withdraws/chance"               # 출금 가능 정보 :contentReference[oaicite:19]{index=19}
+    deposits:
+      list:               "${bithumb.base-url}/v1/deposits"                # 코인 입금 리스트 조회 :contentReference[oaicite:20]{index=20}
+      address-generate:   "${bithumb.base-url}/v1/deposits/generate_coin_address"  
+
+binance:
+
+  access-key: ${BINANCE_OPEN_API_ACCESS_KEY}
+  secret-key: ${BINANCE_OPEN_API_SECRET_KEY}
+
+  future:
+    usdt:
+      # Base URLs
+      base-url:               "https://fapi.binance.com"
+      testnet-base-url:       "https://testnet.binancefuture.com"
+
+      # WebSocket URLs
+      websocket:
+        base-url:          "wss://ws-fapi.binance.com/ws-fapi/v1"
+        testnet-url:  "wss://testnet.binancefuture.com/ws-fapi/v1"
+        stream-name:
+            agg-trade: "@aggTrade"
+            trade: "@trade"
+            kline: "@kline_1m"
+            continuous-kline: "@continuousKline_1m"
+            mark-price: "@markPrice"
+            index-price: "@indexPrice"
+            mini-ticker: "@miniTicker"
+            all-mini-ticker: "!miniTicker@arr"
+            ticker: "@ticker"
+            all-ticker: "!ticker@arr"
+            book-ticker: "@bookTicker"
+            all-book-ticker: "!bookTicker@arr"
+            depth: "@depth"
+            depth5: "@depth5"
+            depth10: "@depth10"
+            depth20: "@depth20"
+            depth100ms: "@depth@100ms"
+        # User Data Streams
+        user-stream:
+          listen-key: "${binance.future.usdt.base-url}/fapi/v1/listenKey"
+
+      # Market Data (REST)
+      market-data:
+        ping:                   "${binance.future.usdt.base-url}/fapi/v1/ping"
+        time:                   "${binance.future.usdt.base-url}/fapi/v1/time"
+        exchange-info:          "${binance.future.usdt.base-url}/fapi/v1/exchangeInfo"
+        order-book:             "${binance.future.usdt.base-url}/fapi/v1/depth"
+        recent-trades:          "${binance.future.usdt.base-url}/fapi/v1/trades"
+        historical-trades:      "${binance.future.usdt.base-url}/fapi/v1/historicalTrades"
+        agg-trades:             "${binance.future.usdt.base-url}/fapi/v1/aggTrades"
+        klines:                 "${binance.future.usdt.base-url}/fapi/v1/klines"
+        ticker-24hr:            "${binance.future.usdt.base-url}/fapi/v1/ticker/24hr"
+        price-ticker:           "${binance.future.usdt.base-url}/fapi/v1/ticker/price"
+        book-ticker:            "${binance.future.usdt.base-url}/fapi/v1/ticker/bookTicker"
+        premium-index:          "${binance.future.usdt.base-url}/fapi/v1/premiumIndex"
+        funding-rate:           "${binance.future.usdt.base-url}/fapi/v1/fundingRate"
+        open-interest:          "${binance.future.usdt.base-url}/fapi/v1/openInterest"
+        open-interest-history:  "${binance.future.usdt.base-url}/futures/data/openInterestHist"
+        top-account-ratio:      "${binance.future.usdt.base-url}/futures/data/topLongShortAccountRatio"
+        top-position-ratio:     "${binance.future.usdt.base-url}/futures/data/topLongShortPositionRatio"
+        global-long-short:      "${binance.future.usdt.base-url}/futures/data/globalLongShortAccountRatio"
+        taker-buy-sell-volume:  "${binance.future.usdt.base-url}/futures/data/takerLongShortRatio"
+        leverage-bracket:       "${binance.future.usdt.base-url}/fapi/v1/leverageBracket"
+
+      # Trade & Order Management (REST)
+      trade:
+        new-order:              "${binance.future.usdt.base-url}/fapi/v1/order"
+        query-order:            "${binance.future.usdt.base-url}/fapi/v1/order"
+        open-orders:            "${binance.future.usdt.base-url}/fapi/v1/openOrders"
+        all-orders:             "${binance.future.usdt.base-url}/fapi/v1/allOrders"
+        batch-orders:           "${binance.future.usdt.base-url}/fapi/v1/batchOrders"
+        fee-burn-status:        "${binance.future.usdt.base-url}/fapi/v1/feeBurn"
+        toggle-fee-burn:        "${binance.future.usdt.base-url}/fapi/v1/feeBurn"
+        insurance-balance:      "${binance.future.usdt.base-url}/fapi/v1/insuranceBalance"
+        constituents:           "${binance.future.usdt.base-url}/fapi/v1/constituents"
+
+
+  spot:
+    # Base Endpoints
+    base-url:              https://api.binance.com                     # :contentReference[oaicite:0]{index=0}
+    alt-base-urls:
+      api-gcp:             https://api-gcp.binance.com                 # :contentReference[oaicite:1]{index=1}
+      api1:                https://api1.binance.com                    # :contentReference[oaicite:2]{index=2}
+      api2:                https://api2.binance.com                    # :contentReference[oaicite:3]{index=3}
+      api3:                https://api3.binance.com                    # :contentReference[oaicite:4]{index=4}
+      api4:                https://api4.binance.com                    # :contentReference[oaicite:5]{index=5}
+
+    # General REST API Endpoints
+    general:
+      ping:                "${binance.spot.base-url}/api/v3/ping"       # :contentReference[oaicite:6]{index=6}
+      time:                "${binance.spot.base-url}/api/v3/time"       # :contentReference[oaicite:7]{index=7}
+      exchange-info:       "${binance.spot.base-url}/api/v3/exchangeInfo" # :contentReference[oaicite:8]{index=8}
+
+    # Market Data Endpoints
+    market-data:
+      depth:               "${binance.spot.base-url}/api/v3/depth"      # :contentReference[oaicite:9]{index=9}
+      recent-trades:       "${binance.spot.base-url}/api/v3/trades"     # :contentReference[oaicite:10]{index=10}
+      historical-trades:   "${binance.spot.base-url}/api/v3/historicalTrades"  # :contentReference[oaicite:11]{index=11}
+      agg-trades:          "${binance.spot.base-url}/api/v3/aggTrades"  # :contentReference[oaicite:12]{index=12}
+      klines:              "${binance.spot.base-url}/api/v3/klines"     # :contentReference[oaicite:13]{index=13}
+      avg-price:           "${binance.spot.base-url}/api/v3/avgPrice"   # :contentReference[oaicite:14]{index=14}
+      ticker-24hr:         "${binance.spot.base-url}/api/v3/ticker/24hr" # :contentReference[oaicite:15]{index=15}
+      price-ticker:        "${binance.spot.base-url}/api/v3/ticker/price"   # :contentReference[oaicite:16]{index=16}
+      book-ticker:         "${binance.spot.base-url}/api/v3/ticker/bookTicker" # :contentReference[oaicite:17]{index=17}
+      ui-klines:           "${binance.spot.base-url}/api/v3/uiKlines"   # :contentReference[oaicite:18]{index=18}
+
+    # Account & Trading Endpoints (USER_DATA)
+    account:
+      info:                "${binance.spot.base-url}/api/v3/account"    # :contentReference[oaicite:19]{index=19}
+      commission:          "${binance.spot.base-url}/api/v3/account/commission" # :contentReference[oaicite:20]{index=20}
+      rate-limit-order:    "${binance.spot.base-url}/api/v3/rateLimit/order"     # :contentReference[oaicite:21]{index=21}
+      prevented-matches:   "${binance.spot.base-url}/api/v3/myPreventedMatches"  # :contentReference[oaicite:22]{index=22}
+      allocations:         "${binance.spot.base-url}/api/v3/myAllocations"      # :contentReference[oaicite:23]{index=23}
+      order-amendments:    "${binance.spot.base-url}/api/v3/order/amendments"    # :contentReference[oaicite:24]{index=24}
+
+    trade:
+      new-order:           "${binance.spot.base-url}/api/v3/order"      # :contentReference[oaicite:25]{index=25}
+      test-order:          "${binance.spot.base-url}/api/v3/order/test" # :contentReference[oaicite:26]{index=26}
+      cancel-order:        "${binance.spot.base-url}/api/v3/order"      # :contentReference[oaicite:27]{index=27}
+      query-order:         "${binance.spot.base-url}/api/v3/order"      # :contentReference[oaicite:28]{index=28}
+      open-orders:         "${binance.spot.base-url}/api/v3/openOrders" # :contentReference[oaicite:29]{index=29}
+      all-orders:          "${binance.spot.base-url}/api/v3/allOrders"  # :contentReference[oaicite:30]{index=30}
+      oco-order:           "${binance.spot.base-url}/api/v3/order/oco"  # :contentReference[oaicite:31]{index=31}
+      cancel-oco:          "${binance.spot.base-url}/api/v3/orderList"  # :contentReference[oaicite:32]{index=32}
+      query-oco:           "${binance.spot.base-url}/api/v3/orderList"  # :contentReference[oaicite:33]{index=33}
+
+    # User Data Stream (WebSocket)
+    user-stream:
+      base-url:            wss://stream.binance.com:9443/ws             # :contentReference[oaicite:34]{index=34}
+      listen-key:
+        create:            "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:35]{index=35}
+        keep-alive:        "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:36]{index=36}
+        close:             "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:37]{index=37}
+
+

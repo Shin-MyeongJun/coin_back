@@ -1,0 +1,25 @@
+rootProject.name = 'demo'
+
+include ':contracts', ':infra_shard','infra_heartbeat' ,':upbit_ingestion', ':binance_ingestion',
+        ':infra_upbit',':infra_binance', ':ingestion_exchange_shard',':fx_ingestion',
+        ':market_data', ':meta_data', ':trading',':analytics',
+        ':market_data_query',':meta_data_query',':analytics_query'
+
+
+
+project(':contracts').projectDir = file('modules/contracts')
+project(':infra_shard').projectDir = file('modules/infra_shard')
+project(':infra_heartbeat').projectDir = file('modules/infra_heartbeat')
+project(':infra_upbit').projectDir = file('modules/infra_exchange/upbit')
+project(':infra_binance').projectDir = file('modules/infra_exchange/binance')
+project(':analytics').projectDir = file('modules/analytics')
+project(':fx_ingestion').projectDir = file('modules/ingection/fx_ingestion')
+project(':upbit_ingestion').projectDir = file('modules/ingection/exchange/upbit_ingestion')
+project(':binance_ingestion').projectDir = file('modules/ingection/exchange/binance_ingestion')
+project(':ingestion_exchange_shard').projectDir = file('modules/ingection/exchange/ingestion_exchange_shard')
+project(':market_data').projectDir = file('modules/market_data')
+project(':meta_data').projectDir = file('modules/meta_data')
+project(':trading').projectDir = file('modules/trading')
+project(':market_data_query').projectDir = file('modules/query/market_data_query')
+project(':meta_data_query').projectDir = file('modules/query/meta_data_query')
+project(':analytics_query').projectDir = file('modules/query/analytics_query')

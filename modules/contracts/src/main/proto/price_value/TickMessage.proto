@@ -1,0 +1,13 @@
+
+syntax = "proto3";
+package contracts;
+
+option java_package = "com.example.demo.contracts";
+option java_multiple_files = true;
+
+message TickMessage {
+  int32  market_code_id = 1;
+  string bid = 2;     // "116802.70"
+  string ask = 3;     // "116802.60"
+  int64  timestamp   = 4;       // epoch millis
+}

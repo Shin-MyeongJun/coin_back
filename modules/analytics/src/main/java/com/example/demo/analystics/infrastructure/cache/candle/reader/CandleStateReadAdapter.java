@@ -1,0 +1,54 @@
+package com.example.demo.analystics.infrastructure.cache.candle.reader;
+
+
+import com.example.demo.analystics.application.port.out.ReadAnalyticsStatePort;
+import com.example.demo.analystics.domain.domain.Interval;
+import com.example.demo.analystics.domain.domain.candle.open.OpenCandle;
+import com.example.demo.analystics.domain.domain.key.DataKey;
+import com.example.demo.analystics.domain.domain.recovery.RecoveryCandleState;
+import com.example.demo.analystics.infrastructure.cache.candle.CandleRedisKeyGenerator;
+import com.example.demo.analystics.infrastructure.cache.candle.codec.CandleStateCodec;
+import com.example.demo.analystics.infrastructure.cache.key_codec.base.DataKeyCodec;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RequiredArgsConstructor
+public abstract   class CandleStateReadAdapter<CANDLE extends OpenCandle<KEY,VAL>,KEY extends DataKey<KEY>,VAL extends Comparable<VAL>>
+        implements ReadAnalyticsStatePort< KEY,RecoveryCandleState<VAL>> {
+
+    private final RedisTemplate<String, String> redis;
+    private final CandleStateCodec<CANDLE, VAL> stateCodec;
+    private final DataKeyCodec<KEY> keyCodec;
+    protected final CandleRedisKeyGenerator keyGenerator;
+    private final String env ="local";
+
+    private final ScanOptions options = ScanOptions.scanOptions()
+            .match("*")
+            .count(1000)
+            .build();
+
+    public Map<KEY, RecoveryCandleState<VAL>> read(int partitionId,Interval interval) {
+        String key = makeKey(env,partitionId,interval.getPeriod());
+        Map<KEY, RecoveryCandleState<VAL>> result = new HashMap<>();
+
+        try (Cursor<Map.Entry<Object, Object>> cursor =
+                     redis.opsForHash().scan(key, options)) {
+            while (cursor.hasNext()) {
+                Map.Entry<Object, Object> entry = cursor.next();
+                byte[] field = (byte[]) entry.getKey();
+                byte[] value = (byte[]) entry.getValue();
+                result.put(keyCodec.decode(field), stateCodec.decode(value));
+            }
+        } catch (Exception e) {
+
+        }
+        return result;
+    }
+
+    protected abstract String makeKey(String env,int partitionId, String tf);
+}

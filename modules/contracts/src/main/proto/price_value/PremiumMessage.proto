@@ -1,0 +1,15 @@
+
+syntax = "proto3";
+package contracts;
+
+option java_package = "com.example.demo.contracts";
+option java_multiple_files = true;
+
+message PremiumMessage {
+  string symbol =1;
+  int32  base_exchange_id = 2;
+  int32  compare_exchange_id = 3;
+  string bid = 4;     // "116802.70"
+  string ask = 5;     // "116802.60"
+  int64  timestamp   = 6;       // epoch millis
+}

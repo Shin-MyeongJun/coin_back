@@ -1,0 +1,30 @@
+plugins {
+	id 'java-library'
+}
+
+dependencies {
+	// Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	// Redis (Reactive 포함)
+	implementation 'org.springframework.data:spring-data-redis'
+	implementation 'io.lettuce:lettuce-core'
+
+	// WebFlux (필요할 때만)
+	implementation 'org.springframework:spring-webflux'
+	implementation 'io.projectreactor.netty:reactor-netty'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+
+	//okio
+	implementation 'com.squareup.okio:okio:3.16.4'
+	//Json-iter
+	implementation 'com.jsoniter:jsoniter:0.9.23'
+	//dsl json
+	implementation 'com.dslplatform:dsl-json:2.0.2'
+	annotationProcessor 'com.dslplatform:dsl-json:2.0.2'
+}

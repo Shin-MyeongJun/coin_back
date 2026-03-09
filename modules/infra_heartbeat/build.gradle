@@ -1,0 +1,157 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.hibernate.orm' version '6.6.13.Final'
+	id 'org.graalvm.buildtools.native' version '0.10.6'
+	id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id 'com.google.protobuf' version '0.9.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
+	set('springCloudVersion', "2024.0.1")
+	set('springModulithVersion', "1.3.5")
+}
+
+
+
+protobuf {
+	protoc { artifact = "com.google.protobuf:protoc:4.33.0" }
+}
+
+dependencies {
+
+	 // Spring Boot core
+    implementation 'org.springframework.boot:spring-boot-starter'
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra'
+	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+	implementation 'org.springframework.boot:spring-boot-starter-groovy-templates'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-web-services'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'io.github.wimdeblauwe:htmx-spring-boot-thymeleaf:4.0.1'
+//	implementation 'org.apache.kafka:kafka-streams'
+//	implementation 'org.springframework.cloud:spring-cloud-bus'
+//	implementation 'org.springframework.cloud:spring-cloud-stream'
+//	implementation 'org.springframework.cloud:spring-cloud-stream-binder-kafka'
+//	implementation 'org.springframework.cloud:spring-cloud-stream-binder-kafka-streams'
+	implementation 'org.springframework.kafka:spring-kafka'
+
+
+//	implementation 'org.springframework.session:spring-session-data-redis'
+//	implementation 'org.springframework.session:spring-session-jdbc'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'io.micrometer:micrometer-registry-datadog'
+
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'org.springframework.security:spring-security-test'
+	implementation 'com.auth0:java-jwt:4.5.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// WebFlux: WebClient & WebSocket support
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.projectreactor.netty:reactor-netty'
+    
+    // Jackson for DTO (JsonNaming, etc.)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    
+    // PostConstruct (Jakarta)
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+
+	// Binnace connector 
+	implementation 'io.github.binance:binance-connector-java:3.4.1'
+	implementation "io.github.binance:binance-derivatives-trading-usds-futures:2.0.0"
+
+	//dsl json
+	implementation 'com.dslplatform:dsl-json:2.0.2'
+	annotationProcessor 'com.dslplatform:dsl-json:2.0.2'
+
+	//jsoniter
+	implementation 'com.jsoniter:jsoniter:0.9.23'
+
+	//postgresql
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'org.postgresql:postgresql'
+
+	//protobuf
+	implementation 'com.google.protobuf:protobuf-java:4.33.0'
+	implementation 'com.google.protobuf:protobuf-java-util:4.33.0'
+
+	//inner project shrard
+	implementation implementation(project(":contracts"))
+	implementation implementation(project(':infra_shard'))
+
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+hibernate {
+	enhancement {
+		enableAssociationManagement = true
+	}
+}
+
+tasks.named('bootBuildImage') {
+	builder = 'paketobuildpacks/builder-jammy-base:latest'
+}
+
+tasks.named('test') {
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+}
+
+tasks.named('asciidoctor') {
+	inputs.dir snippetsDir
+	dependsOn test
+}

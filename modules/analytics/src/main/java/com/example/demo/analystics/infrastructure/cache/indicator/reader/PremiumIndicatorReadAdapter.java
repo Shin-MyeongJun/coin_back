@@ -1,0 +1,20 @@
+package com.example.demo.analystics.infrastructure.cache.indicator.reader;
+
+import com.example.demo.analystics.domain.domain.key.PremiumKey;
+import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedisKeyGenerator;
+import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
+import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
+import org.springframework.data.redis.core.RedisTemplate;
+
+public class PremiumIndicatorReadAdapter extends IndicatorStateReadAdapter<PremiumKey> {
+
+
+    public PremiumIndicatorReadAdapter(RedisTemplate<String, String> redis, IndicatorKeyCodec<PremiumKey> keyCodec, IndicatorStateCodecManager stateCodecManager, IndicatorRedisKeyGenerator keyGenerator) {
+        super(redis, keyCodec, stateCodecManager, keyGenerator);
+    }
+
+    @Override
+    protected String makeKey(String env, String tf) {
+        return keyGenerator.premiumIndicatorState(env,tf);
+    }
+}

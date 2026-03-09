@@ -1,0 +1,19 @@
+
+syntax = "proto3";
+package contracts;
+
+option java_package = "com.example.demo.contracts";
+option java_multiple_files = true;
+
+message PremiumDetailMessage {
+  string symbol =1;
+  int32  base_exchange_id = 2;
+  int32  compare_exchange_id = 3;
+  string base_bid = 4;
+  string base_ask = 5;
+  string base_quote_val = 6;
+  string compare_bid = 7;
+  string compare_ask = 8;
+  string compare_quote_val = 9;
+  int64 timestamp  = 10;
+}

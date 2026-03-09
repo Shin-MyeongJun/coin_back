@@ -1,0 +1,43 @@
+plugins {
+	id 'java-library'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+
+dependencies {
+	// inner
+	implementation project(":infra_shard")
+
+    //config
+	implementation "org.springframework.boot:spring-boot-autoconfigure"
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+	// Binance connector
+	implementation 'io.github.binance:binance-connector-java:3.4.1'
+	implementation  "io.github.binance:binance-derivatives-trading-usds-futures:2.0.0"
+
+	// HTTP client (이 모듈에서 WebClient를 직접 사용한다면 유지)
+	implementation  'org.springframework:spring-webflux'
+	implementation  'io.projectreactor.netty:reactor-netty'
+
+
+	// JSON (실제로 쓰는 것만 남기는 것을 권장)
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations'
+	implementation 'com.dslplatform:dsl-json:2.0.2'
+	annotationProcessor 'com.dslplatform:dsl-json:2.0.2'
+	implementation 'com.jsoniter:jsoniter:0.9.23'
+
+	// Jakarta annotations
+	compileOnly 'jakarta.annotation:jakarta.annotation-api'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.test {
+	useJUnitPlatform()
+}

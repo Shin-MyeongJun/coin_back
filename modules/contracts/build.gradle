@@ -1,0 +1,19 @@
+plugins {
+	id 'java-library'
+	id 'com.google.protobuf' version '0.9.4'
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:4.33.0"
+	}
+}
+
+dependencies {
+	api 'com.google.protobuf:protobuf-java:4.33.0'
+	api 'com.google.protobuf:protobuf-java-util:4.33.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

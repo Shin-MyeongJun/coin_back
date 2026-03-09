@@ -1,0 +1,15 @@
+
+syntax = "proto3";
+package contracts;
+
+option java_package = "com.example.demo.contracts";
+option java_multiple_files = true;
+
+message MarketCodeRawMessage{
+  string exchange_name =1;
+  string exchange_type =2;
+  string country =3;
+  string asset =4;
+  string base =5;
+  string tradingPair =6;
+}
