@@ -15,5 +15,5 @@ public record PremiumCloseIndicator(
         int period,
         BigDecimal value,
         TimeWindow times
-) {
+) implements CloseIndicator {
 }

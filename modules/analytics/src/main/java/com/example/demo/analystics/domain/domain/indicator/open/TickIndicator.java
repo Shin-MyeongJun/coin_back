@@ -6,7 +6,7 @@ import com.example.demo.analystics.domain.domain.key.TickKey;
 
 public class TickIndicator extends OpenTradeIndicator<TickKey>{
     public TickIndicator(TickKey dataKey, IndicatorKey indicatorKey, TradeIndicatorUpdater updater) {
-        super(dataKey, indicatorKey, updater);
+        super(dataKey, indicatorKey ,updater);
     }
 
     public Long getMarketCodeId(){

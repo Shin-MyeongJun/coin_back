@@ -1,6 +1,5 @@
-package com.example.demo.analystics.application.kernel.base;
+package com.example.demo.analystics.domain.dispatch_manager;
 
-import com.example.demo.analystics.domain.buffer.candle.CandleBuffer;
 import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.candle.close.CloseCandle;
 import com.example.demo.analystics.domain.domain.candle.open.OpenCandle;
@@ -13,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class CandleManagerController<
@@ -21,8 +19,7 @@ public abstract class CandleManagerController<
         VAL extends Comparable<VAL>,
         CANDLE extends OpenCandle<KEY, VAL>,
         CLOSE_CANDLE extends CloseCandle,
-        BUFFER extends CandleBuffer<KEY, VAL, CANDLE>,
-        MANAGER extends CandleManager<KEY, VAL, CANDLE, CLOSE_CANDLE, BUFFER>> {
+        MANAGER extends CandleManager<KEY, VAL, CANDLE, CLOSE_CANDLE, ?>> implements AnalyticsMangerController<KEY,VAL,CANDLE,CLOSE_CANDLE> {
 
     // Manager 상태를 관리하는 핵심 저장소
     protected final Map<Integer, MANAGER> managerMap = new ConcurrentHashMap<>();
@@ -31,16 +28,13 @@ public abstract class CandleManagerController<
     // ----------------------------------------------------
     // [1] restore or revoke
     // ----------------------------------------------------
-    public void assignPartitions(Map<Integer,List<CANDLE>> partitions) {
-        partitions.forEach((id, list) -> {
+    public void assignPartition(int id ,Map<Interval,List<CANDLE>> candles) {
             MANAGER manager = createManager();
-            Map<Interval,List<CANDLE>> candles = list.stream().collect(Collectors.groupingBy(CANDLE::getInterval));
             manager.assign(candles);
             managerMap.put(id,manager);
-        });
     }
     public void revokePartitions(Collection<Integer> partitionIds) {
-
+        partitionIds.forEach(managerMap::remove);
     }
     // ----------------------------------------------------
     // [2] flush And Get

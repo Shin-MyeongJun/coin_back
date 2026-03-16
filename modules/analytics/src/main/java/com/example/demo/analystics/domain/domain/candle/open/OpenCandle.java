@@ -1,6 +1,5 @@
 package com.example.demo.analystics.domain.domain.candle.open;
 
-import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.candle.value.OhlcData;
 import com.example.demo.analystics.domain.domain.key.DataKey;
 
@@ -12,22 +11,21 @@ public abstract class OpenCandle<
         > {
    private final KEY key;
    private final OhlcData<VAL> ohlcData;
-   private final Interval interval;
+
    private final long openTimestamp;
     private long closeTimestamp;
    private Boolean isClosed = false;
 
-   public OpenCandle(KEY key, VAL val,Interval interval) {
+   public OpenCandle(KEY key, VAL val) {
        this.key = key;
        this.ohlcData = new OhlcData<>(val);
-       this.interval = interval;
+
        this.openTimestamp = System.currentTimeMillis();
    }
 
-    public OpenCandle(KEY key,OhlcData<VAL> ohlcData,Interval interval,long openTimestamp) {
+    public OpenCandle(KEY key,OhlcData<VAL> ohlcData,long openTimestamp) {
         this.key = key;
         this.ohlcData = ohlcData;
-        this.interval = interval;
         this.openTimestamp = openTimestamp;
     }
 
@@ -66,6 +64,6 @@ public abstract class OpenCandle<
     public KEY getKey(){
         return key;
     }
-    public Interval getInterval(){return interval;};
+
 
 }

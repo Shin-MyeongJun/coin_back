@@ -1,17 +1,16 @@
 package com.example.demo.analystics.domain.domain.candle.open;
 
 
-import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.candle.value.OhlcData;
 import com.example.demo.analystics.domain.domain.candle.value.PremiumDetailValue;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 
 public class PremiumDetailCandle extends OpenCandle<PremiumKey, PremiumDetailValue> {
-    public PremiumDetailCandle(PremiumKey key, PremiumDetailValue val, Interval interval) {
-        super(key, val,interval);
+    public PremiumDetailCandle(PremiumKey key, PremiumDetailValue val) {
+        super(key, val);
     }
-    public PremiumDetailCandle(PremiumKey key, OhlcData<PremiumDetailValue> ohlcData, Interval interval, long timestamp) {
-        super(key, ohlcData,interval,timestamp);
+    public PremiumDetailCandle(PremiumKey key, OhlcData<PremiumDetailValue> ohlcData, long timestamp) {
+        super(key, ohlcData,timestamp);
     }
 
     public long getBaseExchangeId(){

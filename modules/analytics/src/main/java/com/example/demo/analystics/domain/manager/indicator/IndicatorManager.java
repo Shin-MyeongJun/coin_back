@@ -34,6 +34,12 @@ public abstract class IndicatorManager<
         buffers.put(Interval.M240,factory.create());
     }
 
+    public void assign(Map<Interval,List<IND>> candles){
+        candles.forEach((key,list)->{
+            buffers.get(key).assign(list);
+        });
+    }
+
     public void update(KEY key, BigDecimal val){
         for(IndicatorBuffer<KEY,IND>  buffer : buffers.values()){
             buffer.update(key,val);

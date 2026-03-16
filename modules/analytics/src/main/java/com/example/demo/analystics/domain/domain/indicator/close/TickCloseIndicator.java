@@ -14,5 +14,5 @@ public record TickCloseIndicator(
         BigDecimal value,
         TimeWindow times
 
-) {
+) implements CloseIndicator  {
 }

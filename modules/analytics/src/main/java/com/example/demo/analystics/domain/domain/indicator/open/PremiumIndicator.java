@@ -7,7 +7,7 @@ import com.example.demo.analystics.domain.domain.key.PremiumKey;
 public class PremiumIndicator extends OpenTradeIndicator<PremiumKey> {
 
     public PremiumIndicator(PremiumKey dataKey, IndicatorKey indicatorKey, TradeIndicatorUpdater updater) {
-        super(dataKey, indicatorKey,updater);
+        super(dataKey, indicatorKey ,updater);
     }
 
     public long getBaseExchangeId(){

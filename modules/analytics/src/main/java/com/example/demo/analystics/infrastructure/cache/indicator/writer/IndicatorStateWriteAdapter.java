@@ -31,13 +31,14 @@ public abstract class IndicatorStateWriteAdapter<
     private final String env = "local";
 
 
-    public void upsertAll(Interval interval, List<IND> cs) {
+    @Override
+    public void upsert(int partitionId ,Interval interval, List<IND> cs) {
         if (cs == null || cs.isEmpty()) return;
 
         final String tf = interval.getPeriod();
         final long tfSecond = interval.getSecond();
         final long openTime =cs.getFirst().getOpenTimestamp();
-        byte[] rawKey = makeKey(env,tf).getBytes();
+        byte[] rawKey = makeKey(env,partitionId,tf).getBytes();
         redis.executePipelined((RedisCallback<Object>) connection -> {
             for (IND ind : cs) {
                 if (ind == null) continue;
@@ -50,5 +51,5 @@ public abstract class IndicatorStateWriteAdapter<
         });
 
     }
-    protected abstract String makeKey(String env, String tf);
+    protected abstract String makeKey(String env,int partitionId ,String tf);
 }

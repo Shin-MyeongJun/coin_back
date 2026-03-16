@@ -3,8 +3,8 @@ package com.example.demo.analystics.domain.domain.indicator.open;
 import com.example.demo.analystics.domain.domain.indicator.TradeIndicatorType;
 import com.example.demo.analystics.domain.domain.indicator.open.state.IndicatorState;
 import com.example.demo.analystics.domain.domain.indicator.open.updater.TradeIndicatorUpdater;
-import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.DataKey;
+import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 
 import java.math.BigDecimal;
 
@@ -17,7 +17,7 @@ public abstract class OpenTradeIndicator<KEY extends DataKey<KEY>> {
     private Long closeTimestamp;
     private Boolean isClosed = false;
 
-    public OpenTradeIndicator(KEY dataKey,IndicatorKey indicatorKey ,TradeIndicatorUpdater updater) {
+    public OpenTradeIndicator(KEY dataKey, IndicatorKey indicatorKey , TradeIndicatorUpdater updater) {
         this.dataKey = dataKey;
         this.indicatorKey = indicatorKey;
         this.updater = updater;

@@ -12,7 +12,7 @@ public class TickIndicatorReadAdapter extends IndicatorStateReadAdapter<TickKey>
     }
 
     @Override
-    protected String makeKey(String env, String tf) {
-        return keyGenerator.tickIndicatorState(env,tf);
+    protected String makeKey(String env,int partitionId, String tf) {
+        return keyGenerator.tickIndicatorState(env,partitionId,tf);
     }
 }

@@ -1,7 +1,6 @@
-package com.example.demo.analystics.application.kernel.dispatch_manager.candle;
+package com.example.demo.analystics.domain.dispatch_manager.candle;
 
-import com.example.demo.analystics.application.kernel.base.CandleManagerController;
-import com.example.demo.analystics.domain.buffer.candle.PremiumCandleBuffer;
+import com.example.demo.analystics.domain.dispatch_manager.CandleManagerController;
 import com.example.demo.analystics.domain.domain.candle.close.PremiumCloseCandle;
 import com.example.demo.analystics.domain.domain.candle.open.PremiumCandle;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
@@ -19,7 +18,6 @@ public class PremiumCandleMangerController extends CandleManagerController<
         BigDecimal,
         PremiumCandle,
         PremiumCloseCandle,
-        PremiumCandleBuffer,
         PremiumCandleManager> {
 
     private final ClosingData<PremiumCandle, PremiumCloseCandle> closingData;

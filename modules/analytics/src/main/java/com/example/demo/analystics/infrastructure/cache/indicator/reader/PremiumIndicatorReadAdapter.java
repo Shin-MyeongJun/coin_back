@@ -14,7 +14,7 @@ public class PremiumIndicatorReadAdapter extends IndicatorStateReadAdapter<Premi
     }
 
     @Override
-    protected String makeKey(String env, String tf) {
-        return keyGenerator.premiumIndicatorState(env,tf);
+    protected String makeKey(String env,int partitionId, String tf) {
+        return keyGenerator.premiumIndicatorState(env,partitionId,tf);
     }
 }

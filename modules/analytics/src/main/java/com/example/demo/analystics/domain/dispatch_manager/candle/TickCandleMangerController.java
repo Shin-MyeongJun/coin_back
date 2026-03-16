@@ -1,7 +1,6 @@
-package com.example.demo.analystics.application.kernel.dispatch_manager.candle;
+package com.example.demo.analystics.domain.dispatch_manager.candle;
 
-import com.example.demo.analystics.application.kernel.base.CandleManagerController;
-import com.example.demo.analystics.domain.buffer.candle.TickCandleBuffer;
+import com.example.demo.analystics.domain.dispatch_manager.CandleManagerController;
 import com.example.demo.analystics.domain.domain.candle.close.TickCloseCandle;
 import com.example.demo.analystics.domain.domain.candle.open.TickCandle;
 import com.example.demo.analystics.domain.domain.key.TickKey;
@@ -19,7 +18,6 @@ public class TickCandleMangerController extends CandleManagerController<
         BigDecimal,
         TickCandle,
         TickCloseCandle,
-        TickCandleBuffer,
         TickCandleManager> {
 
     private final ClosingData<TickCandle, TickCloseCandle> closingData;

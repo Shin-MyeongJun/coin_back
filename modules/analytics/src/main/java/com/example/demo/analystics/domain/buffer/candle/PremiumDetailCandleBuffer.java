@@ -10,4 +10,8 @@ import com.example.demo.analystics.domain.domain.key.PremiumKey;
 public class PremiumDetailCandleBuffer extends CandleBuffer<PremiumKey, PremiumDetailValue, PremiumDetailCandle> {
 
 
+    @Override
+    protected PremiumDetailCandle createCandle(PremiumKey key, PremiumDetailValue premiumDetailValue) {
+        return new PremiumDetailCandle(key, premiumDetailValue);
+    }
 }

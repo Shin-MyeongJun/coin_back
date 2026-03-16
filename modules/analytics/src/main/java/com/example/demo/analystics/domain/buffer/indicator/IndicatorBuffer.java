@@ -21,6 +21,21 @@ public abstract class IndicatorBuffer<KEY extends DataKey<KEY> , IND extends Ope
         this.factory = factory;
     }
 
+
+    public void assign(List<IND> list) {
+        buffer.clear(); // 기존 할당된 버퍼 초기화
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        for (IND indicator : list) {
+            Map<IndicatorKey, IND> innerMap = buffer.computeIfAbsent(
+                    indicator.getDataKey(),
+                    k -> new ConcurrentHashMap<>()
+            );
+            innerMap.put(indicator.getIndicatorKey(), indicator);
+        }
+    }
+
     public void update(KEY key, BigDecimal val) {
        if(!buffer.containsKey(key)){
            Map<IndicatorKey, IND> indicators = new ConcurrentHashMap<>(factory.createIndicators(key,val));

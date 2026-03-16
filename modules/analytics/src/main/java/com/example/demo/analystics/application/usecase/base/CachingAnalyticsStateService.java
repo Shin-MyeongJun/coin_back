@@ -1,9 +1,9 @@
-package com.example.demo.analystics.application.usecase.base.interval_cache;
+package com.example.demo.analystics.application.usecase.base;
 
 
-import com.example.demo.analystics.application.kernel.base.CandleManagerController;
 import com.example.demo.analystics.application.port.in.PartitionCachingUseCase;
 import com.example.demo.analystics.application.port.out.WriteAnalyticsStatePort;
+import com.example.demo.analystics.domain.dispatch_manager.AnalyticsMangerController;
 import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.candle.open.OpenCandle;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor
-public abstract class CachingCandleStateService<CANDLE extends OpenCandle<?,?>> implements PartitionCachingUseCase {
-    private final CandleManagerController<?,?,CANDLE,?,?,?> controller;
+public abstract class CachingAnalyticsStateService<CANDLE extends OpenCandle<?,?>> implements PartitionCachingUseCase {
+    private final AnalyticsMangerController<?,?,CANDLE,?> controller;
     private final WriteAnalyticsStatePort<CANDLE> writePort;
 
     //주요 IntervalList

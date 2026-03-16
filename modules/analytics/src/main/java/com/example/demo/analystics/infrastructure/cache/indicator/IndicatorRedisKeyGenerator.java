@@ -9,11 +9,11 @@ public class IndicatorRedisKeyGenerator {
     }
 
     // Indicator state (tf + type 필수)
-    public  String tickIndicatorState(String env,String tf) {
-        return base(env) + ":tick:indicator:state:" + tf;
+    public  String tickIndicatorState(String env,int partitionId,String tf) {
+        return base(env) + ":tick:indicator:state:"+partitionId +":"+ tf;
     }
 
-    public  String premiumIndicatorState(String env,String tf) {
-        return base(env) + ":premium:indicator:state:"  + tf;
+    public  String premiumIndicatorState(String env, int partitionId, String tf) {
+        return base(env) + ":premium:indicator:state:"+partitionId +":"+ tf;
     }
 }

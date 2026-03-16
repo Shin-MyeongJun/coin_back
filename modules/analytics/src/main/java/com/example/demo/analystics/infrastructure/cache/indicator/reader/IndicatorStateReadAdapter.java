@@ -30,8 +30,8 @@ public abstract class IndicatorStateReadAdapter<KEY extends DataKey<KEY>> implem
             .count(1000)
             .build();
     @Override
-    public Map<IndicatorPriceDataKey<KEY>, RecoveryIndicatorState> readAll(Interval interval) {
-        String redisKey = makeKey(env,interval.getPeriod());
+    public Map<IndicatorPriceDataKey<KEY>, RecoveryIndicatorState> read(int partitionId, Interval interval) {
+        String redisKey = makeKey(env,partitionId,interval.getPeriod());
         Map<IndicatorPriceDataKey<KEY>, RecoveryIndicatorState> result = new HashMap<>();
 
         try (Cursor<Map.Entry<Object, Object>> cursor =
@@ -49,5 +49,5 @@ public abstract class IndicatorStateReadAdapter<KEY extends DataKey<KEY>> implem
         return result;
     }
 
-    protected abstract String makeKey(String env, String tf);
+    protected abstract String makeKey(String env,int partitionId ,String tf);
 }

@@ -18,7 +18,7 @@ public class PremiumIndicatorStateWriteAdapter extends IndicatorStateWriteAdapte
     }
 
     @Override
-    protected String makeKey(String env, String tf) {
-        return keyGenerator.tickIndicatorState(env, tf);
+    protected String makeKey(String env,int partitionId , String tf) {
+        return keyGenerator.tickIndicatorState(env,partitionId ,tf);
     }
 }

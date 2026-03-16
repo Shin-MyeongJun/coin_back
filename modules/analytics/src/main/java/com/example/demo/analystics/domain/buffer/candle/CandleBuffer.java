@@ -24,11 +24,8 @@ public abstract class CandleBuffer
 
 
     public void update(KEY key, VAL val) {
-        if(buffer.containsKey(key)) {
-            CANDLE candle = buffer.get(key);
+            CANDLE candle = buffer.computeIfAbsent(key, k -> createCandle(k, val));
             candle.update(val);
-            buffer.put(key, candle);
-        }
     }
 
     public void assign(List<CANDLE> list){
@@ -58,5 +55,7 @@ public abstract class CandleBuffer
     private void close(){
        buffer.values().forEach(OpenCandle::close);
     }
+
+    protected abstract CANDLE createCandle(KEY key,VAL val);
 
 }

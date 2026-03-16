@@ -8,4 +8,8 @@ import java.math.BigDecimal;
 
 
 public class TickCandleBuffer extends CandleBuffer<TickKey, BigDecimal, TickCandle> {
+    @Override
+    protected TickCandle createCandle(TickKey key, BigDecimal bigDecimal) {
+        return new TickCandle(key, bigDecimal);
+    }
 }
