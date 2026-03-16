@@ -7,9 +7,11 @@ import com.example.demo.analystics.domain.dispatch_manager.CandleManagerControll
 import com.example.demo.analystics.domain.domain.candle.open.TickCandle;
 import com.example.demo.analystics.domain.domain.key.TickKey;
 import com.example.demo.analystics.domain.domain.recovery.RecoveryCandleState;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Component
 public class RestoreTickCandleStateService extends RestoreAnalyticsStateService<TickKey,
         RecoveryCandleState<BigDecimal>,
         TickCandle

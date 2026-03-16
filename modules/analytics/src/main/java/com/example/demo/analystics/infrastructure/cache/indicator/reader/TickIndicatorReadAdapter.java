@@ -5,7 +5,9 @@ import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedis
 import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TickIndicatorReadAdapter extends IndicatorStateReadAdapter<TickKey> {
     public TickIndicatorReadAdapter(RedisTemplate<String, String> redis, IndicatorKeyCodec<TickKey> keyCodec, IndicatorStateCodecManager stateCodecManager, IndicatorRedisKeyGenerator keyGenerator) {
         super(redis, keyCodec, stateCodecManager, keyGenerator);

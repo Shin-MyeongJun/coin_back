@@ -5,7 +5,9 @@ import com.example.demo.analystics.domain.domain.candle.open.PremiumDetailCandle
 import com.example.demo.analystics.domain.domain.candle.value.PremiumDetailValue;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.analystics.domain.domain.recovery.RecoveryCandleState;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RecoverToPremiumDetailCandleMapper
         implements MappingRecoverToStatePort<RecoveryCandleState<PremiumDetailValue>, PremiumKey, PremiumDetailCandle> {
 @Override

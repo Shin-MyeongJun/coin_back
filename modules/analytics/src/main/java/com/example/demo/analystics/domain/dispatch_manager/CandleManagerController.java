@@ -7,7 +7,6 @@ import com.example.demo.analystics.domain.domain.key.DataKey;
 import com.example.demo.analystics.domain.manager.candle.CandleManager;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +44,6 @@ public abstract class CandleManagerController<
                  .toList();
     }
     public List<CANDLE>  get(int partitionId, Interval interval) {
-        List<CANDLE> list = new ArrayList<>();
         MANAGER manager = getManager(partitionId);
         return manager.getCandles(interval);
     }

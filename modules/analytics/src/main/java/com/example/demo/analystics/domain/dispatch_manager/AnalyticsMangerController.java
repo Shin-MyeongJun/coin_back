@@ -13,9 +13,9 @@ public interface AnalyticsMangerController<
         TD,
         CLOSE_TD
         > {
-    public void assignPartition(int id , Map<Interval, List<TD>> candles);
-    public void revokePartitions(Collection<Integer> partitionIds);
-    public List<CLOSE_TD> flush(Interval interval);
-    public List<TD>  get(int partitionId, Interval interval);
-    public void insert(int partitionId, KEY key, VAL val);
+    void assignPartition(int id , Map<Interval, List<TD>> candles);
+    void revokePartitions(Collection<Integer> partitionIds);
+    List<CLOSE_TD> flush(Interval interval);
+    List<TD>  get(int partitionId, Interval interval);
+    void insert(int partitionId, KEY key, VAL val);
 }

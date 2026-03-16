@@ -7,7 +7,6 @@ import com.example.demo.analystics.domain.manager.indicator.IndicatorManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,6 @@ public abstract class IndicatorMangerController<KEY extends DataKey<KEY>,
                 .toList();
     }
     public List<IND>  get(int partitionId, Interval interval) {
-        List<IND> list = new ArrayList<>();
         MANAGER manager = getManager(partitionId);
         return manager.getInds(interval);
     }

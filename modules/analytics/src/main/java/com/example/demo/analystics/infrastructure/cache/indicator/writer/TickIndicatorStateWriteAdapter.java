@@ -7,7 +7,9 @@ import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedis
 import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TickIndicatorStateWriteAdapter extends IndicatorStateWriteAdapter<TickKey, TickIndicator> {
     public TickIndicatorStateWriteAdapter(RedisTemplate<String, String> redis, IndicatorStateCodecManager manager, IndicatorKeyCodec<TickKey> keyCodec, CacheExpirationPolicy policy, IndicatorRedisKeyGenerator keyGenerator) {
         super(redis, manager, keyCodec, policy, keyGenerator);

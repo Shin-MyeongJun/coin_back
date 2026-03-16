@@ -6,10 +6,12 @@ import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.IndicatorPriceDataKey;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class PremiumIndicatorCodec implements IndicatorKeyCodec<PremiumKey> {
     private static final Charset UTF8 = StandardCharsets.UTF_8;
     private static final char SEP = ':';

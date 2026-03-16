@@ -42,17 +42,13 @@ public abstract class IndicatorBuffer<KEY extends DataKey<KEY> , IND extends Ope
            buffer.put(key,indicators);
        }
        buffer.get(key).forEach(
-               (indicatorKey, ind) -> {
-                   ind.update(val);
-               }
+               (indicatorKey, ind) -> ind.update(val)
        );
     }
 
     public void open(KEY key){
         buffer.get(key).forEach(
-                (indicatorKey, ind) -> {
-                    ind.open();
-                }
+                (indicatorKey, ind) -> ind.open()
         );
     }
 
@@ -60,11 +56,9 @@ public abstract class IndicatorBuffer<KEY extends DataKey<KEY> , IND extends Ope
     public void close() {
         buffer.values().stream()
                 .toList()
-                .forEach((map)->{
-                    map.values().stream().toList().forEach(
-                            OpenTradeIndicator::close
-                    );
-                });
+                .forEach((map)-> map.values().stream().toList().forEach(
+                        OpenTradeIndicator::close
+                ));
     }
 
 
