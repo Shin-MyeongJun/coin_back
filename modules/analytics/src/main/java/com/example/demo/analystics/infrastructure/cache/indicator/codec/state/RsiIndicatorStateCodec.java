@@ -15,13 +15,13 @@ public class RsiIndicatorStateCodec implements IndicatorStateCodec<RsiState> {
     private static final char SEP = '|';
 
     @Override
-    public byte[] encode(RsiState state) {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(state.avgGainScaled()).append(SEP)
-                .append(state.avgLossScaled()).append(SEP)
-                .append(state.prevCloseScaled()).append(SEP)
-                .append(state.initCount());
-        return buffer.toString().getBytes(UTF8);
+    public byte[] encode(RsiState state,long timestamp) {
+        String buffer = String.valueOf(state.avgGainScaled()) + SEP +
+                state.avgLossScaled() + SEP +
+                state.prevCloseScaled() + SEP +
+                state.initCount() + SEP +
+                timestamp;
+        return buffer.getBytes(UTF8);
     }
 
     @Override
@@ -31,11 +31,13 @@ public class RsiIndicatorStateCodec implements IndicatorStateCodec<RsiState> {
         int p1 = str.indexOf(SEP);
         int p2 = str.indexOf(SEP, p1 + 1);
         int p3 = str.indexOf(SEP, p2 + 1);
+        int p4 = str.indexOf(SEP, p3 + 1);
 
-        BigDecimal avgGainScaled = new BigDecimal(str.substring(p1 + 1, p2));
-        BigDecimal avgLossScaled = new BigDecimal(str.substring(p2 + 1, p3));
-        BigDecimal prevCloseScaled = new BigDecimal(str.substring(p3 + 1));
-        int initCount = Integer.parseInt(str.substring(p3 + 1));
+        BigDecimal avgGainScaled = new BigDecimal(str.substring(0, p1));
+        BigDecimal avgLossScaled = new BigDecimal(str.substring(p1 + 1, p2));
+        BigDecimal prevCloseScaled = new BigDecimal(str.substring(p2+1,p3));
+        int initCount = Integer.parseInt(str.substring(p3 + 1,p4));
+        long timestamp = Long.parseLong(str.substring(p4 + 1));
         RsiState state = new RsiState(
                 avgGainScaled,
                 avgLossScaled,
@@ -45,8 +47,8 @@ public class RsiIndicatorStateCodec implements IndicatorStateCodec<RsiState> {
 
         return new RecoveryIndicatorState(
                 state,
-
-        )
+                timestamp
+        );
     }
 
     @Override

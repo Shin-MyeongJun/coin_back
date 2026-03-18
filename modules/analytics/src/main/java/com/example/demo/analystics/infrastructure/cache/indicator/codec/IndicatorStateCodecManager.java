@@ -28,9 +28,9 @@ public class IndicatorStateCodecManager {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends IndicatorState> byte[] encode(TradeIndicatorType type, T state) {
+    public <T extends IndicatorState> byte[] encode(TradeIndicatorType type, T state ,long timestamp) {
         IndicatorStateCodec<T> codec = (IndicatorStateCodec<T>) getCodec(type);
-        return codec.encode(state);
+        return codec.encode(state,timestamp);
     }
 
     /**

@@ -7,7 +7,7 @@ import com.example.demo.analystics.domain.domain.recovery.RecoveryIndicatorState
 import java.util.Set;
 
 public interface IndicatorStateCodec<STATE extends IndicatorState> {
-    public byte[] encode(STATE state);
+    public byte[] encode(STATE state, long timestamp);
     public RecoveryIndicatorState decode(byte[] bytes);
     public Set<TradeIndicatorType> supportedTradeIndicatorTypes();
 }

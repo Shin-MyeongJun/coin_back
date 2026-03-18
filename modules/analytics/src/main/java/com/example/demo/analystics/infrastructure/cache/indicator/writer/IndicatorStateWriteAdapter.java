@@ -43,7 +43,7 @@ public abstract class IndicatorStateWriteAdapter<
             for (IND ind : cs) {
                 if (ind == null) continue;
                 byte[] field =  keyCodec.encode(ind.getDataKey(), ind.getIndicatorKey());
-                byte[] payload = manager.encode(ind.getIndicatorKey().type(),ind.getPayload());
+                byte[] payload = manager.encode(ind.getIndicatorKey().type(),ind.getPayload(), ind.getOpenTimestamp());
                 connection.hashCommands().hSet(rawKey, field, payload);
             }
             connection.keyCommands().expire(rawKey, policy.calculateTtl(openTime,tfSecond));
