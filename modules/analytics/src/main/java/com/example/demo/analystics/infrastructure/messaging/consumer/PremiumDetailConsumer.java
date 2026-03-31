@@ -1,7 +1,7 @@
 package com.example.demo.analystics.infrastructure.messaging.consumer;
 
 import com.example.demo.analystics.application.port.in.ParsingPriceValueUseCase;
-import com.example.demo.analystics.application.usecase.flush_and_on.PremiumDetailAnalyticsService;
+import com.example.demo.analystics.application.port.in.PremiumDetailAnalyticsUseCase;
 import com.example.demo.analystics.domain.domain.candle.value.PremiumDetailValue;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.contracts.message.price_value.PremiumDetailMessage;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class PremiumDetailConsumer extends KafkaRecodeConsumer<PremiumDetailMessage> {
 
     private final ParsingPriceValueUseCase<PremiumDetailMessage, PremiumKey, PremiumDetailValue> parser;
-    private final PremiumDetailAnalyticsService useCase;
+    private final PremiumDetailAnalyticsUseCase useCase;
 
     @Override
     @KafkaListener(

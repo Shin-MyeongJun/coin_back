@@ -13,6 +13,6 @@ public class PremiumDetailAnalyticsDbScheduler  extends AnalyticsDbScheduler  {
 
     @Override
     public void process(Interval interval) {
-        useCase.flushCandles(Interval.M1);
+        useCase.flushCandles(interval);
     }
 }

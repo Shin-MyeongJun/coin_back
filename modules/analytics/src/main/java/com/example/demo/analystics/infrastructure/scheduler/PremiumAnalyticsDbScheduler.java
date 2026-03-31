@@ -13,6 +13,6 @@ public class PremiumAnalyticsDbScheduler extends AnalyticsDbScheduler {
 
     public void process(Interval interval) {
         useCase.flushCandles(interval);
-        useCase.flushCandles(interval);
+        useCase.flushIndicators(interval);
     }
 }
