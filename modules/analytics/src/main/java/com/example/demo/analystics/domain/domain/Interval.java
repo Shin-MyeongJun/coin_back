@@ -1,5 +1,7 @@
 package com.example.demo.analystics.domain.domain;
 
+import java.util.List;
+
 public enum Interval {
     M1   (1,    "1m"),
     M3   (3,    "3m"),
@@ -14,10 +16,16 @@ public enum Interval {
 
     private final int minutes;
     private final String period;   // 외부에서 주로 쓰는 문자열 표현
+    private static final List<Interval> ANALYTICS_SUPPORTED =
+            List.of(M1, M3, M5, M15, M30, M60, M240); // 통계에서 주로 지원할것들
 
     Interval(int minutes, String period) {
         this.minutes = minutes;
         this.period  = period;
+    }
+
+    public static List<Interval> analyticsSupported() {
+        return ANALYTICS_SUPPORTED;
     }
 
     public int getMinutes() {

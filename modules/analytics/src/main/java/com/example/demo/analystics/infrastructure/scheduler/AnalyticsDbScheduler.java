@@ -1,6 +1,5 @@
 package com.example.demo.analystics.infrastructure.scheduler;
 
-import com.example.demo.analystics.application.port.in.IntervalFlushUseCase;
 import com.example.demo.analystics.application.port.out.SchedulingAnalyticsValuePort;
 import com.example.demo.analystics.domain.domain.Interval;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 @RequiredArgsConstructor
 public abstract class AnalyticsDbScheduler implements SchedulingAnalyticsValuePort {
 
-    private final IntervalFlushUseCase useCase;
-
     @Override
-    public void process(Interval interval) {
-            useCase.flush(interval);
-    }
+    public abstract void process(Interval interval);
 
     // 매 1분 정각
     @Scheduled(cron = "0 * * * * *")

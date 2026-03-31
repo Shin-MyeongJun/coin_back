@@ -1,8 +1,8 @@
 package com.example.demo.analystics.infrastructure.messaging.consumer;
 
 
-import com.example.demo.analystics.application.port.in.ConsumeMarketDataUseCase;
 import com.example.demo.analystics.application.port.in.ParsingPriceValueUseCase;
+import com.example.demo.analystics.application.port.in.TickAnalyticsUseCase;
 import com.example.demo.analystics.domain.domain.key.TickKey;
 import com.example.demo.contracts.message.price_value.TickMessage;
 import com.example.demo.infra_shard.messaging.consumer.KafkaRecodeConsumer;
@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class TickConsumer extends KafkaRecodeConsumer<TickMessage> {
 
     private final ParsingPriceValueUseCase<TickMessage, TickKey, BigDecimal> parser;
-    private final ConsumeMarketDataUseCase<TickKey, BigDecimal> useCase;
+    private final TickAnalyticsUseCase useCase;
 
     @Override
     @KafkaListener(
@@ -30,6 +30,6 @@ public class TickConsumer extends KafkaRecodeConsumer<TickMessage> {
         TickMessage message = record.value();
         TickKey key = parser.parseKey(message);
         BigDecimal value = parser.parseValue(message);
-        useCase.process(record.partition(),key,value);
+        useCase.onData(record.partition(),key,value);
     }
 }

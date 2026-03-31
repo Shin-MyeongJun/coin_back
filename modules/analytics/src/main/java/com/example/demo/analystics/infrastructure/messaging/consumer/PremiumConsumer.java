@@ -1,7 +1,7 @@
 package com.example.demo.analystics.infrastructure.messaging.consumer;
 
-import com.example.demo.analystics.application.port.in.ConsumeMarketDataUseCase;
 import com.example.demo.analystics.application.port.in.ParsingPriceValueUseCase;
+import com.example.demo.analystics.application.usecase.flush_and_on.PremiumAnalyticsService;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.contracts.message.price_value.PremiumMessage;
 import com.example.demo.infra_shard.messaging.consumer.KafkaRecodeConsumer;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class PremiumConsumer extends KafkaRecodeConsumer<PremiumMessage> {
 
     private final ParsingPriceValueUseCase<PremiumMessage, PremiumKey, BigDecimal> parser;
-    private final ConsumeMarketDataUseCase<PremiumKey, BigDecimal> useCase;
+    private final PremiumAnalyticsService useCase;
 
     @Override
     @KafkaListener(
@@ -29,6 +29,6 @@ public class PremiumConsumer extends KafkaRecodeConsumer<PremiumMessage> {
         PremiumMessage message = record.value();
         PremiumKey key = parser.parseKey(message);
         BigDecimal value = parser.parseValue(message);
-        useCase.process(record.partition(),key,value);
+        useCase.onData(record.partition(),key,value);
     }
 }
