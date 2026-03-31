@@ -1,6 +1,7 @@
 package com.example.demo.analystics.domain.factory.indicator.value;
 
 import com.example.demo.analystics.domain.domain.indicator.open.PremiumIndicator;
+import com.example.demo.analystics.domain.domain.indicator.open.state.IndicatorState;
 import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import org.springframework.stereotype.Component;
@@ -27,5 +28,15 @@ public class PremiumIndicatorFactory extends IndicatorFactory<PremiumKey,Premium
                 createUpdater(indicatorKey,initVal)
         );
     }
+
+    @Override
+    protected PremiumIndicator createIndicator(PremiumKey dataKey, IndicatorKey indicatorKey, IndicatorState state) {
+        return new PremiumIndicator(
+                dataKey,
+                indicatorKey,
+                createUpdater(indicatorKey, state)
+        );
+    }
+
 
 }

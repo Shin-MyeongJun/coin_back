@@ -12,6 +12,9 @@ public class TrUpdater implements TradeIndicatorUpdater {
     private BigDecimal prevClose;
     private BigDecimal prevSub;
 
+    public  TrUpdater(){
+
+    }
     public TrUpdater(BigDecimal high, BigDecimal low, BigDecimal prevClose) {
         this.high = high;
         this.low = low;
@@ -22,6 +25,10 @@ public class TrUpdater implements TradeIndicatorUpdater {
         this.high = val;
         this.low = val;
         this.prevClose = val;
+    }
+
+    public TrUpdater(TrState state) {
+        this(state.high(), state.low(), state.prevClose());
     }
 
 

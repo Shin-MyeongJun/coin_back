@@ -8,4 +8,5 @@ public interface TradeIndicatorUpdater {
     BigDecimal cal(BigDecimal val);
     BigDecimal close();
     IndicatorState payload();
+
 }

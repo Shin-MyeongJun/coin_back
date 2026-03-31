@@ -1,13 +1,17 @@
 package com.example.demo.analystics.domain.factory.indicator.value;
 
-import com.example.demo.analystics.domain.domain.indicator.open.OpenTradeIndicator;
 import com.example.demo.analystics.domain.domain.indicator.TradeIndicatorType;
+import com.example.demo.analystics.domain.domain.indicator.open.OpenTradeIndicator;
+import com.example.demo.analystics.domain.domain.indicator.open.state.*;
 import com.example.demo.analystics.domain.domain.indicator.open.updater.*;
-import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.DataKey;
+import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public abstract class IndicatorFactory<
@@ -41,6 +45,7 @@ public abstract class IndicatorFactory<
         });
         return map;
     }
+
     public Map<IndicatorKey ,IND > createIndicators(KEY key, BigDecimal initVal){
         Map<IndicatorKey ,IND> map = new HashMap<>();
         keys.forEach(k->{
@@ -49,15 +54,32 @@ public abstract class IndicatorFactory<
         return map;
     }
 
+    public IND createIndicatorFromState(KEY dataKey, IndicatorKey indicatorKey,
+                                        IndicatorState state, long openTimestamp) {
+        return createIndicator(dataKey, indicatorKey, state);
+    }
+
     protected abstract IND createIndicator( KEY dataKey, IndicatorKey indicatorKey);
     protected abstract IND createIndicator(KEY dataKey, IndicatorKey indicatorKey, BigDecimal initVal);
+    protected abstract IND createIndicator(KEY dataKey, IndicatorKey indicatorKey,
+                                           IndicatorState state);
+
+    protected TradeIndicatorUpdater createUpdater(IndicatorKey key, IndicatorState state) {
+        return switch (state) {
+            case EmaState ema -> new EmaUpdater(key.period(), ema);
+            case RsiState rsi -> new RsiUpdater(key.period(), rsi);
+            case TrState tr -> new TrUpdater(tr);
+            case MeanState mean -> new MeanUpdater(mean);
+            case StddevState stddev -> new StddevUpdater(stddev);
+        };
+    }
 
     protected TradeIndicatorUpdater createUpdater(IndicatorKey key){
         if(key.type() == TradeIndicatorType.RSI){
-            return new RsiUpdater(key.period(),null);
+            return new RsiUpdater(key.period());
         }
         if(key.type() == TradeIndicatorType.EMA){
-            return new EmaUpdater(key.period(),null);
+            return new EmaUpdater(key.period());
         }
         if(key.type() == TradeIndicatorType.MEAN){
             return new MeanUpdater();
@@ -66,7 +88,7 @@ public abstract class IndicatorFactory<
             return new StddevUpdater();
         }
         if(key.type() == TradeIndicatorType.TR){
-            return new TrUpdater(null);
+            return new TrUpdater();
         }
         return null;
     }

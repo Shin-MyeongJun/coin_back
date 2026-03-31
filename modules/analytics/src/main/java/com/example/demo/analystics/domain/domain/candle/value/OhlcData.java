@@ -30,15 +30,12 @@ public class OhlcData<VAL extends Comparable<? super VAL>> {
 
 
     public void setHighLow(VAL val){
-        if(compare(high,val) > 0){
+        if(compare(val,high) > 0){
             high = val;
         }
-        if(compare(low,val) < 0) {
+        if(compare(val,low) < 0) {
             low = val;
         }
-    }
-
-    public void setClose(VAL val){
         this.close = val;
     }
 

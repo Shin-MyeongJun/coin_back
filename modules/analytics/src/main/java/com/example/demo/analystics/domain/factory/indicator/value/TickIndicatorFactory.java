@@ -1,6 +1,7 @@
 package com.example.demo.analystics.domain.factory.indicator.value;
 
 import com.example.demo.analystics.domain.domain.indicator.open.TickIndicator;
+import com.example.demo.analystics.domain.domain.indicator.open.state.IndicatorState;
 import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.TickKey;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,15 @@ public class TickIndicatorFactory extends IndicatorFactory<TickKey,TickIndicator
                 dataKey,
                 indicatorKey,
                 createUpdater(indicatorKey,initVal)
+        );
+    }
+
+    @Override
+    protected TickIndicator createIndicator(TickKey dataKey, IndicatorKey indicatorKey, IndicatorState state) {
+        return new TickIndicator(
+                dataKey,
+                indicatorKey,
+                createUpdater(indicatorKey,state)
         );
     }
 }

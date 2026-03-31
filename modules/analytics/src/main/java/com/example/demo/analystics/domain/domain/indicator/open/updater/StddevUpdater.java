@@ -1,7 +1,7 @@
 package com.example.demo.analystics.domain.domain.indicator.open.updater;
 
 import com.example.demo.analystics.domain.domain.indicator.open.state.IndicatorState;
-import com.example.demo.analystics.domain.domain.indicator.open.state.WelfordState;
+import com.example.demo.analystics.domain.domain.indicator.open.state.StddevState;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -9,10 +9,21 @@ import java.math.RoundingMode;
 
 public class StddevUpdater implements TradeIndicatorUpdater {
 
-    private BigDecimal count  = BigDecimal.ZERO;
-    private BigDecimal mean  = BigDecimal.ZERO;
-    private BigDecimal m2 = BigDecimal.ZERO;
+    private BigDecimal count;
+    private BigDecimal mean;
+    private BigDecimal m2;
 
+    public StddevUpdater() {
+        this.count  = BigDecimal.ZERO;
+        this.mean  = BigDecimal.ZERO;
+        this.m2 = BigDecimal.ZERO;
+    }
+
+    public StddevUpdater(StddevState state) {
+        this.count = state.count();
+        this.mean = state.mean();
+        this.m2 = state.m2();
+    }
 
     @Override
     public BigDecimal close() {
@@ -29,9 +40,10 @@ public class StddevUpdater implements TradeIndicatorUpdater {
 
     @Override
     public IndicatorState payload() {
-        return new WelfordState(
+        return new StddevState(
+                count,
                 mean,
-                count
+                m2
         );
     }
 

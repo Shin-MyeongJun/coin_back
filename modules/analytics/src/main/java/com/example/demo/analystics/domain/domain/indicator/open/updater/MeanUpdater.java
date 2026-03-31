@@ -1,17 +1,25 @@
 package com.example.demo.analystics.domain.domain.indicator.open.updater;
 
 import com.example.demo.analystics.domain.domain.indicator.open.state.IndicatorState;
-import com.example.demo.analystics.domain.domain.indicator.open.state.WelfordState;
+import com.example.demo.analystics.domain.domain.indicator.open.state.MeanState;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class MeanUpdater implements TradeIndicatorUpdater {
-    private BigDecimal sum = BigDecimal.ZERO;
-    private BigDecimal count = BigDecimal.ZERO;
+    private BigDecimal sum;
+    private BigDecimal count;
 
 
+    public MeanUpdater() {
+        this.sum = BigDecimal.ZERO;
+        this.count = BigDecimal.ZERO;
+    }
 
+    public MeanUpdater(MeanState state) {
+        this.sum = state.sum();
+        this.count = state.count();
+    }
 
 
     @Override
@@ -34,9 +42,9 @@ public class MeanUpdater implements TradeIndicatorUpdater {
 
     @Override
     public IndicatorState payload() {
-        return new WelfordState(
-                sum.divide(count, 12, RoundingMode.HALF_UP),
-                count
+        return new MeanState(
+                count,
+                sum
         );
     }
 }

@@ -17,6 +17,15 @@ public class EmaUpdater implements  TradeIndicatorUpdater {
     private  BigDecimal prev;
     private  BigDecimal prevSub;
 
+    public EmaUpdater(int period) {
+        if (period <= 0) {
+            throw new IllegalArgumentException("period must be > 0");
+        }
+        this.period = period;
+        // alpha = 2 / (period + 1)
+        this.alpha = BigDecimal.valueOf(2).divide(  BigDecimal.ONE.add(BigDecimal.valueOf(period)) , MC);
+    }
+
     public EmaUpdater(int period, BigDecimal prev) {
         if (period <= 0) {
             throw new IllegalArgumentException("period must be > 0");
@@ -26,6 +35,12 @@ public class EmaUpdater implements  TradeIndicatorUpdater {
         this.alpha = BigDecimal.valueOf(2).divide(  BigDecimal.ONE.add(BigDecimal.valueOf(period)) , MC);
         this.prev = prev;
     }
+
+    public EmaUpdater(int period, EmaState state) {
+        this(period, state.prev());
+    }
+
+
 
     @Override
     public BigDecimal cal(BigDecimal val) {
@@ -53,4 +68,6 @@ public class EmaUpdater implements  TradeIndicatorUpdater {
                 prev
         );
     }
+
+
 }

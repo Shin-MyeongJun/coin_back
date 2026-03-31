@@ -19,9 +19,23 @@ public class RsiUpdater implements  TradeIndicatorUpdater  {
     private BigDecimal sumGain = BigDecimal.ZERO; // 초기화용 누적 gain
     private BigDecimal sumLoss = BigDecimal.ZERO;// 초기화용 누적 loss
 
+    public RsiUpdater(int n) {
+        this.n = n;
+    }
+
     public RsiUpdater(int n, BigDecimal prev) {
         this.n = n;
         this.prev = prev;
+    }
+
+    public RsiUpdater(int n, RsiState state) {
+        this.n = n;
+        this.prev = state.prevCloseScaled();
+        this.avgGain = state.avgGainScaled();
+        this.avgLoss = state.avgLossScaled();
+        this.initCount = state.initCount ();
+        this.sumGain = state.sumGainScaled();
+        this.sumLoss = state.sumLossScaled();
     }
 
 
@@ -93,7 +107,9 @@ public class RsiUpdater implements  TradeIndicatorUpdater  {
                 prev,
                 avgGain,
                 avgLoss,
-                initCount
+                initCount,
+                sumGain,
+                sumLoss
         );
     }
 

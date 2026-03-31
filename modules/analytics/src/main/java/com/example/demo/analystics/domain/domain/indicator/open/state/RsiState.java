@@ -6,5 +6,7 @@ public record RsiState(
         BigDecimal prevCloseScaled,
         BigDecimal avgGainScaled,
         BigDecimal avgLossScaled,
-        int initCount
+        int initCount,
+        BigDecimal sumGainScaled,
+        BigDecimal sumLossScaled
 )implements IndicatorState{}
