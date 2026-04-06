@@ -1,5 +1,5 @@
 package application.port.in;
 
-public interface ScheduledIngestingEcoUseCase {
+public interface ScheduledEcoIndUseCase {
     void process();
 }

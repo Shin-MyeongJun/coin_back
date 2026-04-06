@@ -1,7 +1,7 @@
 package application.usecase;
 
 
-import application.port.in.ScheduledIngestingEcoUseCase;
+import application.port.in.ScheduledEcoIndUseCase;
 import application.port.out.FlushAndSaveEconomicValuePort;
 import application.port.out.LoadRawIndDataPort;
 import com.example.demo.infra_shard.messaging.mapper.RawToDomain;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public abstract class ScheduledIngestingEcoService<RAW> implements ScheduledIngestingEcoUseCase {
+public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseCase {
 
     LoadRawIndDataPort<RAW> loadRawIndDataPort;
     RawToDomain<RAW, EconomicRawIndicator> rawMapper;
