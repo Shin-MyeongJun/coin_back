@@ -21,12 +21,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseCase {
 
-    LoadRawIndDataPort<RAW> loadRawIndDataPort;
-    RawToDomain<RAW, EconomicRawIndicator> rawMapper;
-    DomainToEntity<EconomicRawIndicator,EcoIndEntity> ecoMapper;
-    DomainToEntity<EconomicIndicatorCode,EcoIndCodeEntity> ecoCodeMapper;
-    FlushAndSaveEconomicValuePort<EcoIndEntity> indSave;
-    FlushAndSaveEconomicValuePort<EcoIndCodeEntity> codeSave;
+    private final LoadRawIndDataPort<RAW> loadRawIndDataPort;
+    private final RawToDomain<RAW, EconomicRawIndicator> rawMapper;
+    private final DomainToEntity<EconomicRawIndicator,EcoIndEntity> ecoMapper;
+    private final DomainToEntity<EconomicIndicatorCode,EcoIndCodeEntity> ecoCodeMapper;
+    private final FlushAndSaveEconomicValuePort<EcoIndEntity> indSave;
+    private final FlushAndSaveEconomicValuePort<EcoIndCodeEntity> codeSave;
 
     @Override
     public void process() {

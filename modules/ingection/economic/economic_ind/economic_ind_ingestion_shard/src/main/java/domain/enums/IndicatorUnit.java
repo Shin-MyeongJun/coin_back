@@ -2,12 +2,12 @@ package domain.enums;
 
 public enum IndicatorUnit {
     PERCENT("PERCENT"),
-    INDEX("PERCENT"),
-    CURRENCY("PERCENT"),
-    COUNT("PERCENT"),
-    VOLUME("PERCENT"),
-    POINTS("PERCENT"),
-    UNKNOWN("PERCENT");
+    INDEX("INDEX"),
+    CURRENCY("CURRENCY"),
+    COUNT("COUNT"),
+    VOLUME("VOLUME"),
+    POINTS("POINTS"),
+    UNKNOWN("UNKNOWN");
 
     private String value;
 

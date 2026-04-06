@@ -3,6 +3,7 @@ package infrastructure.persistence.mapper;
 import com.example.demo.infra_shard.persistence.DomainToEntity;
 import domain.EconomicIndicatorCode;
 import domain.enums.IndicatorUnit;
+import domain.enums.ReleaseFrequency;
 import infrastructure.persistence.entity.EcoIndCodeEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class EcoIndCodeEntityMapper implements DomainToEntity<EconomicIndicatorC
                 .indicatorCode(eic.indicatorCode())
                 .type(eic.type())
                 .country(eic.country())
-                .frequency(eic.frequency())
+                .frequency(ReleaseFrequency.fromValue(eic.frequency()))
                 .unit(IndicatorUnit.fromValue(eic.unit()))
                 .build();
     }

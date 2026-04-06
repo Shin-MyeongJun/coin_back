@@ -9,6 +9,8 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @Getter
 public class EconomicSchedule {
+    private final String releaseCode; //code.indicatorCode() +"_"+releaseDate;
+
     private final EconomicIndicatorCode code;//어떤상픔
 
     private final String releaseDate;
@@ -17,9 +19,5 @@ public class EconomicSchedule {
     private ScheduleState state = ScheduleState.PENDING;
     @Setter
     private  Long fetchedAt;//수정시점
-
-    public String getReleaseCode(){
-        return code.indicatorCode() +"_"+releaseDate;
-    }
 
 }

@@ -1,6 +1,7 @@
 package infrastructure.persistence.entity;
 
 import domain.enums.IndicatorUnit;
+import domain.enums.ReleaseFrequency;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +37,8 @@ public class EcoIndCodeEntity {
     private String type; //cpi,gdp ,실업률,...
 
     @Column
-    private String frequency;//주기
+    @Enumerated(EnumType.STRING)
+    private ReleaseFrequency frequency;//주기
 
     @Column
     @Enumerated(EnumType.STRING)

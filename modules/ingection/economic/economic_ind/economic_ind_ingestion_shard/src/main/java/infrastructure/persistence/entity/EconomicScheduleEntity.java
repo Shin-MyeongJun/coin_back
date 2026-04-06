@@ -38,6 +38,7 @@ public class EconomicScheduleEntity {
 
     @Column(nullable = false, length = 20)
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     private ScheduleState status =  ScheduleState.PENDING;  // PENDING, FETCHING, DONE, FAILED
 
     @Column(name = "fetched_at")
