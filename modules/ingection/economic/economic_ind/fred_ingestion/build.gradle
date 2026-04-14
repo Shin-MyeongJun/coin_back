@@ -22,4 +22,5 @@ dependencies {
 
     implementation(project(":contracts"))
     implementation(project(":infra_shard"))
+    implementation(project(":economic_ind_ingestion_shard"))
 }

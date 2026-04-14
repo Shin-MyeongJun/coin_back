@@ -13,7 +13,7 @@ public class EconomicSchedule {
 
     private final EconomicIndicatorCode code;//어떤상픔
 
-    private final String releaseDate;
+    private final Long releaseDate;
 
     @Setter
     private ScheduleState state = ScheduleState.PENDING;

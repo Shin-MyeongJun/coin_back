@@ -11,13 +11,12 @@ import domain.EconomicRawIndicator;
 import infrastructure.persistence.entity.EcoIndCodeEntity;
 import infrastructure.persistence.entity.EcoIndEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+
 @RequiredArgsConstructor
 public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseCase {
 
@@ -45,7 +44,7 @@ public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseC
         //ind save all
         indSave.saveAll(
                 indList.stream()
-                        .map(ind-> ecoMapper.toEntity(ind))
+                        .map(ecoMapper::toEntity)
                         .toList());
     }
 }

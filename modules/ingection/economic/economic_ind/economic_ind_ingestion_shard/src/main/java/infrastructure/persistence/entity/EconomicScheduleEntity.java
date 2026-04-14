@@ -8,14 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "release_schedule",
+@Table(name = "economic_schedule",
         indexes = {
                 @Index(name = "idx_rs_date_status", columnList = "release_date, status"),
-                @Index(name = "idx_rs_release_id", columnList = "release_id")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_rs_release_date",
-                        columnNames = {"release_id", "release_date"})
+                @Index(name = "idx_rs_release_code", columnList = "release_code")
         })
 @Getter
 @NoArgsConstructor
@@ -31,7 +27,7 @@ public class EconomicScheduleEntity {
     private Long indCodeId;
 
     @Column(name = "release_date", nullable = false, length = 10)
-    private String releaseDate;  // "2026-04-10"
+    private Long releaseDate;  // "2026-04-10"
 
     @Column(name = "release_code", unique = true)
     private String releaseCode;

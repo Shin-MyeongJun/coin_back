@@ -42,7 +42,7 @@ public abstract class ScheduledEcoScheduleService<RAW> implements ScheduledEcoSc
         //ind save all
         indSave.saveAll(
                 indList.stream()
-                        .map(ind-> ecoMapper.toEntity(ind))
+                        .map(ecoMapper::toEntity)
                         .toList());
     }
 

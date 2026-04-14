@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @SequenceGenerator(
         name = "economic_indicator_seq_gen",
         sequenceName = "economic_indicator_seq",
-        allocationSize = 100   // ← 하이버네이트가 1000개씩 ID 블록을 미리 가져와 round-trip을 줄임
+        allocationSize = 100   // ← 하이버네이트가 100개씩 ID 블록을 미리 가져와 round-trip을 줄임
 )
 @Getter
 @NoArgsConstructor
@@ -37,12 +37,12 @@ public class EcoIndEntity {
     private BigDecimal value;
 
     @Column(name = "observation_date", length = 20)
-    private String observationDate; // 데이터 시점 (예: "2026-03")
+    private Long observationDate; // 데이터 시점 (예: "2026-03")
 
     // DB에서 사람이 읽을 수 있도록 Instant(UTC) 사용 권장 (DTO에서 파싱 필요)
     @Column(name = "release_date")
-    private String releaseDate; // 발표일시
+    private Long releaseDate; // 발표일시
 
     @Column(name = "timestamp", nullable = false)
-    private String timestamp;  // 시스템 저장/수집 시각
+    private Long timestamp;  // 시스템 저장/수집 시각
 }

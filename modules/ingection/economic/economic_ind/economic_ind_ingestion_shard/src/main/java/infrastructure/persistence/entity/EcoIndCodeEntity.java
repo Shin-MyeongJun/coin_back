@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @SequenceGenerator(
         name = "economic_indicator_code_seq_gen",
         sequenceName = "economic_indicator_code_seq",
-        allocationSize = 100   // ← 하이버네이트가 1000개씩 ID 블록을 미리 가져와 round-trip을 줄임
+        allocationSize = 100   // ← 하이버네이트가 100개씩 ID 블록을 미리 가져와 round-trip을 줄임
 )
 @Getter
 @NoArgsConstructor
