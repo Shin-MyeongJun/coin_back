@@ -5,5 +5,5 @@ import infrastructure.persistence.entity.EconomicScheduleEntity;
 import java.util.List;
 
 public interface ReadScheduledEcoPort {
-    List<EconomicScheduleEntity> read();
+    List<EconomicScheduleEntity> readPending();
 }

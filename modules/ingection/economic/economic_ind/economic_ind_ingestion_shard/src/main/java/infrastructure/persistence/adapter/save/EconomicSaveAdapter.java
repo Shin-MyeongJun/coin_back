@@ -1,4 +1,4 @@
-package infrastructure.persistence.adapter;
+package infrastructure.persistence.adapter.save;
 
 import application.port.out.FlushAndSaveEconomicValuePort;
 import lombok.RequiredArgsConstructor;

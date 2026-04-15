@@ -1,4 +1,4 @@
-package infrastructure.persistence.adapter;
+package infrastructure.persistence.adapter.read;
 
 import application.port.out.ReadScheduledEcoPort;
 import infrastructure.persistence.entity.EconomicScheduleEntity;
@@ -15,7 +15,7 @@ public class EconomicScheduleReadAdapter implements ReadScheduledEcoPort {
     private final EconomicScheduleRepository repo;
 
     @Override
-    public List<EconomicScheduleEntity> read() {
+    public List<EconomicScheduleEntity> readPending() {
         return repo.findAllPendingSchedules();
     }
 }

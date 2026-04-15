@@ -1,4 +1,4 @@
-package infrastructure.persistence.adapter;
+package infrastructure.persistence.adapter.save;
 
 import infrastructure.persistence.entity.EconomicScheduleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +15,6 @@ public class EcoScheduleSaveAdapter extends  EconomicSaveAdapter<EconomicSchedul
     @Override
     public void saveAll(List<EconomicScheduleEntity> list) {
         repo.saveAll(list);
+        flush();
     }
 }

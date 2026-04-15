@@ -1,4 +1,4 @@
-package infrastructure.persistence.adapter;
+package infrastructure.persistence.adapter.save;
 
 import infrastructure.cache.EcoIndCodeCache;
 import infrastructure.persistence.entity.EcoIndCodeEntity;
@@ -22,5 +22,6 @@ public class EcoCodeSaveAdapter extends EconomicSaveAdapter<EcoIndCodeEntity> {
         repo.saveAll(list).forEach(ind->{
             codeCache.put(ind.getIndicatorCode(), ind.getId());
         });
+        flush();
     }
 }

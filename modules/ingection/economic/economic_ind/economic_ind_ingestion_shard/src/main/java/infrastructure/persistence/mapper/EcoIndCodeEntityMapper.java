@@ -1,7 +1,6 @@
 package infrastructure.persistence.mapper;
 
-import com.example.demo.infra_shard.persistence.DomainToEntity;
-import com.example.demo.infra_shard.persistence.EntityToDomain;
+import com.example.demo.infra_shard.persistence.EntityMapping;
 import domain.EconomicIndicatorCode;
 import infrastructure.persistence.entity.EcoIndCodeEntity;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class EcoIndCodeEntityMapper
-        implements DomainToEntity<EconomicIndicatorCode,EcoIndCodeEntity>
-        , EntityToDomain<EcoIndCodeEntity, EconomicIndicatorCode> {
+        implements EntityMapping<EconomicIndicatorCode,EcoIndCodeEntity> {
 
     @Override
     public EcoIndCodeEntity toEntity(EconomicIndicatorCode eic) {

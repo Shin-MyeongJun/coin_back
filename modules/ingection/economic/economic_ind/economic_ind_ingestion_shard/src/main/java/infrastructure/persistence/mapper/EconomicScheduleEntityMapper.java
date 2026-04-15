@@ -1,7 +1,6 @@
 package infrastructure.persistence.mapper;
 
-import com.example.demo.infra_shard.persistence.DomainToEntity;
-import com.example.demo.infra_shard.persistence.EntityToDomain;
+import com.example.demo.infra_shard.persistence.EntityMapping;
 import domain.EconomicIndicatorCode;
 import domain.EconomicSchedule;
 import infrastructure.cache.EcoIndCodeCache;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class EconomicScheduleEntityMapper
-        implements DomainToEntity<EconomicSchedule, EconomicScheduleEntity> , EntityToDomain<EconomicScheduleEntity,EconomicSchedule> {
+        implements EntityMapping<EconomicSchedule, EconomicScheduleEntity> {
 
     private final EcoIndCodeCache cache;
 

@@ -1,4 +1,4 @@
-package infrastructure.persistence.adapter;
+package infrastructure.persistence.adapter.save;
 
 import infrastructure.persistence.entity.EcoIndEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +15,6 @@ public class EcoSaveAdapter extends EconomicSaveAdapter<EcoIndEntity> {
     @Override
     public void saveAll(List<EcoIndEntity> list) {
         repo.saveAll(list);
+        flush();
     }
 }
