@@ -1,7 +1,6 @@
 package infrastructure.persistence.mapper;
 
 import com.example.demo.infra_shard.persistence.EntityMapping;
-import domain.EconomicIndicatorCode;
 import domain.EconomicSchedule;
 import infrastructure.cache.EcoIndCodeCache;
 import infrastructure.persistence.entity.EconomicScheduleEntity;
@@ -18,7 +17,7 @@ public class EconomicScheduleEntityMapper
     @Override
     public EconomicScheduleEntity toEntity(EconomicSchedule es) {
         return EconomicScheduleEntity.builder()
-                .indCodeId(cache.getId(es.getCode().indicatorCode()))
+                .indCodeId(cache.getId(es.getCode()))
                 .releaseDate(es.getReleaseDate())
                 .releaseCode(es.getReleaseCode())
                 .status(es.getState())
@@ -28,12 +27,9 @@ public class EconomicScheduleEntityMapper
 
     @Override
     public EconomicSchedule toDomain(EconomicScheduleEntity es) {
-
-        EconomicIndicatorCode code = new EconomicIndicatorCode()
-
         return new EconomicSchedule(
                 es.getReleaseCode(),
-                cache.getId()
+                cache.getIndCode(es.getIndCodeId()),
                 es.getReleaseDate()
         );
     }

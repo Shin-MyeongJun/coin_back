@@ -22,9 +22,9 @@ public class EcoIndEntityMapper implements DomainToEntity<EconomicRawIndicator,E
         EconomicIndicatorValue value = ei.value();
 
         return EcoIndEntity.builder()
-                .indCodeId(cache.getId(code.indicatorCode()))
+                .indCodeId(cache.getId(code))
                 .value(value.value())
-                .observationDate(value.observationDate())
+                .observationDate(Long.valueOf(value.observationDate()))
                 .releaseDate(value.releaseDate())
                 .timestamp(value.timestamp())
                 .build();
