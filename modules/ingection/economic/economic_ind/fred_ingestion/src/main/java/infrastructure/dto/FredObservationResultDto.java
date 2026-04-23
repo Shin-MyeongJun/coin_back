@@ -1,6 +1,6 @@
-package domain;
+package infrastructure.dto;
 
-public record FredObservationResult(
+public record FredObservationResultDto(
         String seriesId,
         String date,
         String value,

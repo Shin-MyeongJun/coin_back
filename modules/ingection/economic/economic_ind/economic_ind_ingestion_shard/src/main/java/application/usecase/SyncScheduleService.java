@@ -40,7 +40,7 @@ public abstract class SyncScheduleService<RAW> implements SyncScheduleUseCase {
     public void sync() {
 
         // 1. 우선 외부 데이터 조회
-        List<EconomicSchedule> fetchedSchedules = getters.getRaw()
+        List<EconomicSchedule> fetchedSchedules = getters.getRaws()
                 .stream().map(raw -> rawToDomain.toDomain(raw,null))
                 .toList();
 

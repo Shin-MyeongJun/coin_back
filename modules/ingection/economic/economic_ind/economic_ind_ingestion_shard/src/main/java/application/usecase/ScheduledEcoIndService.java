@@ -29,7 +29,7 @@ public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseC
 
     @Override
     public void process() {
-        List<RAW> rawList = loadRawIndDataPort.getRaw();
+        List<RAW> rawList = loadRawIndDataPort.getRaws();
         List<EconomicRawIndicator> indList =
         rawList.stream().map(raw -> {
             Map<String, String> map = new HashMap<>();

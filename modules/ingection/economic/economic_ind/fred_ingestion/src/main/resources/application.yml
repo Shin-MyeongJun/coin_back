@@ -1,57 +1,82 @@
 fred:
-  api-key: ${FRED_API_KEY}
-  base-url: https://api.stlouisfed.org/fred
+ api-key: ${FRED_API_KEY}
+ base-url: https://api.stlouisfed.org/fred
 
-  # 추적할 시리즈 목록
-  tracked-series:
-    - series-id: FEDFUNDS
-      release-id: 17
-      name: "Federal Funds Rate"
-      frequency: MONTHLY
-      impact: HIGH
+ tracked-series:
+  - standard-ind-name: FFR
+    series-id: FEDFUNDS
+    release-id: 17
+    name: "Federal Funds Rate"
+    frequency: MONTHLY
 
-    - series-id: CPIAUCSL
-      release-id: 10
-      name: "Consumer Price Index"
-      frequency: MONTHLY
-      impact: HIGH
+  - standard-ind-name: CPI
+    series-id: CPIAUCSL
+    release-id: 10
+    name: "Consumer Price Index"
+    frequency: MONTHLY
 
-    - series-id: UNRATE
-      release-id: 50
-      name: "Unemployment Rate"
-      frequency: MONTHLY
-      impact: HIGH
+  - standard-ind-name: UNRATE
+    series-id: UNRATE
+    release-id: 50
+    name: "Unemployment Rate"
+    frequency: MONTHLY
 
-    - series-id: PAYEMS
-      release-id: 50
-      name: "Nonfarm Payrolls"
-      frequency: MONTHLY
-      impact: CRITICAL
+  - series-id: PAYEMS
+    release-id: 50
+    name: "Nonfarm Payrolls"
+    frequency: MONTHLY
 
-    - series-id: GDP
-      release-id: 53
-      name: "Gross Domestic Product"
-      frequency: QUARTERLY
-      impact: HIGH
+  - standard-ind-name: GDP
+    series-id: GDP
+    release-id: 53
+    name: "Gross Domestic Product"
+    frequency: QUARTERLY
 
-    - series-id: T10Y2Y
-      release-id: 431
-      name: "10Y-2Y Treasury Spread"
-      frequency: DAILY
-      impact: MEDIUM
+  - standard-ind-name: T10Y2Y
+    series-id: T10Y2Y
+    release-id: 431
+    name: "10Y-2Y Treasury Spread"
+    frequency: DAILY
 
-    - series-id: DEXKOUS
-      release-id: 17
-      name: "USD/KRW Exchange Rate"
-      frequency: DAILY
-      impact: HIGH
+  - series-id: DGS10
+    release-id: 18
+    name: "10-Year Treasury Rate"
+    frequency: DAILY
 
-    - series-id: DGS10
-      release-id: 18
-      name: "10-Year Treasury Rate"
-      frequency: DAILY
-      impact: MEDIUM
+  # === 새롭게 추가된 핵심 거시경제 지표 ===
+  - standard-ind-name: PPI
+    series-id: PPIACO
+    release-id: 46  # Producer Price Index
+    name: "Producer Price Index (All Commodities)"
+    frequency: MONTHLY
 
-  schedule:
-    release-sync-cron: "0 0 6 * * *"     # 매일 06:00 발표일정 동기화
-    observation-check-ms: 1800000          # 30분마다 발표 체크
+  - standard-ind-name: BR
+    series-id: IRSTCB01JPM156N
+    release-id: 426  # Main Economic Indicators (OECD)
+    name: "Japan Short-Term Interest Rate"
+    frequency: MONTHLY
+
+  - series-id: ICSA
+    release-id: 79  # Unemployment Insurance Weekly Claims
+    name: "Initial Claims"
+    frequency: WEEKLY
+
+  - series-id: RSAFS
+    release-id: 83  # Advance Monthly Sales for Retail and Food Services
+    name: "Retail Sales"
+    frequency: MONTHLY
+
+  - series-id: UMCSENT
+    release-id: 193  # Surveys of Consumers (University of Michigan)
+    name: "University of Michigan: Consumer Sentiment"
+    frequency: MONTHLY
+
+  - standard-ind-name: CORE_PCE
+    series-id: PCEPILFE
+    release-id: 52  # Personal Income and Outlays
+    name: "Core PCE Price Index"
+    frequency: MONTHLY
+
+ schedule:
+  release-sync-cron: "0 0 6 * * *"       # 매일 06:00 발표일정 동기화
+  observation-check-ms: 1800000          # 30분마다 발표 체크

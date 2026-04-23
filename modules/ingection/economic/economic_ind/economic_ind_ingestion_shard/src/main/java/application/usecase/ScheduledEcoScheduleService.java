@@ -27,7 +27,7 @@ public abstract class ScheduledEcoScheduleService<RAW> implements ScheduledEcoSc
 
     @Override
     public void process() {
-        List<RAW> rawList = loadRawIndDataPort.getRaw();
+        List<RAW> rawList = loadRawIndDataPort.getRaws();
         List<EconomicSchedule> indList =
                 rawList.stream().map(raw -> {
                     Map<String, String> map = new HashMap<>();

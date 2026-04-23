@@ -1,11 +1,10 @@
 package infrastructure.clinet;
 
-import application.port.out.FredClientPort;
 import com.fasterxml.jackson.databind.JsonNode;
-import domain.FredObservationResult;
+import infrastructure.config.FredProperties;
+import infrastructure.dto.FredObservationResultDto;
 import infrastructure.dto.FredReleaseResponseDto;
 import infrastructure.dto.ReleaseDateDto;
-import infrastructure.config.FredProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +14,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FredClient implements FredClientPort {
+public class FredClient{
 
     private final WebClient.Builder webClientBuilder;
     private final FredProperties properties;
@@ -24,14 +23,13 @@ public class FredClient implements FredClientPort {
      * fred/releases/dates
      * include_release_dates_with_no_data=true → 미래 발표 일정 포함
      */
-    @Override
     public List<ReleaseDateDto> fetchReleaseDates(String realTimeStart, String realTimeEnd) {
         String url = properties.getBaseUrl() + "/releases/dates"
                 + "?api_key=" + properties.getApiKey()
                 + "&file_type=json"
                 + "&realtime_start=" + realTimeStart
-                + "&realtime_end=" + realTimeEnd
                 + "&include_release_dates_with_no_data=true"
+                + "&realtime_end=" + realTimeEnd
                 + "&sort_order=asc"
                 + "&limit=1000";
 
@@ -56,8 +54,7 @@ public class FredClient implements FredClientPort {
      * fred/series/observations
      * sort_order=desc & limit=1 → 가장 최신 관측값 1건만
      */
-    @Override
-    public FredObservationResult fetchLatestObservation(String seriesId) {
+    public FredObservationResultDto fetchLatestObservation(String seriesId) {
         String url = properties.getBaseUrl() + "/series/observations"
                 + "?series_id=" + seriesId
                 + "&api_key=" + properties.getApiKey()
@@ -82,7 +79,7 @@ public class FredClient implements FredClientPort {
 
         // FRED에서 units와 frequency를 가져오려면 fred/series 호출 필요
         // 여기서는 간결하게 null 처리, 추후 fred/series 메타데이터 캐싱으로 개선
-        return new FredObservationResult(
+        return new FredObservationResultDto(
                 seriesId,
                 obs.get("date").asText(),
                 value,

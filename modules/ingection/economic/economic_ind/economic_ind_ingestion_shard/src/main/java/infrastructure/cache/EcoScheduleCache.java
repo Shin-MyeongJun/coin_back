@@ -2,6 +2,7 @@ package infrastructure.cache;
 
 import domain.EconomicSchedule;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,8 +23,11 @@ public class EcoScheduleCache {
     public Long getId(EconomicSchedule schedule) {
         return ScheduleIdCache.get(schedule);
     }
-    public EconomicSchedule  getIndCode(Long id) {
+    public EconomicSchedule  getSchedule(Long id) {
         return ScheduleCache.get(id);
+    }
+    public List<EconomicSchedule> getAllSchedule() {
+        return ScheduleCache.values().stream().toList();
     }
 
 }
