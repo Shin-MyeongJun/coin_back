@@ -1,53 +1,21 @@
 package infrastructure.scheduler;
 
-import application.port.in.GetRealTimeEcoIndUseCase;
-import application.port.out.DynamicSchedulingPort;
-import domain.EconomicSchedule;
-import infrastructure.cache.EcoScheduleCache;
+import application.port.in.ScheduledEcoIndUseCase;
+import application.port.in.ScheduledEcoScheduleUseCase;
+import application.port.out.SchedulingPort;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-
-@Slf4j
 @RequiredArgsConstructor
-public abstract   class EcoIndScheduler<RAW> implements DynamicSchedulingPort {
+public abstract class EcoIndScheduler implements SchedulingPort {
 
-    private final TaskScheduler taskScheduler;
-    private final EcoScheduleCache ecoScheduleCache;
-    private final GetRealTimeEcoIndUseCase getTask;
-
-    private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private final ScheduledEcoIndUseCase indCase;
+    private final ScheduledEcoScheduleUseCase scheduleCase;
 
     @Override
-    public void adjustSchedule() {
-        scheduledTasks.values().forEach(task -> task.cancel(false));
-        scheduledTasks.clear();
-
-        // 2. 캐시에서 스케줄 데이터 읽기
-        List<EconomicSchedule> schedules = ecoScheduleCache.getAllSchedule();
-
-        // 3. 동적 스케줄링 등록
-        for (EconomicSchedule schedule : schedules) {
-            Instant releaseTime = Instant.ofEpochMilli(schedule.getReleaseDate());
-
-            if (releaseTime.isBefore(Instant.now())) {
-                continue;
-            }
-
-            Runnable task = () -> {
-                getTask.process(schedule.getCode().type()); //CHANGE CHECK
-            };
-
-            ScheduledFuture<?> future = taskScheduler.schedule(task, releaseTime);
-            scheduledTasks.put(schedule.getReleaseCode(), future);
-        }
-
-        log.info("스케줄러 갱신 완료: 총 {}개 작업 예약됨", scheduledTasks.size());
+    @Scheduled(cron = "0 0 6 * * *")
+    public void process() {
+        scheduleCase.process();
+        indCase.process();
     }
 }

@@ -1,9 +1,8 @@
 package infrastructure.clinet;
 
-import application.port.out.FredClientPort;
-import com.example.demo.infra_shard.messaging.mapper.RawToDomain;
-import domain.EconomicRawIndicator;
-import domain.EconomicSchedule;
+import application.port.out.LoadRawIndDataPort;
+import application.port.out.LoadRawIndSchedulePort;
+import infrastructure.config.FredProperties;
 import infrastructure.dto.FredObservationResultDto;
 import infrastructure.dto.ReleaseDateDto;
 import lombok.RequiredArgsConstructor;
@@ -13,27 +12,28 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FredClientAdapter implements FredClientPort {
+public class FredClientAdapter implements LoadRawIndSchedulePort<ReleaseDateDto>,LoadRawIndDataPort<FredObservationResultDto> {
 
     private final FredClient client;
-    private final RawToDomain<> scheduleMapper;
+    private final FredProperties properties;
 
     @Override
-    public List<EconomicSchedule> getSchedules(String realTimeStart, String realTimeEnd) {
-
-        List<ReleaseDateDto> rawList = client.fetchReleaseDates(realTimeStart, realTimeEnd);
-
-        return List.of();
+    public List<FredObservationResultDto> getRaws() {
+        List<FredObservationResultDto> targets = properties.getTrackedSeries().stream()
+                .map(data -> client.fetchLatestObservation(data.getSeriesId()))
+                .toList();
+        return targets;
     }
 
     @Override
-    public List<EconomicRawIndicator> getRawIndicators() {
-        return List.of();
+    public FredObservationResultDto getRaw(String target) {
+        return client.fetchLatestObservation(target);
     }
 
     @Override
-    public EconomicRawIndicator getRawIndicator(String indicator) {
-        FredObservationResultDto dto = client.fetchLatestObservation(indicator);
-        return null;
+    public List<ReleaseDateDto> getRawSchedules() {
+        long startTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis() + 86400000 ;
+        return client.fetchReleaseDates(Long.toString(startTime),Long.toString(endTime));
     }
 }

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class GetRealTimeEcoIndService<RAW> implements GetRealTimeEcoIndUseCase {
+public abstract class GetRealTimeEcoIndService<RAW> implements GetRealTimeEcoIndUseCase {
 
     private final LoadRawIndDataPort<RAW> loadRawIndDataPort;
     private final RawToDomain<RAW, EconomicRawIndicator> rawMapper;
