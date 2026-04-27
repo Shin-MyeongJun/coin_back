@@ -2,17 +2,15 @@ package com.example.demo.ingestion.economic.economic_ind.infrastructure.schedule
 
 import com.example.demo.ingestion.economic.economic_ind.application.port.in.ScheduledEcoIndUseCase;
 import com.example.demo.ingestion.economic.economic_ind.application.port.in.ScheduledEcoScheduleUseCase;
-import com.example.demo.ingestion.economic.economic_ind.application.port.out.SchedulingPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 
 @RequiredArgsConstructor
-public abstract class EcoIndScheduler implements SchedulingPort {
+public abstract class EcoIndScheduler {
 
     private final ScheduledEcoIndUseCase indCase;
     private final ScheduledEcoScheduleUseCase scheduleCase;
 
-    @Override
     @Scheduled(cron = "0 0 6 * * *")
     public void process() {
         scheduleCase.process();
