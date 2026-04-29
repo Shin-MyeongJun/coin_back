@@ -1,0 +1,43 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: crawling-ingestion
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  task:
+    scheduling:
+      pool:
+        size: 4
+
+crawling:
+  yahoo:
+    base-url: ${YAHOO_BASE_URL:https://query1.finance.yahoo.com}
+    user-agent: ${YAHOO_USER_AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36}
+    polling-interval-ms: ${YAHOO_POLLING_MS:2000}
+    symbols:
+      - "^GSPC"
+      - "^IXIC"
+      - "^VIX"
+      - "DX-Y.NYB"
+      - "GC=F"
+      - "CL=F"
+
+  investing:
+    user-agent: ${INVESTING_USER_AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36}
+    polling-interval-ms: ${INVESTING_POLLING_MS:5000}
+    instruments:
+      - symbol: "KOSPI200"
+        name: "KOSPI 200"
+        url: "https://www.investing.com/indices/kospi-200"
+      - symbol: "US10Y"
+        name: "US 10-Year Treasury Yield"
+        url: "https://www.investing.com/rates-bonds/u.s.-10-year-bond-yield"
