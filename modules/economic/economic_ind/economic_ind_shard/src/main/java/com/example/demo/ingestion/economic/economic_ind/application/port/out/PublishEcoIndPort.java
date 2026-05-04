@@ -1,4 +1,4 @@
-package com.example.demo.economic.crawling.application.port.out;
+package com.example.demo.ingestion.economic.economic_ind.application.port.out;
 
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicRawIndicator;
 

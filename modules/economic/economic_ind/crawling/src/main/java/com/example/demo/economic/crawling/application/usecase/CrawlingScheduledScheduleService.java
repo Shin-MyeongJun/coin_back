@@ -1,5 +1,6 @@
 package com.example.demo.economic.crawling.application.usecase;
 
+import com.example.demo.infra_shard.persistence.EntityToDomain;
 import com.example.demo.ingestion.economic.economic_ind.application.port.in.ScheduledEcoScheduleUseCase;
 import com.example.demo.ingestion.economic.economic_ind.application.port.out.DynamicSchedulingPort;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorCode;
@@ -10,7 +11,6 @@ import com.example.demo.ingestion.economic.economic_ind.infrastructure.persisten
 import com.example.demo.ingestion.economic.economic_ind.infrastructure.persistence.entity.EconomicScheduleEntity;
 import com.example.demo.ingestion.economic.economic_ind.infrastructure.persistence.repo.EcoIndCodeRepository;
 import com.example.demo.ingestion.economic.economic_ind.infrastructure.persistence.repo.EconomicScheduleRepository;
-import com.example.demo.infra_shard.persistence.EntityToDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

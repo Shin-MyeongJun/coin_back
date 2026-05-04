@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract   class EcoDynamicIndScheduler<RAW> implements DynamicSchedulingPort {
+public abstract   class EcoDynamicIndScheduler implements DynamicSchedulingPort {
 
     private final TaskScheduler taskScheduler;
     private final EcoScheduleCache ecoScheduleCache;

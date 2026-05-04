@@ -28,4 +28,9 @@ public class EcoSaveAdapter implements FlushAndSaveEconomicValuePort<EconomicRaw
     public void flush() {
         repo.flush();
     }
+
+    @Override
+    public void save(EconomicRawIndicator economicRawIndicator) {
+        repo.save(mapper.toEntity(economicRawIndicator));
+    }
 }

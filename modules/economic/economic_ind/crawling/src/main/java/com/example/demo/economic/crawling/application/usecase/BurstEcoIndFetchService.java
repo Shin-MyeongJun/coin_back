@@ -1,10 +1,10 @@
 package com.example.demo.economic.crawling.application.usecase;
 
 import com.example.demo.economic.crawling.application.port.out.FetchEcoValuePort;
-import com.example.demo.economic.crawling.application.port.out.PublishEcoIndPort;
 import com.example.demo.economic.crawling.infrastructure.config.CrawlingEcoProperties;
 import com.example.demo.ingestion.economic.economic_ind.application.port.in.GetRealTimeEcoIndUseCase;
 import com.example.demo.ingestion.economic.economic_ind.application.port.out.FlushAndSaveEconomicValuePort;
+import com.example.demo.ingestion.economic.economic_ind.application.port.out.PublishEcoIndPort;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorCode;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorValue;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicRawIndicator;

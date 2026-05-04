@@ -34,4 +34,9 @@ public class EcoCodeSaveAdapter implements FlushAndSaveEconomicValuePort<Economi
     public void flush() {
         repo.flush();
     }
+
+    @Override
+    public void save(EconomicIndicatorCode economicIndicatorCode) {
+        repo.save(domainToEntity.toEntity(economicIndicatorCode));
+    }
 }

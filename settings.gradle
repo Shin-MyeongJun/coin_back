@@ -3,7 +3,7 @@ rootProject.name = 'demo'
 include ':contracts',
         ':infra_upbit',':infra_binance', ':infra_shard','infra_heartbeat' ,
         ':ingestion_exchange_shard',':upbit_ingestion', ':binance_ingestion',
-        ':economic_ind_shard',':fred',':crawling',':eco_crawling',
+        ':economic_ind_shard',':fred',':crawling',
         ':fx_ingestion',
         ':market_data', ':meta_data', ':trading',':analytics',
         ':market_data_query',':meta_data_query',':analytics_query'
@@ -21,7 +21,6 @@ project(':upbit_ingestion').projectDir = file('modules/ingection/exchange/upbit_
 project(':binance_ingestion').projectDir = file('modules/ingection/exchange/binance_ingestion')
 project(':ingestion_exchange_shard').projectDir = file('modules/ingection/exchange/ingestion_exchange_shard')
 project(':fred').projectDir = file('modules/economic/economic_ind/fred')
-project(':eco_crawling').projectDir = file('modules/economic/crawling')
 project(':crawling').projectDir = file('modules/economic/economic_ind/crawling')
 project(':economic_ind_shard').projectDir = file('modules/economic/economic_ind/economic_ind_shard')
 project(':market_data').projectDir = file('modules/market_data')

@@ -34,4 +34,9 @@ public class EcoScheduleSaveAdapter implements FlushAndSaveEconomicValuePort<Eco
     public void flush() {
         repo.flush();
     }
+
+    @Override
+    public void save(EconomicSchedule economicSchedule) {
+        repo.save(domainToEntity.toEntity(economicSchedule));
+    }
 }
