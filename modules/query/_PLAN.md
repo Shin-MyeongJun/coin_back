@@ -68,41 +68,43 @@ modules/query/meta_data_query/
     ├── java/com/example/demo/meta_data_query/
     │   ├── application/
     │   │   ├── port/out/
-    │   │   │   ├── GetExchangeListPort.java                              [ TODO ]  JPA
-    │   │   │   ├── GetMarketCodesByExchangePort.java                     [ TODO ]  JPA
-    │   │   │   ├── SearchMarketCodePort.java                             [ TODO ]  QueryDSL
-    │   │   │   └── CheckMappingIntegrityPort.java                        [ TODO ]  .sql
+    │   │   │   ├── GetExchangeListPort.java                              [ DONE ]  JPA
+    │   │   │   ├── GetMarketCodesByExchangePort.java                     [ DONE ]  JPA
+    │   │   │   ├── SearchMarketCodePort.java                             [ DONE ]  QueryDSL
+    │   │   │   └── CheckMappingIntegrityPort.java                        [ DONE ]  .sql
     │   │   ├── usecase/
-    │   │   │   ├── GetExchangeListUseCase.java                           [ TODO ]
-    │   │   │   ├── GetMarketCodesByExchangeUseCase.java                  [ TODO ]
-    │   │   │   ├── SearchMarketCodeUseCase.java                          [ TODO ]
-    │   │   │   └── CheckMappingIntegrityUseCase.java                     [ TODO ]
+    │   │   │   ├── GetExchangeListUseCase.java                           [ DONE ]
+    │   │   │   ├── GetMarketCodesByExchangeUseCase.java                  [ DONE ]
+    │   │   │   ├── SearchMarketCodeUseCase.java                          [ DONE ]
+    │   │   │   └── CheckMappingIntegrityUseCase.java                     [ DONE ]
     │   │   └── dto/
-    │   │       ├── ExchangeView.java                                     [ TODO ]  record
-    │   │       ├── MarketCodeView.java                                   [ TODO ]  record
-    │   │       ├── MarketCodeSearchResult.java                           [ TODO ]  record
-    │   │       └── MappingIntegrityResult.java                           [ TODO ]  record
+    │   │       ├── ExchangeView.java                                     [ DONE ]  record
+    │   │       ├── MarketCodeView.java                                   [ DONE ]  record
+    │   │       ├── MarketCodeSearchResult.java                           [ DONE ]  record
+    │   │       └── MappingIntegrityResult.java                           [ DONE ]  record
     │   └── infrastructure/persistence/
+    │       ├── config/
+    │       │   └── QueryDslConfig.java                                   [ DONE ]  JPAQueryFactory @Bean
     │       ├── entity/
-    │       │   ├── ExchangeQueryEntity.java                              [ TODO ]  @Entity (읽기전용)
-    │       │   └── MarketCodeQueryEntity.java                            [ TODO ]  @Entity (읽기전용)
+    │       │   ├── ExchangeQueryEntity.java                              [ DONE ]  @Entity @Immutable (읽기전용)
+    │       │   └── MarketCodeQueryEntity.java                            [ DONE ]  @Entity @Immutable (읽기전용)
     │       ├── repo/
-    │       │   ├── ExchangeJpaRepository.java                            [ TODO ]  JpaRepository
-    │       │   └── MarketCodeJpaRepository.java                          [ TODO ]  JpaRepository
+    │       │   ├── ExchangeJpaRepository.java                            [ DONE ]  JpaRepository
+    │       │   └── MarketCodeJpaRepository.java                          [ DONE ]  JpaRepository
     │       ├── mapper/
-    │       │   ├── ExchangeViewMapper.java                               [ TODO ]  EntityToDomain<ExchangeQueryEntity, ExchangeView>
-    │       │   └── MarketCodeViewMapper.java                             [ TODO ]  EntityToDomain<MarketCodeQueryEntity, MarketCodeView>
+    │       │   ├── ExchangeViewMapper.java                               [ DONE ]  EntityToDomain<ExchangeQueryEntity, ExchangeView>
+    │       │   └── MarketCodeViewMapper.java                             [ DONE ]  EntityToDomain<MarketCodeQueryEntity, MarketCodeView>
     │       ├── adapter/
-    │       │   ├── GetExchangeListAdapter.java                           [ TODO ]  @Component, JPA
-    │       │   ├── GetMarketCodesByExchangeAdapter.java                  [ TODO ]  @Component, JPA
-    │       │   ├── SearchMarketCodeAdapter.java                          [ TODO ]  @Component, QueryDSL
-    │       │   └── CheckMappingIntegrityAdapter.java                     [ TODO ]  @Component, .sql + DataClassRowMapper
+    │       │   ├── GetExchangeListAdapter.java                           [ DONE ]  @Component, JPA
+    │       │   ├── GetMarketCodesByExchangeAdapter.java                  [ DONE ]  @Component, JPA
+    │       │   ├── SearchMarketCodeAdapter.java                          [ DONE ]  @Component, QueryDSL
+    │       │   └── CheckMappingIntegrityAdapter.java                     [ DONE ]  @Component, .sql + DataClassRowMapper
     │       └── querydsl/
-    │           └── MarketCodeQueryDslRepository.java                     [ TODO ]  JPAQueryFactory, 동적 LIKE/IN 필터
+    │           └── MarketCodeQueryDslRepository.java                     [ DONE ]  JPAQueryFactory, 동적 LIKE/IN 필터
     └── resources/sql/
         ├── get_all_exchange.sql                                          [ STUB ]  JPA로 대체 → 삭제 예정
         ├── get_all_market_code.sql                                       [ STUB ]  JPA로 대체 → 삭제 예정
-        └── check_mapping_integrity.sql                                   [ TODO ]  LEFT JOIN으로 고아 레코드 탐지
+        └── check_mapping_integrity.sql                                   [ DONE ]  NOT EXISTS 고아 레코드 탐지
 ```
 
 **의존성**: `infra_shard`(SqlLoader), `contracts`, `spring-data-jpa`, `querydsl-jpa`
@@ -113,70 +115,67 @@ modules/query/meta_data_query/
 
 **패키지**: `com.example.demo.economic_query`
 
-> **선행 작업**: `settings.gradle`에 `':economic_query'` 등록 + `projectDir` 매핑 필요.
-> 모듈 디렉토리 및 `build.gradle` 신규 생성 필요.
-
 ### 기능 분류
 
 | 기능 | 전략 | 비고 |
 |------|------|------|
-| 단일 지표 시계열 | JPA | `fred_data_series` 단순 range 조회 |
+| 단일 지표 시계열 | JPA | `economic_indicator` range 조회 |
 | 발표 캘린더 | JPA | 날짜 범위 WHERE |
 | 지표 메타 | JPA | 단건 또는 전체 리스트 |
-| 카테고리별 지표 리스트 | JPA | `category` WHERE |
+| 카테고리별 지표 리스트 | JPA | `type` WHERE |
 | 지표 변화율 (LAG 윈도우) | `.sql` | `LAG()` 윈도우 함수 사용 |
-| 자산-지표 상관계수 (사전계산 조회) | JPA | 사전계산 결과 테이블 단순 SELECT |
+| 자산-지표 상관계수 (사전계산 조회) | JPA | `asset_indicator_correlation` 단순 SELECT |
 
 ### 파일 트리
 
 ```
 modules/query/economic_query/
-├── build.gradle                                                          [ TODO ]  신규 생성
+├── build.gradle                                                          [ DONE ]  신규 생성
 └── src/main/
     ├── java/com/example/demo/economic_query/
     │   ├── application/
     │   │   ├── port/out/
-    │   │   │   ├── GetIndicatorSeriesPort.java                           [ TODO ]  JPA
-    │   │   │   ├── GetEconomicCalendarPort.java                          [ TODO ]  JPA
-    │   │   │   ├── GetIndicatorMetaPort.java                             [ TODO ]  JPA
-    │   │   │   ├── GetIndicatorListByCategoryPort.java                   [ TODO ]  JPA
-    │   │   │   ├── GetIndicatorChangeRatePort.java                       [ TODO ]  .sql (LAG 윈도우)
-    │   │   │   └── GetCorrelationResultPort.java                         [ TODO ]  JPA
+    │   │   │   ├── GetIndicatorSeriesPort.java                           [ DONE ]  JPA
+    │   │   │   ├── GetEconomicCalendarPort.java                          [ DONE ]  JPA
+    │   │   │   ├── GetIndicatorMetaPort.java                             [ DONE ]  JPA
+    │   │   │   ├── GetIndicatorListByCategoryPort.java                   [ DONE ]  JPA
+    │   │   │   ├── GetIndicatorChangeRatePort.java                       [ DONE ]  .sql (LAG 윈도우)
+    │   │   │   └── GetCorrelationResultPort.java                         [ DONE ]  JPA
     │   │   ├── usecase/
-    │   │   │   ├── GetIndicatorSeriesUseCase.java                        [ TODO ]
-    │   │   │   ├── GetEconomicCalendarUseCase.java                       [ TODO ]
-    │   │   │   ├── GetIndicatorMetaUseCase.java                          [ TODO ]
-    │   │   │   ├── GetIndicatorListByCategoryUseCase.java                [ TODO ]
-    │   │   │   ├── GetIndicatorChangeRateUseCase.java                    [ TODO ]
-    │   │   │   └── GetCorrelationResultUseCase.java                      [ TODO ]
+    │   │   │   ├── GetIndicatorSeriesUseCase.java                        [ DONE ]
+    │   │   │   ├── GetEconomicCalendarUseCase.java                       [ DONE ]
+    │   │   │   ├── GetIndicatorMetaUseCase.java                          [ DONE ]
+    │   │   │   ├── GetIndicatorListByCategoryUseCase.java                [ DONE ]
+    │   │   │   ├── GetIndicatorChangeRateUseCase.java                    [ DONE ]
+    │   │   │   └── GetCorrelationResultUseCase.java                      [ DONE ]
     │   │   └── dto/
-    │   │       ├── IndicatorSeriesView.java                              [ TODO ]  record
-    │   │       ├── EconomicCalendarView.java                             [ TODO ]  record
-    │   │       ├── IndicatorMetaView.java                                [ TODO ]  record
-    │   │       ├── IndicatorChangeRateView.java                          [ TODO ]  record
-    │   │       └── CorrelationResultView.java                            [ TODO ]  record
+    │   │       ├── IndicatorSeriesView.java                              [ DONE ]  record
+    │   │       ├── EconomicCalendarView.java                             [ DONE ]  record
+    │   │       ├── IndicatorMetaView.java                                [ DONE ]  record
+    │   │       ├── IndicatorChangeRateView.java                          [ DONE ]  record
+    │   │       └── CorrelationResultView.java                            [ DONE ]  record
     │   └── infrastructure/persistence/
     │       ├── entity/
-    │       │   ├── IndicatorSeriesQueryEntity.java                       [ TODO ]
-    │       │   ├── EconomicCalendarQueryEntity.java                      [ TODO ]
-    │       │   ├── IndicatorMetaQueryEntity.java                         [ TODO ]
-    │       │   └── CorrelationResultQueryEntity.java                     [ TODO ]
+    │       │   ├── EcoIndQueryEntity.java                                [ DONE ]  economic_indicator
+    │       │   ├── EcoIndCodeQueryEntity.java                            [ DONE ]  economic_indicator_code
+    │       │   ├── EconomicScheduleQueryEntity.java                      [ DONE ]  economic_schedule
+    │       │   └── CorrelationResultQueryEntity.java                     [ DONE ]  asset_indicator_correlation
     │       ├── repo/
-    │       │   ├── IndicatorSeriesJpaRepository.java                     [ TODO ]  JpaRepository
-    │       │   ├── EconomicCalendarJpaRepository.java                    [ TODO ]  JpaRepository
-    │       │   ├── IndicatorMetaJpaRepository.java                       [ TODO ]  JpaRepository
-    │       │   └── CorrelationResultJpaRepository.java                   [ TODO ]  JpaRepository
+    │       │   ├── EcoIndJpaRepository.java                              [ DONE ]  JpaRepository
+    │       │   ├── EcoIndCodeJpaRepository.java                          [ DONE ]  JpaRepository
+    │       │   ├── EconomicScheduleJpaRepository.java                    [ DONE ]  JpaRepository
+    │       │   └── CorrelationResultJpaRepository.java                   [ DONE ]  JpaRepository
     │       ├── mapper/
-    │       │   └── IndicatorViewMapper.java                              [ TODO ]  DataClassRowMapper 우선
+    │       │   └── IndicatorViewMapper.java                              [ DONE ]  entity→DTO 통합 매퍼
     │       └── adapter/
-    │           ├── GetIndicatorSeriesAdapter.java                        [ TODO ]  @Component, JPA
-    │           ├── GetEconomicCalendarAdapter.java                       [ TODO ]  @Component, JPA
-    │           ├── GetIndicatorMetaAdapter.java                          [ TODO ]  @Component, JPA
-    │           ├── GetIndicatorListByCategoryAdapter.java                [ TODO ]  @Component, JPA
-    │           ├── GetIndicatorChangeRateAdapter.java                    [ TODO ]  @Component, .sql
-    │           └── GetCorrelationResultAdapter.java                      [ TODO ]  @Component, JPA
+    │           ├── GetIndicatorSeriesAdapter.java                        [ DONE ]  @Component, JPA
+    │           ├── GetEconomicCalendarAdapter.java                       [ DONE ]  @Component, JPA
+    │           ├── GetIndicatorMetaAdapter.java                          [ DONE ]  @Component, JPA
+    │           ├── GetIndicatorListByCategoryAdapter.java                [ DONE ]  @Component, JPA
+    │           ├── GetIndicatorChangeRateAdapter.java                    [ DONE ]  @Component, .sql
+    │           └── GetCorrelationResultAdapter.java                      [ DONE ]  @Component, JPA
     └── resources/sql/
-        └── indicator_change_rate.sql                                     [ TODO ]  LAG() 윈도우, 전후값 변화율 계산
+        └── indicator_change_rate.sql                                     [ DONE ]  LAG() 윈도우, 전후값 변화율 계산
 ```
 
 **의존성**: `infra_shard`(SqlLoader), `contracts`, `spring-data-jpa`
@@ -406,9 +405,9 @@ modules/query/market_data_query/
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | — (계획 작성 완료, 구현 미시작) |
-| **첫 번째 시작 파일** | `meta_data_query` — `GetExchangeListPort.java` → `ExchangeQueryEntity.java` → `ExchangeJpaRepository.java` → `GetExchangeListAdapter.java` 순 |
-| **다음 할 일** | `meta_data_query` build.gradle에 `querydsl-jpa` 의존성 추가 여부 확인 후 Port / Entity / Adapter 순 작성 시작 |
+| **현재 작업 모듈** | `analytics_query` |
+| **첫 번째 시작 파일** | 기존 SQL 파일 목록 확인 → JPA 전환 대상 삭제 → Port / Entity / Adapter 순 |
+| **다음 할 일** | `analytics_query` build.gradle 확인 + 기존 SQL 파일 정리 후 Port/Entity/Adapter 작성 |
 
 ---
 
@@ -417,3 +416,5 @@ modules/query/market_data_query/
 | 날짜 | 내용 |
 |------|------|
 | 2026-05-05 | 최초 작성 |
+| 2026-05-05 | meta_data_query 구현 완료 (entity, repo, mapper, adapter, querydsl, usecase, SQL) |
+| 2026-05-05 | economic_query 구현 완료 (신설 모듈, settings.gradle 등록, 전 레이어 작성) |
