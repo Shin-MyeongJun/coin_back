@@ -1,7 +1,8 @@
 package com.example.demo.analytics_query.application.dto;
 
-public record LastBucketMeta(
-        String interval,
-        Long bucketCloseTs
-) {
+public sealed interface LastBucketMeta
+        permits TickLastBucketMeta, PremiumLastBucketMeta, PremiumDetailLastBucketMeta {
+
+    String interval();
+    Long bucketCloseTs();
 }
