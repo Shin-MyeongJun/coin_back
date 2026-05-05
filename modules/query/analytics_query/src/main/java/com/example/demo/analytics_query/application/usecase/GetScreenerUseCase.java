@@ -1,11 +1,12 @@
 package com.example.demo.analytics_query.application.usecase;
 
-import com.example.demo.analytics_query.application.dto.ScreenerResult;
+import com.example.demo.analytics_query.application.dto.PremiumScreenerResult;
+import com.example.demo.analytics_query.application.dto.ScreenerCondition;
+import com.example.demo.analytics_query.application.dto.TickScreenerResult;
 import com.example.demo.analytics_query.application.port.out.GetScreenerPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -14,7 +15,11 @@ public class GetScreenerUseCase {
 
     private final GetScreenerPort port;
 
-    public List<ScreenerResult> execute(String interval, String type, BigDecimal minValue, BigDecimal maxValue) {
-        return port.findByIndicatorCondition(interval, type, minValue, maxValue);
+    public List<TickScreenerResult> executeForTick(List<ScreenerCondition> conditions) {
+        return port.findTickByConditions(conditions);
+    }
+
+    public List<PremiumScreenerResult> executeForPremium(List<ScreenerCondition> conditions) {
+        return port.findPremiumByConditions(conditions);
     }
 }

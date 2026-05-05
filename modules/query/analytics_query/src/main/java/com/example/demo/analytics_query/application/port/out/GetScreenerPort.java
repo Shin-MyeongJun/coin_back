@@ -1,10 +1,12 @@
 package com.example.demo.analytics_query.application.port.out;
 
-import com.example.demo.analytics_query.application.dto.ScreenerResult;
+import com.example.demo.analytics_query.application.dto.PremiumScreenerResult;
+import com.example.demo.analytics_query.application.dto.ScreenerCondition;
+import com.example.demo.analytics_query.application.dto.TickScreenerResult;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface GetScreenerPort {
-    List<ScreenerResult> findByIndicatorCondition(String interval, String type, BigDecimal minValue, BigDecimal maxValue);
+    List<TickScreenerResult> findTickByConditions(List<ScreenerCondition> conditions);
+    List<PremiumScreenerResult> findPremiumByConditions(List<ScreenerCondition> conditions);
 }

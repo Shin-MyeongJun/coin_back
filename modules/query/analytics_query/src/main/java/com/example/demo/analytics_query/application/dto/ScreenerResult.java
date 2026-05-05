@@ -1,13 +1,9 @@
 package com.example.demo.analytics_query.application.dto;
 
-import java.math.BigDecimal;
+public sealed interface ScreenerResult
+        permits TickScreenerResult, PremiumScreenerResult {
 
-public record ScreenerResult(
-        Long marketCodeId,
-        String interval,
-        String type,
-        Integer period,
-        BigDecimal value,
-        Long bucketCloseTs
-) {
+    String interval();
+    String type();
+    Long bucketCloseTs();
 }
