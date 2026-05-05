@@ -208,77 +208,69 @@ modules/query/economic_query/
 
 ```
 modules/query/analytics_query/
-├── build.gradle                                                          [ DONE ]
+├── build.gradle                                                          [ DONE ]  과잉 의존성 → 최소 의존성으로 교체
 └── src/main/
     ├── java/com/example/demo/analytics_query/
     │   ├── application/
     │   │   ├── port/out/
-    │   │   │   ├── GetCandleSeriesPort.java                              [ TODO ]  JPA (Tick/Premium 공용 제네릭)
-    │   │   │   ├── GetCandleMiniChartPort.java                           [ TODO ]  JPA
-    │   │   │   ├── GetCandleDownsampledPort.java                         [ TODO ]  .sql (time_bucket)
-    │   │   │   ├── GetIndicatorSeriesPort.java                           [ TODO ]  JPA
-    │   │   │   ├── GetLatestIndicatorPort.java                           [ TODO ]  JPA (단건)
-    │   │   │   ├── GetLatestIndicatorMultiMarketPort.java                [ TODO ]  .sql (멀티 마켓)
-    │   │   │   ├── GetScreenerPort.java                                  [ TODO ]  QueryDSL
-    │   │   │   ├── GetLastClosedBucketPort.java                          [ TODO ]  JPA (MAX bucket_close_ts)
-    │   │   │   └── GetCandleAndPremiumSeriesPort.java                    [ TODO ]  .sql (tick candle + premium JOIN)
+    │   │   │   ├── GetCandleSeriesPort.java                              [ DONE ]  JPA
+    │   │   │   ├── GetCandleMiniChartPort.java                           [ DONE ]  JPA
+    │   │   │   ├── GetCandleDownsampledPort.java                         [ DONE ]  .sql (time_bucket)
+    │   │   │   ├── GetIndicatorSeriesPort.java                           [ DONE ]  JPA
+    │   │   │   ├── GetLatestIndicatorPort.java                           [ DONE ]  JPA (단건)
+    │   │   │   ├── GetLatestIndicatorMultiMarketPort.java                [ DONE ]  .sql (멀티 마켓)
+    │   │   │   ├── GetScreenerPort.java                                  [ DONE ]  QueryDSL
+    │   │   │   ├── GetLastClosedBucketPort.java                          [ DONE ]  JPA (MAX bucket_close_ts)
+    │   │   │   └── GetCandleAndPremiumSeriesPort.java                    [ DONE ]  .sql (tick candle + premium JOIN)
     │   │   ├── usecase/
-    │   │   │   ├── GetCandleSeriesUseCase.java                           [ TODO ]
-    │   │   │   ├── GetCandleMiniChartUseCase.java                        [ TODO ]
-    │   │   │   ├── GetCandleDownsampledUseCase.java                      [ TODO ]
-    │   │   │   ├── GetIndicatorSeriesUseCase.java                        [ TODO ]
-    │   │   │   ├── GetLatestIndicatorUseCase.java                        [ TODO ]
-    │   │   │   ├── GetLatestIndicatorMultiMarketUseCase.java             [ TODO ]
-    │   │   │   ├── GetScreenerUseCase.java                               [ TODO ]
-    │   │   │   ├── GetLastClosedBucketUseCase.java                       [ TODO ]
-    │   │   │   └── GetCandleAndPremiumSeriesUseCase.java                 [ TODO ]
+    │   │   │   ├── GetCandleSeriesUseCase.java                           [ DONE ]
+    │   │   │   ├── GetCandleMiniChartUseCase.java                        [ DONE ]
+    │   │   │   ├── GetCandleDownsampledUseCase.java                      [ DONE ]
+    │   │   │   ├── GetIndicatorSeriesUseCase.java                        [ DONE ]
+    │   │   │   ├── GetLatestIndicatorUseCase.java                        [ DONE ]
+    │   │   │   ├── GetLatestIndicatorMultiMarketUseCase.java             [ DONE ]
+    │   │   │   ├── GetScreenerUseCase.java                               [ DONE ]
+    │   │   │   ├── GetLastClosedBucketUseCase.java                       [ DONE ]
+    │   │   │   └── GetCandleAndPremiumSeriesUseCase.java                 [ DONE ]
     │   │   └── dto/
-    │   │       ├── CandleView.java                                       [ TODO ]  record
-    │   │       ├── IndicatorView.java                                    [ TODO ]  record
-    │   │       ├── ScreenerResult.java                                   [ TODO ]  record
-    │   │       ├── LastBucketMeta.java                                   [ TODO ]  record
-    │   │       └── CandleAndPremiumView.java                             [ TODO ]  record
+    │   │       ├── CandleView.java                                       [ DONE ]  record (tick/premium 통합)
+    │   │       ├── IndicatorView.java                                    [ DONE ]  record (tick/premium 통합)
+    │   │       ├── ScreenerResult.java                                   [ DONE ]  record
+    │   │       ├── LastBucketMeta.java                                   [ DONE ]  record
+    │   │       └── CandleAndPremiumView.java                             [ DONE ]  record
     │   └── infrastructure/persistence/
+    │       ├── config/
+    │       │   └── QueryDslConfig.java                                   [ DONE ]  JPAQueryFactory @Bean
     │       ├── entity/
-    │       │   ├── TickCandleQueryEntity.java                            [ TODO ]
-    │       │   ├── PremiumCandleQueryEntity.java                         [ TODO ]
-    │       │   ├── TickIndicatorQueryEntity.java                         [ TODO ]
-    │       │   └── PremiumIndicatorQueryEntity.java                      [ TODO ]
+    │       │   ├── TickCandleQueryEntity.java                            [ DONE ]  @Immutable
+    │       │   ├── PremiumCandleQueryEntity.java                         [ DONE ]  @Immutable
+    │       │   ├── TickIndicatorQueryEntity.java                         [ DONE ]  @Immutable
+    │       │   └── PremiumIndicatorQueryEntity.java                      [ DONE ]  @Immutable
     │       ├── repo/
-    │       │   ├── TickCandleJpaRepository.java                          [ TODO ]  JpaRepository
-    │       │   ├── PremiumCandleJpaRepository.java                       [ TODO ]  JpaRepository
-    │       │   ├── TickIndicatorJpaRepository.java                       [ TODO ]  JpaRepository
-    │       │   └── PremiumIndicatorJpaRepository.java                    [ TODO ]  JpaRepository
+    │       │   ├── TickCandleJpaRepository.java                          [ DONE ]  JpaRepository
+    │       │   ├── PremiumCandleJpaRepository.java                       [ DONE ]  JpaRepository + @Query
+    │       │   ├── TickIndicatorJpaRepository.java                       [ DONE ]  JpaRepository + findTop1
+    │       │   └── PremiumIndicatorJpaRepository.java                    [ DONE ]  JpaRepository + @Query
     │       ├── mapper/
-    │       │   ├── CandleViewMapper.java                                 [ TODO ]
-    │       │   └── IndicatorViewMapper.java                              [ TODO ]
+    │       │   ├── CandleViewMapper.java                                 [ DONE ]
+    │       │   └── IndicatorViewMapper.java                              [ DONE ]
     │       ├── adapter/
-    │       │   ├── GetCandleSeriesAdapter.java                           [ TODO ]  @Component, JPA
-    │       │   ├── GetCandleMiniChartAdapter.java                        [ TODO ]  @Component, JPA
-    │       │   ├── GetCandleDownsampledAdapter.java                      [ TODO ]  @Component, .sql
-    │       │   ├── GetIndicatorSeriesAdapter.java                        [ TODO ]  @Component, JPA
-    │       │   ├── GetLatestIndicatorAdapter.java                        [ TODO ]  @Component, JPA
-    │       │   ├── GetLatestIndicatorMultiMarketAdapter.java             [ TODO ]  @Component, .sql
-    │       │   ├── GetScreenerAdapter.java                               [ TODO ]  @Component, QueryDSL
-    │       │   ├── GetLastClosedBucketAdapter.java                       [ TODO ]  @Component, JPA
-    │       │   └── GetCandleAndPremiumSeriesAdapter.java                 [ TODO ]  @Component, .sql
+    │       │   ├── GetCandleSeriesAdapter.java                           [ DONE ]  @Component, JPA
+    │       │   ├── GetCandleMiniChartAdapter.java                        [ DONE ]  @Component, JPA + Pageable
+    │       │   ├── GetCandleDownsampledAdapter.java                      [ DONE ]  @Component, .sql
+    │       │   ├── GetIndicatorSeriesAdapter.java                        [ DONE ]  @Component, JPA
+    │       │   ├── GetLatestIndicatorAdapter.java                        [ DONE ]  @Component, JPA
+    │       │   ├── GetLatestIndicatorMultiMarketAdapter.java             [ DONE ]  @Component, .sql
+    │       │   ├── GetScreenerAdapter.java                               [ DONE ]  @Component, QueryDSL
+    │       │   ├── GetLastClosedBucketAdapter.java                       [ DONE ]  @Component, JPA MAX
+    │       │   └── GetCandleAndPremiumSeriesAdapter.java                 [ DONE ]  @Component, .sql
     │       └── querydsl/
-    │           └── IndicatorQueryDslRepository.java                      [ TODO ]  JPAQueryFactory, 동적 지표 조건
+    │           └── IndicatorQueryDslRepository.java                      [ DONE ]  JPAQueryFactory, 동적 지표 조건
     └── resources/sql/
-        ├── candle_downsampled.sql                                        [ TODO ]  time_bucket 다운샘플링
-        ├── latest_indicator_multi_market.sql                             [ TODO ]  멀티 marketCodeId latest 패턴
-        ├── candle_and_premium_series.sql                                 [ TODO ]  tick_candle + premium 동기화 JOIN
-        │
-        │   ── 기존 파일 (JPA 전환으로 삭제 대상) ──────────────────────────────
-        ├── range/candle/range_tick_candle.sql                           [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── range/candle/range_premium_candle.sql                        [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── range/candle/range_premium_detail_candle.sql                 [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── range/indicator/range_tick_indicator.sql                     [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── range/indicator/range_premium_indicator.sql                  [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── latest/latest_tick_indicator.sql                             [IN_PROG]  JPA 전환 → 삭제 예정
-        ├── latest/latest_premium_indicator.sql                          [IN_PROG]  JPA 전환 → 삭제 예정 (단건은 findTop1 대체)
-        ├── range/multi/range_tick_indicator_and_candle.sql              [ STUB ]   candle_and_premium_series.sql 로 통합 → 삭제
-        └── range/multi/range_premium_indicator_and_candle.sql           [ STUB ]   candle_and_premium_series.sql 로 통합 → 삭제
+        ├── candle_downsampled.sql                                        [ DONE ]  time_bucket 다운샘플링
+        ├── latest_indicator_multi_market.sql                             [ DONE ]  DISTINCT ON 멀티 marketCodeId latest
+        └── candle_and_premium_series.sql                                 [ DONE ]  tick_candle + premium JOIN
+        (기존 range/*, latest/* 파일 9개 → JPA 전환 후 git rm 완료)
 ```
 
 **의존성**: `infra_shard`(SqlLoader), `contracts`, `spring-data-jpa`, `querydsl-jpa`
@@ -405,9 +397,9 @@ modules/query/market_data_query/
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `analytics_query` |
-| **첫 번째 시작 파일** | 기존 SQL 파일 목록 확인 → JPA 전환 대상 삭제 → Port / Entity / Adapter 순 |
-| **다음 할 일** | `analytics_query` build.gradle 확인 + 기존 SQL 파일 정리 후 Port/Entity/Adapter 작성 |
+| **현재 작업 모듈** | `market_data_query` |
+| **첫 번째 시작 파일** | port/in stub 정리 → Port/out 신규 작성 → Entity → Adapter 순 |
+| **다음 할 일** | `market_data_query` 기존 stub(port/in, LatestView) 채우고 SQL 오타 수정, lastest/ → latest/ 리네임 후 작성 시작 |
 
 ---
 
@@ -418,3 +410,4 @@ modules/query/market_data_query/
 | 2026-05-05 | 최초 작성 |
 | 2026-05-05 | meta_data_query 구현 완료 (entity, repo, mapper, adapter, querydsl, usecase, SQL) |
 | 2026-05-05 | economic_query 구현 완료 (신설 모듈, settings.gradle 등록, 전 레이어 작성) |
+| 2026-05-05 | analytics_query 구현 완료 (build.gradle 교체, 기존 SQL 9개 삭제, 전 레이어 작성) |
