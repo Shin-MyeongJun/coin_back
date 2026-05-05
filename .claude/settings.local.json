@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(find . -name \"02_PROJECT_CONTEXT.md\")",
+      "Bash(dir /s /b \"02_PROJECT_CONTEXT.md\")",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\smj\\\\Desktop\\\\COIN_SERVER\\\\demo\\\\modules\" -Recurse -Directory | Where-Object { $_.Name -eq \"economic\" -or $_.Name -eq \"economic_ind\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\smj\\\\Desktop\\\\COIN_SERVER\\\\demo\\\\modules\\\\economic\" -Recurse | Where-Object { $_.Extension -eq \".java\" } | Select-Object -ExpandProperty FullName)"
     ]
   }
 }
