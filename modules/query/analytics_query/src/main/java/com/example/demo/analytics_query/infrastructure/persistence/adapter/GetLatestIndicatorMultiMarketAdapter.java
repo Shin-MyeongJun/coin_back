@@ -1,7 +1,7 @@
 package com.example.demo.analytics_query.infrastructure.persistence.adapter;
 
 import com.example.demo.infra_shard.sql.SqlLoader;
-import com.example.demo.analytics_query.application.dto.IndicatorView;
+import com.example.demo.analytics_query.application.dto.TickIndicatorView;
 import com.example.demo.analytics_query.application.port.out.GetLatestIndicatorMultiMarketPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.DataClassRowMapper;
@@ -19,10 +19,10 @@ public class GetLatestIndicatorMultiMarketAdapter implements GetLatestIndicatorM
     private final SqlLoader sqlLoader;
 
     @Override
-    public List<IndicatorView> findLatestForMarkets(List<Long> marketCodeIds, String interval, String type) {
+    public List<TickIndicatorView> findLatestForMarkets(List<Long> marketCodeIds, String interval, String type) {
         String sql = sqlLoader.load("sql/latest_indicator_multi_market.sql");
         return jdbcTemplate.query(sql,
                 Map.of("marketCodeIds", marketCodeIds.toArray(new Long[0]), "interval", interval, "type", type),
-                new DataClassRowMapper<>(IndicatorView.class));
+                new DataClassRowMapper<>(TickIndicatorView.class));
     }
 }

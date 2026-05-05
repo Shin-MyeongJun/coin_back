@@ -1,6 +1,6 @@
 package com.example.demo.analytics_query.application.usecase;
 
-import com.example.demo.analytics_query.application.dto.IndicatorView;
+import com.example.demo.analytics_query.application.dto.TickIndicatorView;
 import com.example.demo.analytics_query.application.port.out.GetLatestIndicatorMultiMarketPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ public class GetLatestIndicatorMultiMarketUseCase {
 
     private final GetLatestIndicatorMultiMarketPort port;
 
-    public List<IndicatorView> execute(List<Long> marketCodeIds, String interval, String type) {
+    public List<TickIndicatorView> execute(List<Long> marketCodeIds, String interval, String type) {
         return port.findLatestForMarkets(marketCodeIds, interval, type);
     }
 }

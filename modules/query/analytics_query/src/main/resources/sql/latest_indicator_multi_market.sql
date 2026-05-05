@@ -1,9 +1,5 @@
 SELECT DISTINCT ON (ti.market_code_id)
-    ti.id,
     ti.market_code_id,
-    NULL            AS symbol,
-    NULL            AS base_exchange_id,
-    NULL            AS compare_exchange_id,
     ti.interval,
     ti.type,
     ti.period,
