@@ -303,91 +303,77 @@ modules/query/analytics_query/
 
 ```
 modules/query/market_data_query/
-├── build.gradle                                                          [ DONE ]
+├── build.gradle                                                          [ DONE ]  infra_shard + jdbc 추가
 └── src/main/
     ├── java/com/example/demo/market_data_query/
     │   ├── application/
-    │   │   ├── port/in/                    ← 기존 빈 stub, port/out + usecase/ 로 재편 예정
-    │   │   │   ├── GetLatestPriceDataPort.java                          [ STUB ]  내용 채우거나 삭제 후 usecase/ 로 이동
-    │   │   │   ├── GetRangePriceDataPort.java                           [ STUB ]  동일
-    │   │   │   └── GetTickByAllExchangePort.java                        [ STUB ]  동일
     │   │   ├── port/out/
-    │   │   │   ├── GetLatestTickPort.java                               [ TODO ]  JPA (단건)
-    │   │   │   ├── GetLatestTickBulkPort.java                           [ TODO ]  .sql (DISTINCT ON / LATERAL)
-    │   │   │   ├── GetPremiumSnapshotByBasePort.java                    [ TODO ]  .sql (DISTINCT ON per exchange)
-    │   │   │   ├── GetPremiumTimeSeriesPort.java                        [ TODO ]  .sql (time_bucket 다운샘플링)
-    │   │   │   ├── GetPremiumDetailRawPort.java                         [ TODO ]  JPA
-    │   │   │   ├── GetPremiumDetailAggPort.java                         [ TODO ]  .sql
-    │   │   │   ├── GetPremiumRankingPort.java                           [ TODO ]  .sql (top N 양/음 분리)
-    │   │   │   ├── GetLatestFxPort.java                                 [ TODO ]  JPA
-    │   │   │   ├── GetFxRawPort.java                                    [ TODO ]  JPA
-    │   │   │   └── GetFxDownsampledPort.java                            [ TODO ]  .sql (time_bucket)
+    │   │   │   ├── GetLatestTickPort.java                               [ DONE ]  JPA (단건)
+    │   │   │   ├── GetLatestTickBulkPort.java                           [ DONE ]  .sql (DISTINCT ON)
+    │   │   │   ├── GetPremiumSnapshotByBasePort.java                    [ DONE ]  .sql (DISTINCT ON per exchange)
+    │   │   │   ├── GetPremiumTimeSeriesPort.java                        [ DONE ]  .sql (time_bucket 다운샘플링)
+    │   │   │   ├── GetPremiumDetailRawPort.java                         [ DONE ]  JPA
+    │   │   │   ├── GetPremiumDetailAggPort.java                         [ DONE ]  .sql
+    │   │   │   ├── GetPremiumRankingPort.java                           [ DONE ]  .sql (top N 양/음 분리)
+    │   │   │   ├── GetLatestFxPort.java                                 [ DONE ]  JPA
+    │   │   │   ├── GetFxRawPort.java                                    [ DONE ]  JPA
+    │   │   │   └── GetFxDownsampledPort.java                            [ DONE ]  .sql (time_bucket)
     │   │   ├── usecase/
-    │   │   │   ├── GetLatestTickUseCase.java                            [ TODO ]
-    │   │   │   ├── GetLatestTickBulkUseCase.java                        [ TODO ]
-    │   │   │   ├── GetPremiumSnapshotByBaseUseCase.java                 [ TODO ]
-    │   │   │   ├── GetPremiumTimeSeriesUseCase.java                     [ TODO ]
-    │   │   │   ├── GetPremiumDetailRawUseCase.java                      [ TODO ]
-    │   │   │   ├── GetPremiumDetailAggUseCase.java                      [ TODO ]
-    │   │   │   ├── GetPremiumRankingUseCase.java                        [ TODO ]
-    │   │   │   ├── GetLatestFxUseCase.java                              [ TODO ]
-    │   │   │   ├── GetFxRawUseCase.java                                 [ TODO ]
-    │   │   │   └── GetFxDownsampledUseCase.java                         [ TODO ]
+    │   │   │   ├── GetLatestTickUseCase.java                            [ DONE ]
+    │   │   │   ├── GetLatestTickBulkUseCase.java                        [ DONE ]
+    │   │   │   ├── GetPremiumSnapshotByBaseUseCase.java                 [ DONE ]
+    │   │   │   ├── GetPremiumTimeSeriesUseCase.java                     [ DONE ]
+    │   │   │   ├── GetPremiumDetailRawUseCase.java                      [ DONE ]
+    │   │   │   ├── GetPremiumDetailAggUseCase.java                      [ DONE ]
+    │   │   │   ├── GetPremiumRankingUseCase.java                        [ DONE ]
+    │   │   │   ├── GetLatestFxUseCase.java                              [ DONE ]
+    │   │   │   ├── GetFxRawUseCase.java                                 [ DONE ]
+    │   │   │   └── GetFxDownsampledUseCase.java                         [ DONE ]
     │   │   └── dto/
-    │   │       ├── LatestView.java                                      [ STUB ]  내용 채워야 함 (현재 빈 record)
     │   │       ├── RangeView.java                                       [ DONE ]
-    │   │       ├── TickLatestView.java                                  [ TODO ]  record
-    │   │       ├── TickBulkView.java                                    [ TODO ]  record
-    │   │       ├── PremiumSnapshotView.java                             [ TODO ]  record
-    │   │       ├── PremiumTimeSeriesView.java                           [ TODO ]  record
-    │   │       ├── PremiumRankingView.java                              [ TODO ]  record
-    │   │       └── FxView.java                                          [ TODO ]  record
+    │   │       ├── TickLatestView.java                                  [ DONE ]  record
+    │   │       ├── TickBulkView.java                                    [ DONE ]  record
+    │   │       ├── PremiumSnapshotView.java                             [ DONE ]  record
+    │   │       ├── PremiumTimeSeriesView.java                           [ DONE ]  record
+    │   │       ├── PremiumDetailView.java                               [ DONE ]  record
+    │   │       ├── PremiumRankingView.java                              [ DONE ]  record
+    │   │       └── FxView.java                                          [ DONE ]  record
     │   └── infrastructure/persistence/
     │       ├── entity/
-    │       │   ├── TickQueryEntity.java                                 [ TODO ]
-    │       │   ├── PremiumDetailQueryEntity.java                        [ TODO ]
-    │       │   └── FxQueryEntity.java                                   [ TODO ]
+    │       │   ├── TickQueryEntity.java                                 [ DONE ]  @Immutable
+    │       │   ├── PremiumDetailQueryEntity.java                        [ DONE ]  @Immutable
+    │       │   └── FxQueryEntity.java                                   [ DONE ]  @Immutable
     │       ├── repo/
-    │       │   ├── TickJpaRepository.java                               [ TODO ]  JPA (단건 latest, findTop1)
-    │       │   ├── PremiumDetailJpaRepository.java                      [ TODO ]  JPA (raw range)
-    │       │   └── FxJpaRepository.java                                 [ TODO ]  JPA (latest + raw)
+    │       │   ├── TickJpaRepository.java                               [ DONE ]  JPA (findTop1)
+    │       │   ├── PremiumDetailJpaRepository.java                      [ DONE ]  JPA (raw range)
+    │       │   └── FxJpaRepository.java                                 [ DONE ]  JPA (latest + raw)
     │       ├── mapper/
-    │       │   ├── TickViewMapper.java                                  [ TODO ]
-    │       │   ├── PremiumViewMapper.java                               [ TODO ]
-    │       │   └── FxViewMapper.java                                    [ TODO ]
+    │       │   ├── TickViewMapper.java                                  [ DONE ]
+    │       │   ├── PremiumViewMapper.java                               [ DONE ]
+    │       │   └── FxViewMapper.java                                    [ DONE ]
     │       └── adapter/
-    │           ├── GetLatestTickAdapter.java                            [ TODO ]  @Component, JPA
-    │           ├── GetLatestTickBulkAdapter.java                        [ TODO ]  @Component, .sql
-    │           ├── GetPremiumSnapshotByBaseAdapter.java                 [ TODO ]  @Component, .sql
-    │           ├── GetPremiumTimeSeriesAdapter.java                     [ TODO ]  @Component, .sql
-    │           ├── GetPremiumDetailRawAdapter.java                      [ TODO ]  @Component, JPA
-    │           ├── GetPremiumDetailAggAdapter.java                      [ TODO ]  @Component, .sql
-    │           ├── GetPremiumRankingAdapter.java                        [ TODO ]  @Component, .sql
-    │           ├── GetLatestFxAdapter.java                              [ TODO ]  @Component, JPA
-    │           ├── GetFxRawAdapter.java                                 [ TODO ]  @Component, JPA
-    │           └── GetFxDownsampledAdapter.java                         [ TODO ]  @Component, .sql
+    │           ├── GetLatestTickAdapter.java                            [ DONE ]  @Component, JPA
+    │           ├── GetLatestTickBulkAdapter.java                        [ DONE ]  @Component, .sql
+    │           ├── GetPremiumSnapshotByBaseAdapter.java                 [ DONE ]  @Component, .sql
+    │           ├── GetPremiumTimeSeriesAdapter.java                     [ DONE ]  @Component, .sql
+    │           ├── GetPremiumDetailRawAdapter.java                      [ DONE ]  @Component, JPA
+    │           ├── GetPremiumDetailAggAdapter.java                      [ DONE ]  @Component, .sql
+    │           ├── GetPremiumRankingAdapter.java                        [ DONE ]  @Component, .sql
+    │           ├── GetLatestFxAdapter.java                              [ DONE ]  @Component, JPA
+    │           ├── GetFxRawAdapter.java                                 [ DONE ]  @Component, JPA
+    │           └── GetFxDownsampledAdapter.java                         [ DONE ]  @Component, .sql
     └── resources/sql/
-        ├── latest/                                                               lastest/ → latest/ 리네임 후
-        │   ├── latest_tick_bulk.sql                                     [ TODO ]  DISTINCT ON / LATERAL 멀티 마켓
-        │   ├── latest_premium_by_base.sql                               [ TODO ]  latest_by_base_all_exchanges.sql 수정 + 이동
-        │   └── latest_premium.sql                                      [IN_PROG]  lastest/ 에서 이동 + 내용 검토
+        ├── latest/
+        │   ├── latest_tick_bulk.sql                                     [ DONE ]  DISTINCT ON 멀티 마켓
+        │   └── latest_premium_by_base.sql                               [ DONE ]  DISTINCT ON per (baseExchangeId, compareExchangeId)
         └── range/
-            ├── range_premium_downsampled.sql                            [ TODO ]  time_bucket 다운샘플링
-            ├── range_premium_detail_agg.sql                             [ TODO ]  집계 신규 작성
-            ├── premium_ranking.sql                                      [ TODO ]  top N 양/음 분리 UNION
-            └── range_fx_downsampled.sql                                 [ TODO ]  time_bucket
-
-        ── 기존 파일 (정리 필요) ─────────────────────────────────────────────────
-        lastest/latest_tick.sql                                         [IN_PROG]  후행 쉼표 오류, JPA 전환 → 삭제
-        lastest/latest_by_base_all_exchanges.sql                        [IN_PROG]  SQL 문법 오류(쉼표/마침표 오타), latest_premium_by_base.sql로 이동+수정
-        lastest/latest_premium.sql                                      [IN_PROG]  latest/ 로 이동
-        lastest/latest_premium_detail.sql                               [IN_PROG]  JPA 전환 → 삭제
-        range/range_tick.sql                                            [IN_PROG]  JPA 전환 → 삭제
-        range/range_premium_detail.sql                                  [IN_PROG]  JPA 전환 → 삭제
-        range/range_premium.sql                                         [IN_PROG]  후행 쉼표 오류, 내용 검토 후 유지 여부 결정
+            ├── range_premium_downsampled.sql                            [ DONE ]  time_bucket + last()
+            ├── range_premium_detail_agg.sql                             [ DONE ]  time_bucket + avg(compare/base-1)
+            ├── premium_ranking.sql                                      [ DONE ]  CTE + ROW_NUMBER 양/음 분리 UNION ALL
+            └── range_fx_downsampled.sql                                 [ DONE ]  time_bucket + avg(rate)
 ```
 
-**의존성**: `infra_shard`(SqlLoader), `contracts`, `spring-data-jpa`
+**의존성**: `infra_shard`(SqlLoader), `contracts`, `spring-data-jpa`, `spring-boot-starter-jdbc`
 
 ---
 
@@ -397,9 +383,8 @@ modules/query/market_data_query/
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `market_data_query` |
-| **첫 번째 시작 파일** | port/in stub 정리 → Port/out 신규 작성 → Entity → Adapter 순 |
-| **다음 할 일** | `market_data_query` 기존 stub(port/in, LatestView) 채우고 SQL 오타 수정, lastest/ → latest/ 리네임 후 작성 시작 |
+| **현재 작업 모듈** | 전체 완료 |
+| **다음 할 일** | — |
 
 ---
 
@@ -411,3 +396,4 @@ modules/query/market_data_query/
 | 2026-05-05 | meta_data_query 구현 완료 (entity, repo, mapper, adapter, querydsl, usecase, SQL) |
 | 2026-05-05 | economic_query 구현 완료 (신설 모듈, settings.gradle 등록, 전 레이어 작성) |
 | 2026-05-05 | analytics_query 구현 완료 (build.gradle 교체, 기존 SQL 9개 삭제, 전 레이어 작성) |
+| 2026-05-05 | market_data_query 구현 완료 (build.gradle 갱신, usecase 10개, entity 3개, repo 3개, mapper 3개, adapter 10개, SQL 6개) |
