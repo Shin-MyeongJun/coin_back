@@ -196,7 +196,7 @@ modules/api/src/main/java/com/example/demo/api/
 
 ---
 
-## 5. market 컨트롤러
+## 5. market 컨트롤러 ✅ DONE
 
 **호출 대상**: `market_data_query` UseCase 10종
 
@@ -205,25 +205,25 @@ modules/api/src/main/java/com/example/demo/api/
 | 메서드 | 경로 | UseCase | 비고 |
 |--------|------|---------|------|
 | GET | `/api/v1/market/ticks/latest/{marketCodeId}` | `GetLatestTickUseCase` | 단건 |
-| GET | `/api/v1/market/ticks/latest` | `GetLatestTickBulkUseCase` | `?marketCodeIds=` |
+| GET | `/api/v1/market/ticks/latest` | `GetLatestTickBulkUseCase` | `?marketCodeIds=1,2,3` |
 | GET | `/api/v1/market/premium/snapshot/{base}` | `GetPremiumSnapshotByBaseUseCase` | base별 거래소 스냅샷 |
-| GET | `/api/v1/market/premium/series` | `GetPremiumTimeSeriesUseCase` | cursor + bucket |
-| GET | `/api/v1/market/premium-detail/raw` | `GetPremiumDetailRawUseCase` | cursor |
-| GET | `/api/v1/market/premium-detail/agg` | `GetPremiumDetailAggUseCase` | cursor + bucket |
-| GET | `/api/v1/market/premium/ranking` | `GetPremiumRankingUseCase` | top N, `?direction=positive|negative&n=` |
-| GET | `/api/v1/market/fx/latest` | `GetLatestFxUseCase` | `?currency=` |
-| GET | `/api/v1/market/fx/raw` | `GetFxRawUseCase` | cursor |
-| GET | `/api/v1/market/fx/downsampled` | `GetFxDownsampledUseCase` | cursor + bucket |
+| GET | `/api/v1/market/premium/series` | `GetPremiumTimeSeriesUseCase` | |
+| GET | `/api/v1/market/premium-detail/raw` | `GetPremiumDetailRawUseCase` | |
+| GET | `/api/v1/market/premium-detail/agg` | `GetPremiumDetailAggUseCase` | |
+| GET | `/api/v1/market/premium/ranking` | `GetPremiumRankingUseCase` | `?n=10` |
+| GET | `/api/v1/market/fx/latest` | `GetLatestFxUseCase` | `?baseCurrency=&quoteCurrency=` |
+| GET | `/api/v1/market/fx/raw` | `GetFxRawUseCase` | |
+| GET | `/api/v1/market/fx/downsampled` | `GetFxDownsampledUseCase` | |
 
 ### 파일 트리
 
 ```
 modules/api/src/main/java/com/example/demo/api/
 └── controller/market/
-    ├── TickController.java                                               [ TODO ]
-    ├── PremiumController.java                                            [ TODO ]  snapshot, series, ranking
-    ├── PremiumDetailController.java                                      [ TODO ]  raw, agg
-    └── FxController.java                                                 [ TODO ]
+    ├── TickController.java                                               [DONE]
+    ├── PremiumController.java                                            [DONE]
+    ├── PremiumDetailController.java                                      [DONE]
+    └── FxController.java                                                 [DONE]
 ```
 
 ---
@@ -334,10 +334,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 5: market 컨트롤러) |
-| **첫 번째 시작 파일** | `controller/market/TickController.java` |
-| **다음 할 일** | 단계 5 — market_data_query UseCase 10종: TickController, PremiumController, PremiumDetailController, FxController |
-| **선결 작업** | market_data_query UseCase 파라미터 확인 필요 |
+| **현재 작업 모듈** | `api` (단계 6: composition 합성 엔드포인트) |
+| **첫 번째 시작 파일** | `composition/dto/MarketOverviewResponse.java` |
+| **다음 할 일** | 단계 6 — composition: MarketOverviewService+Controller, ChartCompositionService+Controller, DashboardService+Controller (placeholder 구현 포함) |
+| **선결 작업** | 없음 (단계 1~5 모두 컴파일 성공 확인) |
 
 ---
 
