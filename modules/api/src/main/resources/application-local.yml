@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    password: ${DB_PASSWORD:10200411}
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+
+cors:
+  allowed-origin-patterns: "*"
+
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.web: DEBUG

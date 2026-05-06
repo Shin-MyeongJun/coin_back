@@ -5,7 +5,8 @@ public enum ModuleName {
     INGESTION("INGESTION"),
     TRADING("TRADING"),
     MARKET_DATA("MARKET_DATA"),
-    META_DATA("META_DATA");
+    META_DATA("META_DATA"),
+    API("API");
 
     private final String name;
     ModuleName(final String name) {
