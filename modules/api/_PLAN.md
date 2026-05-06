@@ -110,7 +110,7 @@ modules/api/
 
 ---
 
-## 2. meta 컨트롤러
+## 2. meta 컨트롤러 ✅ DONE
 
 **호출 대상**: `meta_data_query` UseCase 4종
 
@@ -128,9 +128,9 @@ modules/api/
 ```
 modules/api/src/main/java/com/example/demo/api/
 └── controller/meta/
-    ├── ExchangeController.java                                           [ TODO ]
-    ├── MarketCodeController.java                                         [ TODO ]
-    └── MetaIntegrityController.java                                      [ TODO ]
+    ├── ExchangeController.java                                           [DONE]
+    ├── MarketCodeController.java                                         [DONE]
+    └── MetaIntegrityController.java                                      [DONE]
 ```
 
 응답 DTO는 `meta_data_query`의 View record를 그대로 반환. api 모듈이 자체 DTO를 만들지 않는다 (단순 1:1 패스스루).
@@ -344,10 +344,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 2: meta 컨트롤러) |
-| **첫 번째 시작 파일** | `controller/meta/ExchangeController.java` |
-| **다음 할 일** | 단계 2 meta 컨트롤러 3파일 작성: ExchangeController, MarketCodeController, MetaIntegrityController |
-| **선결 작업** | 없음 (skeleton 완료, :api:compileJava BUILD SUCCESSFUL 확인) |
+| **현재 작업 모듈** | `api` (단계 3: economic 컨트롤러) |
+| **첫 번째 시작 파일** | `common/CursorPage.java`, `common/OffsetPage.java`, `common/CursorRequest.java` (공통 envelope 먼저) |
+| **다음 할 일** | 단계 3 — economic_query UseCase 시그니처 확인 후 IndicatorController, EconomicCalendarController, CorrelationController 작성. common/ envelope 3파일 선행 |
+| **선결 작업** | economic_query UseCase 파라미터 확인 필요 |
 
 ---
 
