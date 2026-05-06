@@ -167,35 +167,32 @@ modules/api/src/main/java/com/example/demo/api/
 
 ---
 
-## 4. analytics 컨트롤러
+## 4. analytics 컨트롤러 ✅ DONE
 
-**호출 대상**: `analytics_query` UseCase 9종
+**호출 대상**: `analytics_query` UseCase 9종 (GetCandleAndPremiumSeriesUseCase는 리팩토링으로 삭제됨 — 제외)
 
 ### 엔드포인트 매핑
 
 | 메서드 | 경로 | UseCase | 비고 |
 |--------|------|---------|------|
-| GET | `/api/v1/analytics/candles` | `GetCandleSeriesUseCase` | cursor, `?marketCodeId=&interval=&type=tick|premium` |
-| GET | `/api/v1/analytics/candles/mini` | `GetCandleMiniChartUseCase` | 고정 N개 (cursor 없음) |
-| GET | `/api/v1/analytics/candles/downsampled` | `GetCandleDownsampledUseCase` | cursor + bucket size |
-| GET | `/api/v1/analytics/indicators` | `GetIndicatorSeriesUseCase` | cursor |
-| GET | `/api/v1/analytics/indicators/latest` | `GetLatestIndicatorUseCase` | 단건 |
-| GET | `/api/v1/analytics/indicators/latest/multi` | `GetLatestIndicatorMultiMarketUseCase` | `?marketCodeIds=1,2,3` |
-| GET | `/api/v1/analytics/screener` | `GetScreenerUseCase` | offset, 다수 옵셔널 필터 |
-| GET | `/api/v1/analytics/candles/last-closed` | `GetLastClosedBucketUseCase` | 메타 |
-| GET | `/api/v1/analytics/candles-with-premium` | `GetCandleAndPremiumSeriesUseCase` | cursor (이미 query에서 합성) |
+| GET | `/api/v1/analytics/candles` | tick/premium Series | ?type=tick\|premium |
+| GET | `/api/v1/analytics/candles/mini` | tick/premium MiniChart | ?limit= |
+| GET | `/api/v1/analytics/candles/downsampled` | tick/premium Downsampled | ?targetBucketSeconds= |
+| GET | `/api/v1/analytics/candles/last-closed` | GetLastClosedBucketUseCase | ?type=tick\|premium\|premium-detail |
+| GET | `/api/v1/analytics/indicators` | tick/premium IndicatorSeries | ?type=tick\|premium |
+| GET | `/api/v1/analytics/indicators/latest` | tick/premium LatestIndicator | 단건 |
+| GET | `/api/v1/analytics/indicators/latest/multi` | GetLatestIndicatorMultiMarketUseCase | ?marketCodeIds=1,2,3 |
+| GET | `/api/v1/analytics/screener` | GetScreenerUseCase | ?type=tick\|premium, single condition |
 
 ### 파일 트리
 
 ```
 modules/api/src/main/java/com/example/demo/api/
 └── controller/analytics/
-    ├── CandleController.java                                             [ TODO ]  series, mini, downsampled, last-closed, with-premium
-    ├── IndicatorController.java                                          [ TODO ]  series, latest, latest-multi
-    └── ScreenerController.java                                           [ TODO ]
+    ├── CandleController.java                                             [DONE]
+    ├── IndicatorController.java                                          [DONE]
+    └── ScreenerController.java                                           [DONE]
 ```
-
-`controller/economic/IndicatorController`와 클래스명 충돌 → 패키지로 분리되므로 OK. import 시 풀 패키지 사용.
 
 ---
 
@@ -337,10 +334,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 4: analytics 컨트롤러) |
-| **첫 번째 시작 파일** | `controller/analytics/CandleController.java` |
-| **다음 할 일** | 단계 4 — analytics 컨트롤러 3파일: CandleController (tick/premium/downsampled/mini/last-closed), IndicatorController (series/latest/multi), ScreenerController |
-| **선결 작업** | analytics_query ScreenerResult 타입 (TickScreenerResult, PremiumScreenerResult) 확인 필요 |
+| **현재 작업 모듈** | `api` (단계 5: market 컨트롤러) |
+| **첫 번째 시작 파일** | `controller/market/TickController.java` |
+| **다음 할 일** | 단계 5 — market_data_query UseCase 10종: TickController, PremiumController, PremiumDetailController, FxController |
+| **선결 작업** | market_data_query UseCase 파라미터 확인 필요 |
 
 ---
 
