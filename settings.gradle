@@ -6,7 +6,8 @@ include ':contracts',
         ':economic_ind_shard',':fred',':crawling',
         ':fx_ingestion',
         ':market_data', ':meta_data', ':trading',':analytics',
-        ':market_data_query',':meta_data_query',':analytics_query',':economic_query'
+        ':market_data_query',':meta_data_query',':analytics_query',':economic_query',
+        ':api'
 
 
 
@@ -30,3 +31,4 @@ project(':market_data_query').projectDir = file('modules/query/market_data_query
 project(':meta_data_query').projectDir = file('modules/query/meta_data_query')
 project(':analytics_query').projectDir = file('modules/query/analytics_query')
 project(':economic_query').projectDir = file('modules/query/economic_query')
+project(':api').projectDir = file('modules/api')
