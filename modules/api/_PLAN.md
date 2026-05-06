@@ -228,17 +228,17 @@ modules/api/src/main/java/com/example/demo/api/
 
 ---
 
-## 6. composition (합성 엔드포인트)
+## 6. composition (합성 엔드포인트) ✅ DONE
 
-**책임**: 여러 query UseCase를 호출해 혼합 응답 생성. `_PLAN.md` 정책 「혼합 도메인 응답은 query 모듈에서 만들지 않는다」의 위치.
+**책임**: 여러 query UseCase를 호출해 혼합 응답 생성.
 
-### 엔드포인트 (예시 — 프런트 요구 명확해질 때 추가)
+### 엔드포인트
 
 | 메서드 | 경로 | 합성 |
 |--------|------|------|
-| GET | `/api/v1/compose/market-overview/{marketCodeId}` | `GetLatestTick` + `GetPremiumSnapshotByBase` + `GetLatestIndicator` |
-| GET | `/api/v1/compose/chart/{marketCodeId}` | `GetCandleSeriesUseCase` + `GetIndicatorSeriesUseCase` (interval 동기화) |
-| GET | `/api/v1/compose/dashboard` | 다중 마켓 latest tick + premium ranking + 경제 캘린더 (홈 화면용) |
+| GET | `/api/v1/compose/market-overview/{marketCodeId}` | `GetLatestTick` + `GetPremiumSnapshotByBase` + `GetLatestIndicatorMultiMarket` |
+| GET | `/api/v1/compose/chart/{marketCodeId}` | `GetTickCandleSeries` + `GetTickIndicatorSeries` |
+| GET | `/api/v1/compose/dashboard` | `GetLatestTickBulk` + `GetPremiumRanking` + `GetEconomicCalendar` |
 
 ### 파일 트리
 
@@ -246,20 +246,18 @@ modules/api/src/main/java/com/example/demo/api/
 modules/api/src/main/java/com/example/demo/api/
 └── composition/
     ├── service/
-    │   ├── MarketOverviewService.java                                    [ TODO ]  여러 UseCase 호출 + 조합
-    │   ├── ChartCompositionService.java                                  [ TODO ]
-    │   └── DashboardService.java                                         [ TODO ]
+    │   ├── MarketOverviewService.java                                    [DONE]
+    │   ├── ChartCompositionService.java                                  [DONE]
+    │   └── DashboardService.java                                         [DONE]
     ├── dto/
-    │   ├── MarketOverviewResponse.java                                   [ TODO ]  record
-    │   ├── ChartResponse.java                                            [ TODO ]  record
-    │   └── DashboardResponse.java                                        [ TODO ]  record
+    │   ├── MarketOverviewResponse.java                                   [DONE]
+    │   ├── ChartResponse.java                                            [DONE]
+    │   └── DashboardResponse.java                                        [DONE]
     └── controller/
-        ├── MarketOverviewController.java                                 [ TODO ]
-        ├── ChartController.java                                          [ TODO ]
-        └── DashboardController.java                                      [ TODO ]
+        ├── MarketOverviewController.java                                 [DONE]
+        ├── ChartController.java                                          [DONE]
+        └── DashboardController.java                                      [DONE]
 ```
-
-> 합성 엔드포인트는 프런트가 실제 화면을 그릴 때 요구사항 도출. 지금 단계에선 placeholder만, 단계 6 진입 시 구체화.
 
 ---
 
@@ -334,10 +332,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 6: composition 합성 엔드포인트) |
-| **첫 번째 시작 파일** | `composition/dto/MarketOverviewResponse.java` |
-| **다음 할 일** | 단계 6 — composition: MarketOverviewService+Controller, ChartCompositionService+Controller, DashboardService+Controller (placeholder 구현 포함) |
-| **선결 작업** | 없음 (단계 1~5 모두 컴파일 성공 확인) |
+| **현재 작업 모듈** | `api` (단계 7: stream SSE) |
+| **첫 번째 시작 파일** | `stream/sink/MarketDataStream.java` |
+| **다음 할 일** | 단계 7 — stream: build.gradle에 reactor-core + spring-kafka 추가, MarketDataStream/AnalyticsStream Sink, StreamKafkaConfig, 4개 Consumer, 4개 SseHandler, StreamController |
+| **선결 작업** | build.gradle에 reactor-core, spring-kafka dependency 추가 필요 |
 
 ---
 
