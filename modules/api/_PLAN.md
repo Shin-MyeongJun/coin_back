@@ -137,40 +137,33 @@ modules/api/src/main/java/com/example/demo/api/
 
 ---
 
-## 3. economic 컨트롤러
+## 3. economic 컨트롤러 ✅ DONE
 
 **호출 대상**: `economic_query` UseCase 6종
 
 ### 엔드포인트 매핑
 
-| 메서드 | 경로 | UseCase | 페이징 |
+| 메서드 | 경로 | UseCase | 비고 |
 |--------|------|---------|--------|
-| GET | `/api/v1/economic/indicators/{code}/series` | `GetIndicatorSeriesUseCase` | cursor (시계열) |
-| GET | `/api/v1/economic/calendar` | `GetEconomicCalendarUseCase` | offset |
-| GET | `/api/v1/economic/indicators/{code}` | `GetIndicatorMetaUseCase` | — (단건) |
-| GET | `/api/v1/economic/indicators` | `GetIndicatorListByCategoryUseCase` | offset, `?category=` |
-| GET | `/api/v1/economic/indicators/{code}/change-rate` | `GetIndicatorChangeRateUseCase` | cursor |
-| GET | `/api/v1/economic/correlation` | `GetCorrelationResultUseCase` | offset, `?asset=&indicator=` |
+| GET | `/api/v1/economic/indicators/{codeId}/series` | `GetIndicatorSeriesUseCase` | ?fromTs=&toTs= |
+| GET | `/api/v1/economic/calendar` | `GetEconomicCalendarUseCase` | ?fromTs=&toTs= |
+| GET | `/api/v1/economic/indicators/{codeId}` | `GetIndicatorMetaUseCase` | 단건 |
+| GET | `/api/v1/economic/indicators` | `GetIndicatorListByCategoryUseCase` or All | ?category= |
+| GET | `/api/v1/economic/indicators/{codeId}/change-rate` | `GetIndicatorChangeRateUseCase` | raw list |
+| GET | `/api/v1/economic/correlation` | `GetCorrelationResultUseCase` | ?asset= |
 
 ### 파일 트리
 
 ```
 modules/api/src/main/java/com/example/demo/api/
+├── common/
+│   ├── CursorPage.java                                                   [DONE]  record (items, nextCursor, hasMore)
+│   └── OffsetPage.java                                                   [DONE]  record (items, page, size, total)
 └── controller/economic/
-    ├── IndicatorController.java                                          [ TODO ]  series, meta, list, change-rate
-    ├── EconomicCalendarController.java                                   [ TODO ]
-    └── CorrelationController.java                                        [ TODO ]
+    ├── IndicatorController.java                                          [DONE]  series, meta, list, change-rate
+    ├── EconomicCalendarController.java                                   [DONE]
+    └── CorrelationController.java                                        [DONE]
 ```
-
-```
-modules/api/src/main/java/com/example/demo/api/
-└── common/
-    ├── CursorPage.java                                                   [ TODO ]  record (items, nextCursor, hasMore)
-    ├── OffsetPage.java                                                   [ TODO ]  record (items, page, size, total)
-    └── CursorRequest.java                                                [ TODO ]  record (cursor, limit), 검증 포함
-```
-
-`common/`은 economic 단계에서 처음 등장. 이후 단계에서 재사용.
 
 ---
 
@@ -344,10 +337,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 3: economic 컨트롤러) |
-| **첫 번째 시작 파일** | `common/CursorPage.java`, `common/OffsetPage.java`, `common/CursorRequest.java` (공통 envelope 먼저) |
-| **다음 할 일** | 단계 3 — economic_query UseCase 시그니처 확인 후 IndicatorController, EconomicCalendarController, CorrelationController 작성. common/ envelope 3파일 선행 |
-| **선결 작업** | economic_query UseCase 파라미터 확인 필요 |
+| **현재 작업 모듈** | `api` (단계 4: analytics 컨트롤러) |
+| **첫 번째 시작 파일** | `controller/analytics/CandleController.java` |
+| **다음 할 일** | 단계 4 — analytics 컨트롤러 3파일: CandleController (tick/premium/downsampled/mini/last-closed), IndicatorController (series/latest/multi), ScreenerController |
+| **선결 작업** | analytics_query ScreenerResult 타입 (TickScreenerResult, PremiumScreenerResult) 확인 필요 |
 
 ---
 
