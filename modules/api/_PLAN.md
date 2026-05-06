@@ -261,7 +261,7 @@ modules/api/src/main/java/com/example/demo/api/
 
 ---
 
-## 7. stream (SSE)
+## 7. stream (SSE) ✅ DONE
 
 **책임**: Kafka에 흐르는 실시간 이벤트(tick, premium, candle close, indicator close)를 SSE로 클라이언트에 푸시.
 
@@ -269,10 +269,10 @@ modules/api/src/main/java/com/example/demo/api/
 
 | 메서드 | 경로 | 이벤트 |
 |--------|------|--------|
-| GET | `/api/v1/stream/ticks` | `tick` 토픽 (쿼리: `?marketCodeId=`) |
-| GET | `/api/v1/stream/premium` | `market-data.premium` 토픽 |
-| GET | `/api/v1/stream/candles/close` | `analytics.tick-candle-close` 등 |
-| GET | `/api/v1/stream/indicators/close` | `analytics.tick-indicator-close` 등 |
+| GET | `/api/v1/stream/ticks` | `market-data.tick` (쿼리: `?marketCodeId=`) |
+| GET | `/api/v1/stream/premium` | `market-data.premium` |
+| GET | `/api/v1/stream/candles/close` | `analytics.tick-candle` / `analytics.premium-candle` (?type=) |
+| GET | `/api/v1/stream/indicators/close` | `analytics.tick-indicator` / `analytics.premium-indicator` (?type=) |
 
 ### 파일 트리
 
@@ -280,40 +280,29 @@ modules/api/src/main/java/com/example/demo/api/
 modules/api/src/main/java/com/example/demo/api/
 └── stream/
     ├── config/
-    │   └── StreamKafkaConfig.java                                        [ TODO ]  consumer factory, 조회 전용 group-id
+    │   └── StreamKafkaConfig.java                                        [DONE]  StringDeserializer, UUID group-id
     ├── consumer/
-    │   ├── TickStreamConsumer.java                                       [ TODO ]  @KafkaListener → MarketDataStream
-    │   ├── PremiumStreamConsumer.java                                    [ TODO ]
-    │   ├── CandleCloseStreamConsumer.java                                [ TODO ]
-    │   └── IndicatorCloseStreamConsumer.java                             [ TODO ]
+    │   ├── TickStreamConsumer.java                                       [DONE]
+    │   ├── PremiumStreamConsumer.java                                    [DONE]
+    │   ├── CandleCloseStreamConsumer.java                                [DONE]  tick-candle + premium-candle
+    │   └── IndicatorCloseStreamConsumer.java                             [DONE]  tick-indicator + premium-indicator
     ├── sink/
-    │   ├── MarketDataStream.java                                         [ TODO ]  Sinks.Many<Tick>, Sinks.Many<Premium>
-    │   └── AnalyticsStream.java                                          [ TODO ]  Sinks.Many<CloseCandle>, Sinks.Many<CloseIndicator>
+    │   ├── MarketDataStream.java                                         [DONE]  Sinks.Many<TickMessage>, Sinks.Many<PremiumMessage>
+    │   └── AnalyticsStream.java                                          [DONE]  Sinks.Many<TickCandleMessage> etc.
     ├── handler/
-    │   ├── TickSseHandler.java                                           [ TODO ]  SseEmitter, 필터링(marketCodeId)
-    │   ├── PremiumSseHandler.java                                        [ TODO ]
-    │   ├── CandleCloseSseHandler.java                                    [ TODO ]
-    │   └── IndicatorCloseSseHandler.java                                 [ TODO ]
+    │   ├── TickSseHandler.java                                           [DONE]  marketCodeId 필터링
+    │   ├── PremiumSseHandler.java                                        [DONE]
+    │   ├── CandleCloseSseHandler.java                                    [DONE]
+    │   └── IndicatorCloseSseHandler.java                                 [DONE]
     └── controller/
-        └── StreamController.java                                         [ TODO ]  4개 GET 엔드포인트, handler 위임
+        └── StreamController.java                                         [DONE]
 ```
 
-### Kafka 토픽 / Consumer 그룹
+### 구현 결정사항
 
-- 토픽명: 기존 컨벤션 그대로 (`{소스모듈}.{데이터타입}`). api 모듈은 publish 안 함, consume only
-- group-id: `api.stream.{도메인}.v1` (다른 모듈 그룹과 충돌 금지)
-- 다중 인스턴스 시: 모든 인스턴스가 모든 메시지 수신해야 fanout이 맞음 → **인스턴스마다 group-id 고유화** 또는 Redis Pub/Sub 브릿지로 전환
-
-### Sink 정책
-
-```java
-Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
-// SSE 핸들러: tickSink.asFlux().filter(t -> matches(criteria)).subscribe(emitter::send)
-```
-
-- multicast (한 메시지 → N 구독자)
-- backpressure buffer (느린 클라이언트 보호, 임계 초과 시 emitter 종료)
-- emitter 타임아웃: 30분, 클라이언트 자동 재연결에 의존
+- StringDeserializer + ObjectMapper 방식 (타입별 consumer factory 없음)
+- 인스턴스마다 UUID group-id → 전체 메시지 fanout 보장
+- emitter 타임아웃 30분, Disposable을 onCompletion/onTimeout/onError 시 해제
 
 ---
 
@@ -332,10 +321,10 @@ Sinks.Many<Tick> tickSink = Sinks.many().multicast().onBackpressureBuffer();
 
 | 항목 | 내용 |
 |------|------|
-| **현재 작업 모듈** | `api` (단계 7: stream SSE) |
-| **첫 번째 시작 파일** | `stream/sink/MarketDataStream.java` |
-| **다음 할 일** | 단계 7 — stream: build.gradle에 reactor-core + spring-kafka 추가, MarketDataStream/AnalyticsStream Sink, StreamKafkaConfig, 4개 Consumer, 4개 SseHandler, StreamController |
-| **선결 작업** | build.gradle에 reactor-core, spring-kafka dependency 추가 필요 |
+| **현재 작업 모듈** | `api` — 전체 7단계 구현 완료 |
+| **첫 번째 시작 파일** | 없음 |
+| **다음 할 일** | 검증: ./gradlew :api:bootRun 정상 기동 확인. 이후 실제 DB/Kafka 연결 테스트 진행 |
+| **선결 작업** | 없음 (모든 단계 컴파일 성공 확인) |
 
 ---
 
