@@ -1,0 +1,135 @@
+package com.example.demo.market_data.infrastructure.cache.redis;
+
+// NOTE: Docker이 실행 중이어야 합니다. Docker 미가용 환경에서는 이 테스트를 스킵하세요.
+
+import com.example.demo.infra_shard.redis.RedisKeys;
+import com.example.demo.market_data.domain.domain.Tick;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
+@Testcontainers
+class TickLatestRedisWriteAdapterTest {
+
+    @Container
+    static final GenericContainer<?> redis =
+            new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
+
+    private static StringRedisTemplate redisTemplate;
+
+    TickLatestRedisWriteAdapter sut;
+
+    @BeforeAll
+    static void setUpRedis() {
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(
+                redis.getHost(), redis.getMappedPort(6379));
+        factory.afterPropertiesSet();
+        redisTemplate = new StringRedisTemplate(factory);
+        redisTemplate.afterPropertiesSet();
+    }
+
+    @BeforeEach
+    void setUp() {
+        sut = new TickLatestRedisWriteAdapter(redisTemplate);
+        redisTemplate.execute((RedisCallback<Void>) conn -> { conn.serverCommands().flushAll(); return null; });
+    }
+
+    private static Tick tick(long id, String bid, String ask, long ts) {
+        return new Tick(id, new BigDecimal(bid), new BigDecimal(ask), ts);
+    }
+
+    @Test
+    @DisplayName("upsertAll — 키가 RedisKeys.tickLatest('local', marketCodeId) 와 정확히 일치")
+    void upsertAll_keyMatchesRedisKeys() {
+        // given
+        Tick t = tick(42L, "50000", "50100", 9_999L);
+        String expectedKey = RedisKeys.tickLatest("local", 42L);
+
+        // when
+        sut.upsertAll(List.of(t));
+
+        // then
+        assertThat(redisTemplate.hasKey(expectedKey)).isTrue();
+    }
+
+    @Test
+    @DisplayName("upsertAll — bid·ask·ts 필드 값이 정확히 저장됨")
+    void upsertAll_fieldsStoredCorrectly() {
+        // given
+        Tick t = tick(1L, "50000.12345678", "50100.98765432", 8_888L);
+        String key = RedisKeys.tickLatest("local", 1L);
+
+        // when
+        sut.upsertAll(List.of(t));
+
+        // then
+        Map<Object, Object> fields = redisTemplate.opsForHash().entries(key);
+        assertThat(fields)
+                .containsEntry("bid", t.bid().toPlainString())
+                .containsEntry("ask", t.ask().toPlainString())
+                .containsEntry("ts",  Long.toString(t.timestamp()));
+    }
+
+    @Test
+    @DisplayName("upsertAll — TTL이 설정됨(양수)")
+    void upsertAll_ttlIsPositive() {
+        // given
+        Tick t = tick(2L, "50000", "50100", 1_000L);
+        String key = RedisKeys.tickLatest("local", 2L);
+
+        // when
+        sut.upsertAll(List.of(t));
+
+        // then
+        Long ttl = redisTemplate.getExpire(key);
+        assertThat(ttl).isPositive();
+    }
+
+    @Test
+    @DisplayName("upsertAll — 빈 리스트 전달 시 키 미생성(no-op)")
+    void upsertAll_emptyList_noKeyCreated() {
+        // given
+        String key = RedisKeys.tickLatest("local", 99L);
+
+        // when
+        sut.upsertAll(List.of());
+
+        // then
+        assertThat(redisTemplate.hasKey(key)).isFalse();
+    }
+
+    @Test
+    @DisplayName("upsert(null) — 예외 없이 무시됨")
+    void upsert_null_noException() {
+        assertThatNoException().isThrownBy(() -> sut.upsert(null));
+    }
+
+    @Test
+    @DisplayName("upsertAll — 여러 Tick 동시 저장: 각 marketCodeId 키 별도 생성")
+    void upsertAll_multipleTicks_eachKeyCreated() {
+        // given
+        Tick t1 = tick(10L, "50000", "50100", 1_000L);
+        Tick t2 = tick(20L, "36000", "36100", 2_000L);
+
+        // when
+        sut.upsertAll(List.of(t1, t2));
+
+        // then
+        assertThat(redisTemplate.hasKey(RedisKeys.tickLatest("local", 10L))).isTrue();
+        assertThat(redisTemplate.hasKey(RedisKeys.tickLatest("local", 20L))).isTrue();
+    }
+}
