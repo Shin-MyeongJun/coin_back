@@ -4,7 +4,6 @@ import com.example.demo.infra_shard.messaging.mapper.RawToDomain;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorCode;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorValue;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicRawIndicator;
-import com.example.demo.ingestion.economic.economic_ind.domain.enums.ReleaseFrequency;
 import com.example.demo.ingestion.economic.economic_ind.infrastructure.dto.FredObservationResultDto;
 import org.springframework.stereotype.Component;
 

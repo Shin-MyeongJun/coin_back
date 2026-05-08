@@ -71,7 +71,15 @@
       "WebSearch",
       "Bash(./gradlew test *)",
       "Bash(./gradlew :analytics:test :market_data:test --rerun-tasks -q)",
-      "Bash(./gradlew :analytics:test :market_data:test --rerun-tasks)"
+      "Bash(./gradlew :analytics:test :market_data:test --rerun-tasks)",
+      "Bash(./gradlew compileJava compileTestJava --warning-mode all)",
+      "Bash(sed -i '/^import java\\\\.util\\\\.ArrayList;$/d' modules/analytics/src/test/java/com/example/demo/analystics/domain/store/candle/TickCandleStoreTest.java)",
+      "Bash(sed -i '/^import java\\\\.util\\\\.ArrayList;$/d' modules/market_data/src/test/java/com/example/demo/market_data/domain/buffer/TickBufferTest.java)",
+      "Bash(sed -i '/^import java\\\\.util\\\\.List;$/d' modules/economic/economic_ind/crawling/src/test/java/com/example/demo/economic/crawling/application/usecase/BurstEcoIndFetchServiceTest.java)",
+      "Bash(sed -i '/^import com\\\\.example\\\\.demo\\\\.analystics\\\\.domain\\\\.domain\\\\.key\\\\.IndicatorKey;$/d' modules/analytics/src/test/java/com/example/demo/analystics/domain/store/indicator/TickIndicatorStoreTest.java)",
+      "Bash(sed -i '/^import org\\\\.springframework\\\\.boot\\\\.context\\\\.properties\\\\.EnableConfigurationProperties;$/d' modules/economic/economic_ind/crawling/src/main/java/com/example/demo/economic/crawling/CrawlingEcoApplication.java)",
+      "Bash(sed -i '/^import com\\\\.example\\\\.demo\\\\.ingestion\\\\.economic\\\\.economic_ind\\\\.domain\\\\.enums\\\\.ReleaseFrequency;$/d' modules/economic/economic_ind/fred/src/main/java/com/example/demo/ingestion/economic/economic_ind/infrastructure/parer/FredIndMapper.java)",
+      "Bash(sed -i '/^import java\\\\.util\\\\.Optional;$/d' modules/query/analytics_query/src/main/java/com/example/demo/analytics_query/infrastructure/persistence/repo/PremiumIndicatorJpaRepository.java)"
     ]
   }
 }

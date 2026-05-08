@@ -3,7 +3,6 @@ package com.example.demo.analystics.domain.store.indicator;
 import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.indicator.close.TickCloseIndicator;
 import com.example.demo.analystics.domain.domain.indicator.open.TickIndicator;
-import com.example.demo.analystics.domain.domain.key.IndicatorKey;
 import com.example.demo.analystics.domain.domain.key.TickKey;
 import com.example.demo.analystics.domain.factory.indicator.value.TickIndicatorFactory;
 import com.example.demo.analystics.domain.service.ClosingData;
