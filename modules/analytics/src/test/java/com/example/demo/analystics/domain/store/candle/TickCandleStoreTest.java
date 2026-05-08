@@ -139,19 +139,19 @@ class TickCandleStoreTest {
     void update_concurrent_noDataLoss() throws InterruptedException {
         // given
         int threadCount = 20;
-        ExecutorService pool = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         // when
-        for (int i = 0; i < threadCount; i++) {
-            long id = i;
-            pool.submit(() -> {
-                sut.update(new TickKey(id), new BigDecimal(String.valueOf(id * 100)));
-                latch.countDown();
-            });
+        try (ExecutorService pool = Executors.newFixedThreadPool(threadCount)) {
+            for (int i = 0; i < threadCount; i++) {
+                long id = i;
+                pool.submit(() -> {
+                    sut.update(new TickKey(id), new BigDecimal(String.valueOf(id * 100)));
+                    latch.countDown();
+                });
+            }
+            latch.await();
         }
-        latch.await();
-        pool.shutdown();
 
         // then — threadCount 개의 서로 다른 key → M1 buffer에 threadCount candle 존재
         assertThat(sut.getCandles(Interval.M1)).hasSize(threadCount);

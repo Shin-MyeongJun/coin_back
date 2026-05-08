@@ -150,14 +150,15 @@ class CalPremiumManagerTest {
     @DisplayName("handling — codeGetter(B tick) empty → 중단: buffer 미호출")
     void handling_codeGetterB_empty_noPublish() {
         // given — 등록은 정상, handling 내 mcB(idA) 조회 2번째 empty
+        // handling(a=tick(2L), b=tick(1L)) 흐름:
+        //   codeGetter(2L)[call2]=mcA → 정상, codeGetter(1L)[call2]=mcB → empty → 중단
         given(codeGetter.get(1L))
                 .willReturn(Optional.of(mc(10L, "BTC")))
                 .willReturn(Optional.empty()); // handling 내 mcB
         given(codeGetter.get(2L)).willReturn(Optional.of(mc(20L, "BTC")));
         given(tickGetter.get(1L)).willReturn(Optional.of(tick(1L, "50000000", "50100000")));
         given(tickGetter.get(2L)).willReturn(Optional.of(tick(2L, "36000", "36100")));
-        // exA 조회까지 가지 않도록 mcB가 먼저 empty 반환
-        given(exchangeGetter.get(20L)).willReturn(Optional.of(ex("Binance", "USDT")));
+        // mcB가 empty를 반환하므로 exchangeGetter는 호출되지 않음 — stub 불필요
 
         sut.cal(1L);
 
@@ -350,38 +351,37 @@ class CalPremiumManagerTest {
     @DisplayName("동시성 — N 스레드 동시 cal() 호출 시 marketCodeList 손실 없음")
     void cal_concurrency_noLossInMarketCodeList() throws InterruptedException {
         // given
+        // 모든 id를 동일 exchangeId=99L에 매핑 → exchangeGetter stub이 하나만 필요 (unused stub 방지)
         int n = 10;
         long[] ids = new long[n];
         for (int i = 0; i < n; i++) {
             ids[i] = (long) (i + 1);
             final long id = ids[i];
-            final long exId = (long) (i + 10);
-            given(codeGetter.get(id)).willReturn(Optional.of(mc(exId, "ETH")));
+            given(codeGetter.get(id)).willReturn(Optional.of(mc(99L, "ETH")));
             given(tickGetter.get(id)).willReturn(Optional.of(tick(id, "2000", "2001")));
-            given(exchangeGetter.get(exId)).willReturn(Optional.empty()); // handling 조기 중단
         }
+        given(exchangeGetter.get(99L)).willReturn(Optional.empty()); // 모든 handling 조기 중단
 
         CountDownLatch ready = new CountDownLatch(1);
         CountDownLatch done  = new CountDownLatch(n);
-        ExecutorService pool = Executors.newFixedThreadPool(n);
+        try (ExecutorService pool = Executors.newFixedThreadPool(n)) {
+            for (long id : ids) {
+                pool.submit(() -> {
+                    try {
+                        ready.await();
+                        sut.cal(id);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        done.countDown();
+                    }
+                });
+            }
 
-        for (long id : ids) {
-            pool.submit(() -> {
-                try {
-                    ready.await();
-                    sut.cal(id);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    done.countDown();
-                }
-            });
+            // when
+            ready.countDown();
+            assertThat(done.await(5, TimeUnit.SECONDS)).isTrue();
         }
-
-        // when
-        ready.countDown();
-        assertThat(done.await(5, TimeUnit.SECONDS)).isTrue();
-        pool.shutdown();
 
         // then — 모든 id가 marketCodeList에 누적됐으면 이후 임의 id cal() 시 전부 페어링 시도
         // 추가 cal(ids[0]) 으로 나머지 모든 id의 tick 조회가 발생했는지 간접 검증

@@ -106,16 +106,30 @@ class TickBufferTest {
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch done  = new CountDownLatch(writers + 1);
         CopyOnWriteArrayList<Tick> flushed = new CopyOnWriteArrayList<>();
-        ExecutorService pool = Executors.newFixedThreadPool(writers + 1);
+        try (ExecutorService pool = Executors.newFixedThreadPool(writers + 1)) {
+            // writer threads
+            for (int w = 0; w < writers; w++) {
+                final int wId = w;
+                pool.submit(() -> {
+                    try {
+                        start.await();
+                        for (int i = 0; i < itemsPerWriter; i++) {
+                            sut.add(tick((long) (wId * 100 + i), "100", "101"));
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        done.countDown();
+                    }
+                });
+            }
 
-        // writer threads
-        for (int w = 0; w < writers; w++) {
-            final int wId = w;
+            // reader thread
             pool.submit(() -> {
                 try {
                     start.await();
-                    for (int i = 0; i < itemsPerWriter; i++) {
-                        sut.add(tick((long) (wId * 100 + i), "100", "101"));
+                    for (int i = 0; i < 10; i++) {
+                        flushed.addAll(sut.flush());
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -123,26 +137,11 @@ class TickBufferTest {
                     done.countDown();
                 }
             });
+
+            // when
+            start.countDown();
+            assertThat(done.await(5, TimeUnit.SECONDS)).isTrue();
         }
-
-        // reader thread
-        pool.submit(() -> {
-            try {
-                start.await();
-                for (int i = 0; i < 10; i++) {
-                    flushed.addAll(sut.flush());
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                done.countDown();
-            }
-        });
-
-        // when
-        start.countDown();
-        assertThat(done.await(5, TimeUnit.SECONDS)).isTrue();
-        pool.shutdown();
 
         // then — 예외 없이 완료됨이 곧 ConcurrentHashMap의 thread-safety 검증
         assertThat(flushed).allSatisfy(t -> assertThat(t).isNotNull());
