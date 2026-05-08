@@ -15,14 +15,18 @@ import com.example.demo.ingestion.economic.economic_ind.infrastructure.persisten
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InOrder;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.inOrder;
@@ -38,19 +42,31 @@ class CrawlingScheduledScheduleServiceTest {
     @Mock EcoScheduleCache ecoScheduleCache;
     @Mock DynamicSchedulingPort dynamicSchedulingPort;
 
-    @InjectMocks
     CrawlingScheduledScheduleService sut;
+
+    @BeforeEach
+    void setUp() {
+        // Explicit constructor to avoid @InjectMocks swapping the two EntityToDomain mocks (generic erasure)
+        sut = new CrawlingScheduledScheduleService(
+                codeRepository, scheduleRepository, codeMapper, scheduleMapper,
+                ecoIndCodeCache, ecoScheduleCache, dynamicSchedulingPort);
+    }
 
     @Test
     @DisplayName("process — 코드 캐시·스케줄 캐시 갱신 후 adjustSchedule 호출")
     void process_refreshesCaches_thenAdjustsSchedule() {
-        EcoIndCodeEntity codeEntity = EcoIndCodeEntity.builder().build();
-        codeEntity.setId(1L);
         EconomicIndicatorCode code = EconomicIndicatorCode.of("US", "NFP", ReleaseFrequency.MONTHLY, IndicatorUnit.COUNT);
-
-        EconomicScheduleEntity scheduleEntity = EconomicScheduleEntity.builder().build();
-        scheduleEntity.setId(10L);
         EconomicSchedule schedule = new EconomicSchedule("US_NFP_MONTHLY_1000", code, 1_000L);
+
+        // Set JPA-managed id via reflection (no setter, @GeneratedValue field)
+        EcoIndCodeEntity codeEntity = EcoIndCodeEntity.builder()
+                .indicatorCode("US_NFP_MONTHLY").country("US").type("NFP")
+                .frequency(ReleaseFrequency.MONTHLY).unit(IndicatorUnit.COUNT).build();
+        ReflectionTestUtils.setField(codeEntity, "id", 1L);
+
+        EconomicScheduleEntity scheduleEntity = EconomicScheduleEntity.builder()
+                .releaseCode("US_NFP_MONTHLY_1000").releaseDate(1_000L).build();
+        ReflectionTestUtils.setField(scheduleEntity, "id", 10L);
 
         given(codeRepository.findAll()).willReturn(List.of(codeEntity));
         given(codeMapper.toDomain(codeEntity)).willReturn(code);
@@ -73,6 +89,8 @@ class CrawlingScheduledScheduleServiceTest {
 
         sut.process();
 
+        then(ecoIndCodeCache).should().put(anyMap());
+        then(ecoScheduleCache).should().put(anyMap());
         then(dynamicSchedulingPort).should().adjustSchedule();
     }
 }
