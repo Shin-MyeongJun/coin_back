@@ -355,7 +355,7 @@ class CalPremiumManagerTest {
         int n = 10;
         long[] ids = new long[n];
         for (int i = 0; i < n; i++) {
-            ids[i] = (long) (i + 1);
+            ids[i] = i + 1;
             final long id = ids[i];
             given(codeGetter.get(id)).willReturn(Optional.of(mc(99L, "ETH")));
             given(tickGetter.get(id)).willReturn(Optional.of(tick(id, "2000", "2001")));

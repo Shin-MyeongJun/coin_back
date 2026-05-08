@@ -113,7 +113,7 @@ class TickBufferTest {
                     try {
                         start.await();
                         for (int i = 0; i < itemsPerWriter; i++) {
-                            sut.add(tick((long) (wId * 100 + i), "100", "101"));
+                            sut.add(tick(wId * 100 + i, "100", "101"));
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();

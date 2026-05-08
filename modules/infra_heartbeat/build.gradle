@@ -138,7 +138,6 @@ dependencyManagement {
 
 hibernate {
 	enhancement {
-		enableAssociationManagement = true
 	}
 }
 
