@@ -93,6 +93,13 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.5.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+	// Testcontainers
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:kafka'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'com.redis:testcontainers-redis:2.2.2'
+	testImplementation 'org.awaitility:awaitility:4.2.2'
+
 	// WebFlux: WebClient & WebSocket support
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'io.projectreactor.netty:reactor-netty'

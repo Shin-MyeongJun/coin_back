@@ -93,6 +93,11 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.5.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+	// Testcontainers
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'org.awaitility:awaitility:4.2.2'
+
 	// WebFlux: WebClient & WebSocket support
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'io.projectreactor.netty:reactor-netty'
@@ -144,6 +149,12 @@ hibernate {
 
 tasks.named('bootBuildImage') {
 	builder = 'paketobuildpacks/builder-jammy-base:latest'
+}
+
+// NOTE: domain/factory/indicator/buffer/*.java reference missing IndicatorBuffer class (dead code)
+// Excluded to allow compilation. See COIN-BUG-002.
+compileJava {
+	exclude 'com/example/demo/analystics/domain/factory/indicator/buffer/**'
 }
 
 tasks.named('test') {

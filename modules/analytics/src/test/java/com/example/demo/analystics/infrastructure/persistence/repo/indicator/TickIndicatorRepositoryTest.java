@@ -84,7 +84,7 @@ class TickIndicatorRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        TickIndicatorEntity stored = found.get(0);
+        TickIndicatorEntity stored = found.getFirst();
         assertThat(stored.getMarketCodeId()).isEqualTo(99L);
         assertThat(stored.getInterval()).isEqualTo(Interval.M1);
         assertThat(stored.getType()).isEqualTo(TradeIndicatorType.EMA);

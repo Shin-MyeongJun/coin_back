@@ -27,4 +27,11 @@ dependencies {
     implementation(project(":contracts"))
     implementation(project(":infra_shard"))
     implementation(project(":economic_ind_shard"))
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

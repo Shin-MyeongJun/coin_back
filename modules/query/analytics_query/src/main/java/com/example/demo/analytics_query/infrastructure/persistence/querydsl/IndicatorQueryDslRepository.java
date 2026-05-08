@@ -41,7 +41,7 @@ public class IndicatorQueryDslRepository {
                 perConditionResults.stream().map(rows -> rows.stream()
                         .map(TickScreenerResult::marketCodeId).collect(java.util.stream.Collectors.toSet())).toList());
 
-        return perConditionResults.get(0).stream()
+        return perConditionResults.getFirst().stream()
                 .filter(r -> intersection.contains(r.marketCodeId()))
                 .toList();
     }
@@ -68,7 +68,7 @@ public class IndicatorQueryDslRepository {
                         .map(r -> premiumKey(r.symbol(), r.baseExchangeId(), r.compareExchangeId()))
                         .collect(java.util.stream.Collectors.toSet())).toList());
 
-        return perConditionResults.get(0).stream()
+        return perConditionResults.getFirst().stream()
                 .filter(r -> intersection.contains(premiumKey(r.symbol(), r.baseExchangeId(), r.compareExchangeId())))
                 .toList();
     }
@@ -94,13 +94,13 @@ public class IndicatorQueryDslRepository {
     }
 
     private Set<Long> intersectMarketCodeIds(List<Set<Long>> sets) {
-        Set<Long> result = new HashSet<>(sets.get(0));
+        Set<Long> result = new HashSet<>(sets.getFirst());
         for (int i = 1; i < sets.size(); i++) result.retainAll(sets.get(i));
         return result;
     }
 
     private Set<String> intersectPremiumKeys(List<Set<String>> sets) {
-        Set<String> result = new HashSet<>(sets.get(0));
+        Set<String> result = new HashSet<>(sets.getFirst());
         for (int i = 1; i < sets.size(); i++) result.retainAll(sets.get(i));
         return result;
     }

@@ -23,4 +23,17 @@ dependencies {
     implementation(project(":contracts"))
     implementation(project(":infra_shard"))
     implementation(project(":economic_ind_shard"))
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// NOTE: FredIndMapper and FredScheduleMapper have incomplete implementations (syntax errors).
+// Excluded to allow compilation. See COIN-BUG-003.
+compileJava {
+    exclude 'com/example/demo/ingestion/economic/economic_ind/infrastructure/parer/**'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

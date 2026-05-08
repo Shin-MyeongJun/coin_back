@@ -111,7 +111,7 @@ class TickIndicatorStoreTest {
         // then
         List<TickIndicator> indicators = sut.getIndicators(Interval.M1);
         assertThat(indicators).hasSize(1);
-        assertThat(indicators.get(0).getDataKey()).isEqualTo(key2);
+        assertThat(indicators.getFirst().getDataKey()).isEqualTo(key2);
     }
 
     @Test

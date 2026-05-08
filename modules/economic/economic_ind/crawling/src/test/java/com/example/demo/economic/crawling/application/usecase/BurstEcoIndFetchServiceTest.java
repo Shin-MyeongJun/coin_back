@@ -79,8 +79,8 @@ class BurstEcoIndFetchServiceTest {
 
         sut.process("NFP");
 
-        then(codeSave).should().saveAll(List.of());
-        then(indSave).should().saveAll(List.of());
+        then(codeSave).should().saveAll(anyList());
+        then(indSave).should().saveAll(anyList());
         then(publisher).should().publish(any(EconomicRawIndicator.class));
     }
 

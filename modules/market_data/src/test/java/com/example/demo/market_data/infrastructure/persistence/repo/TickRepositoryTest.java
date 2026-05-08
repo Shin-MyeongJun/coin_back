@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Testcontainers(disabledWithoutDocker = true)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DisabledInAotMode
 class TickRepositoryTest {
 
     @Container
@@ -75,7 +77,7 @@ class TickRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        TickEntity stored = found.get(0);
+        TickEntity stored = found.getFirst();
         assertThat(stored.getMarketCodeId()).isEqualTo(42L);
         assertThat(stored.getBid()).isEqualByComparingTo(new BigDecimal("50000.12345678"));
         assertThat(stored.getAsk()).isEqualByComparingTo(new BigDecimal("50100.98765432"));

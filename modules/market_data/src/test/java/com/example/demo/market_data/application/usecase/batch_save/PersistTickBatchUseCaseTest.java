@@ -16,8 +16,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 
@@ -93,7 +93,7 @@ class PersistTickBatchUseCaseTest {
     void flush_dbThrows_redisNotCalled() {
         // given
         buffer.add(tick(1L, "50000", "50100"));
-        given(dbAdapter.saveAll(anyList())).willThrow(new RuntimeException("DB error"));
+        willThrow(new RuntimeException("DB error")).given(dbAdapter).saveAll(anyList());
 
         // when
         org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> sut.flush());

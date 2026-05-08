@@ -58,7 +58,7 @@ class PremiumBufferTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).bid()).isEqualByComparingTo(new BigDecimal("2.0"));
+        assertThat(result.getFirst().bid()).isEqualByComparingTo(new BigDecimal("2.0"));
     }
 
     @Test

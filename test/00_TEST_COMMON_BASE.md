@@ -169,9 +169,9 @@ void xxx() {
 
 ## 모듈 우선순위 (전체 로드맵)
 
-1. `market_data`  ← 본 작업 시작점
-2. `analytics`
-3. `meta_data`
-4. `ingestion` (`exchange/*` + `fx_ingestion`)
-5. `economic` (`economic_ind_shard` + `fred` + `crawling`)
-6. `api`
+1. `market_data`  ← 완료
+2. `analytics`   ← 완료
+3. `meta_data`   ← 완료
+4. `ingestion` (`exchange/*` + `fx_ingestion`) ← 완료
+5. `economic` (`economic_ind_shard` + `fred` + `crawling`) ← 완료
+6. `api` ← 완료

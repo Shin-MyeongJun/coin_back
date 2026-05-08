@@ -42,7 +42,7 @@ class TickStreamConsumerTest {
 
         // then
         assertThat(received).hasSize(1);
-        assertThat(received.get(0)).usingRecursiveComparison().isEqualTo(expected);
+        assertThat(received.getFirst()).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
@@ -71,7 +71,7 @@ class TickStreamConsumerTest {
 
         // then
         assertThat(received).hasSize(2);
-        assertThat(received.get(0).marketCodeId()).isEqualTo(1L);
+        assertThat(received.getFirst().marketCodeId()).isEqualTo(1L);
         assertThat(received.get(1).marketCodeId()).isEqualTo(2L);
     }
 }

@@ -6,10 +6,10 @@ import com.example.demo.analystics.domain.domain.candle.close.TickCloseCandle;
 import com.example.demo.analystics.domain.domain.indicator.close.TickCloseIndicator;
 import com.example.demo.analystics.domain.domain.key.TickKey;
 import com.example.demo.analystics.domain.partition_registry.TickPartitionRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -32,8 +32,12 @@ class TickAnalyticsServiceTest {
     @Mock
     WriteAnalyticsValuePort<TickCloseIndicator> indicatorWriter;
 
-    @InjectMocks
     TickAnalyticsService sut;
+
+    @BeforeEach
+    void setUp() {
+        sut = new TickAnalyticsService(registry, candleWriter, indicatorWriter);
+    }
 
     @Test
     @DisplayName("onData — registry.update(partitionId, key, price) 위임")

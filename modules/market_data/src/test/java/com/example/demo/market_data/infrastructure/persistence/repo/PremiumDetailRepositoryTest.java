@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Testcontainers(disabledWithoutDocker = true)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DisabledInAotMode
 class PremiumDetailRepositoryTest {
 
     @Container
@@ -81,7 +83,7 @@ class PremiumDetailRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        PremiumDetailEntity stored = found.get(0);
+        PremiumDetailEntity stored = found.getFirst();
         assertThat(stored.getSymbol()).isEqualTo("BTC");
         assertThat(stored.getBaseExchangeId()).isEqualTo(10L);
         assertThat(stored.getCompareExchangeId()).isEqualTo(20L);

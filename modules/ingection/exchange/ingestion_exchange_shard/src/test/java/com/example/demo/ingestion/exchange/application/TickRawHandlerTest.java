@@ -30,7 +30,7 @@ class TickRawHandlerTest {
     void process_parsesAndPublishes() {
         // given
         String raw = "{\"price\":\"50000\"}";
-        TickRawMessage msg = new TickRawMessage(1L, "50000", "50100", 9_999L);
+        TickRawMessage msg = new TickRawMessage("BTCUSDT", "binance", "SPOT", "USDT", "BTC", "50000", "50100", 9_999L);
         given(parser.toMessage(raw, null)).willReturn(msg);
 
         // when
