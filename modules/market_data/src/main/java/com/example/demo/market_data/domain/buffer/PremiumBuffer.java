@@ -25,6 +25,9 @@ public class PremiumBuffer implements PriceValueBuffer<Premium> {
 
     @Override
     public List<Premium> flush() {
-        return buffer.values().stream().toList();
+        if (buffer.isEmpty()) return List.of();
+        List<Premium> snapshot = List.copyOf(buffer.values());
+        buffer.clear();
+        return snapshot;
     }
 }

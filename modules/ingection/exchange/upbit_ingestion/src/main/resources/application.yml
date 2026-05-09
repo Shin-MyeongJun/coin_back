@@ -22,9 +22,9 @@ spring:
       baseline-on-migrate: true
 
     datasource:
-      url: jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true
-      username: db_manager
-      password: "10200411"
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true}
+      username: ${DB_USER:db_manager}
+      password: ${DB_PASSWORD}
       hikari:
         maximum-pool-size: 12
   #      driver-class-name: org.postgresql.Driver

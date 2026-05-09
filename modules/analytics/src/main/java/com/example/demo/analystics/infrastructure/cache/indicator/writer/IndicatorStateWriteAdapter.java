@@ -9,6 +9,7 @@ import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedis
 import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -28,7 +29,7 @@ public abstract class IndicatorStateWriteAdapter<
     private final CacheExpirationPolicy policy;
     protected final IndicatorRedisKeyGenerator keyGenerator;
 
-    private final String env = "local";
+    @Value("${app.env:local}") private String env;
 
 
     @Override

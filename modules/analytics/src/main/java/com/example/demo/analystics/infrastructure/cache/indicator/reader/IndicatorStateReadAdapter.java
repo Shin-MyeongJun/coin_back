@@ -9,6 +9,7 @@ import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedis
 import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
@@ -23,7 +24,7 @@ public abstract class IndicatorStateReadAdapter<KEY extends DataKey<KEY>> implem
     private final IndicatorKeyCodec<KEY> keyCodec;
     private final IndicatorStateCodecManager stateCodecManager;
     protected final IndicatorRedisKeyGenerator keyGenerator;
-    private final String env ="local";
+    @Value("${app.env:local}") private String env;
 
     private final ScanOptions options = ScanOptions.scanOptions()
             .match("*")

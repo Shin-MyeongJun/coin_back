@@ -4,6 +4,7 @@ import com.example.demo.infra_shard.redis.RedisKeys;
 import com.example.demo.market_data.application.port.out.WriteRedisLatestDataPort;
 import com.example.demo.market_data.domain.domain.Tick;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,7 +22,7 @@ public class TickLatestRedisWriteAdapter implements WriteRedisLatestDataPort<Tic
 
     private final RedisTemplate<String, String> redis;
 
-    private final String env ="local";
+    @Value("${app.env:local}") private String env;
 
     // latest tick TTL (너 정책에 맞게 조정)
     private static final Duration LATEST_TTL = Duration.ofSeconds(30);

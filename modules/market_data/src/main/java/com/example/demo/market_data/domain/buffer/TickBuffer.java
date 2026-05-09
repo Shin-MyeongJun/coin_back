@@ -19,5 +19,9 @@ public class TickBuffer implements PriceValueBuffer<Tick> {
 
     @Override
     public List<Tick> flush() {
-        return buffer.values().stream().toList();
+        if (buffer.isEmpty()) return List.of();
+        // snapshot → clear 순서로 race window 최소화.
+        List<Tick> snapshot = List.copyOf(buffer.values());
+        buffer.clear();
+        return snapshot;
     }}

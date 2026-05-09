@@ -4,7 +4,6 @@ import com.example.demo.market_data.domain.domain.Tick;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -66,6 +65,7 @@ class TickBufferTest {
     }
 
     @Test
+    @Disabled("COIN-BUG-001 수정 후 더 이상 유효하지 않음 — 다음 PR 에서 삭제 예정")
     @DisplayName("현재 동작 검증 — flush 후 다시 flush해도 동일 데이터 반환(clear 없음)")
     void flush_twice_returnsSameData() {
         // given
@@ -81,9 +81,7 @@ class TickBufferTest {
     }
 
     @Test
-    @Tag("known-bug")
-    @Disabled("버그 재현: flush() 후 buffer.clear()가 없으므로 동일 데이터가 중복 저장됨 — COIN-BUG-001")
-    @DisplayName("[known-bug] 이상적 동작 — flush 후 다음 flush는 비어야 한다")
+    @DisplayName("flush 후 다음 flush 는 비어 있다 (COIN-BUG-001 회귀)")
     void flush_afterFlush_shouldBeEmpty_butIsNot() {
         // given
         sut.add(tick(1L, "50000", "50100"));
@@ -92,8 +90,8 @@ class TickBufferTest {
         // when
         List<Tick> second = sut.flush();
 
-        // then — 이상적으로는 비어야 하지만 현재는 그렇지 않음
-        assertThat(second).isEmpty(); // 이 assertion은 현재 실패함
+        // then
+        assertThat(second).isEmpty();
     }
 
     @Test

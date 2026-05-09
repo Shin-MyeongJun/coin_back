@@ -4,7 +4,6 @@ package com.example.demo.ingestion.exchange.application;
 import com.example.demo.ingestion.exchange.application.port.in.GetSymbolsUseCase;
 import com.example.demo.ingestion.exchange.application.port.in.ManageSubscribe;
 import com.example.demo.ingestion.exchange.application.port.out.SubscribeMarketDataPort;
-import groovy.util.logging.Slf4j;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Slf4j
 @RequiredArgsConstructor
 public abstract class ExchangeStreamManager implements ManageSubscribe {
 

@@ -9,6 +9,7 @@ import com.example.demo.analystics.infrastructure.cache.candle.CandleRedisKeyGen
 import com.example.demo.analystics.infrastructure.cache.candle.codec.CandleStateCodec;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.DataKeyCodec;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -29,7 +30,7 @@ public abstract class CandleStateWriteAdapter<
     private final CacheExpirationPolicy policy;
     protected final CandleRedisKeyGenerator keyGenerator;
 
-    private final String env = "local";
+    @Value("${app.env:local}") private String env;
 
 
     public void upsert(int partitionId ,Interval interval, List<CANDLE> cs) {

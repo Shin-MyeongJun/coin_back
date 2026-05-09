@@ -2,7 +2,6 @@ package com.example.demo.analystics.infrastructure.messaging.balancer;
 
 import com.example.demo.analystics.application.port.in.RestoreAnalyticsStateUseCase;
 import com.example.demo.analystics.application.port.in.RevokeAnalyticsStateUseCase;
-import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.TopicPartition;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.List;
 
-@Slf4j// 운영 환경에서 리밸런싱 과정을 추적하기 위해 로깅은 필수입니다.
 @Component
 @RequiredArgsConstructor
 public class AnalyticsPartitionLifecycleListener implements ConsumerAwareRebalanceListener {

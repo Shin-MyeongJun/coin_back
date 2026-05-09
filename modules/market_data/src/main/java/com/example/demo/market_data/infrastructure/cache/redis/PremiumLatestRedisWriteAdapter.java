@@ -4,6 +4,7 @@ import com.example.demo.infra_shard.redis.RedisKeys;
 import com.example.demo.market_data.application.port.out.WriteRedisLatestDataPort;
 import com.example.demo.market_data.domain.domain.Premium;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,7 +22,7 @@ public class PremiumLatestRedisWriteAdapter implements WriteRedisLatestDataPort<
 
     private final RedisTemplate<String, String> redis;
 
-    private final String env = "local";
+    @Value("${app.env:local}") private String env;
     private static final Duration LATEST_TTL = Duration.ofSeconds(30);
 
     private static final StringRedisSerializer S = new StringRedisSerializer();
@@ -52,7 +53,6 @@ public class PremiumLatestRedisWriteAdapter implements WriteRedisLatestDataPort<
                 byte[] vAsk =  S.serialize(p.ask().toPlainString());
 
                 final Map<byte[], byte[]> fields = new HashMap<>(5);
-                fields.put(F_TS, S.serialize(Long.toString(p.timestamp())));
                 fields.put(F_TS, vTs);
                 fields.put(F_BID, vBid);
                 fields.put(F_ASK, vAsk);
