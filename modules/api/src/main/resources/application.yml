@@ -24,5 +24,6 @@ springdoc:
     enabled: false
 
 app:
+  moduleName: api
   heartbeat:
-    enabled: false
+    enabled: true

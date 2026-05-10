@@ -1,3 +1,8 @@
+app:
+  moduleName: meta-data
+  heartbeat:
+    enabled: true
+
 spring:
     main:
         web-application-type: none
@@ -275,5 +280,4 @@ binance:
         create:            "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:35]{index=35}
         keep-alive:        "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:36]{index=36}
         close:             "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:37]{index=37}
-
 

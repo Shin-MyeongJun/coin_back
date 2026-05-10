@@ -1,5 +1,7 @@
 package com.example.demo.infra_heartbeat.domain;
 
+import java.util.Locale;
+
 public enum ModuleName {
     ANALYTICS("ANALYTICS"),
     INGESTION("INGESTION"),
@@ -14,5 +16,13 @@ public enum ModuleName {
     }
     public String getName() {
         return name;
+    }
+
+    public static ModuleName from(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("module name is required");
+        }
+        String normalized = value.trim().replace('-', '_').toUpperCase(Locale.ROOT);
+        return ModuleName.valueOf(normalized);
     }
 }

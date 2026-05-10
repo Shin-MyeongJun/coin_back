@@ -19,4 +19,8 @@ public abstract class MarketDataCache<KEY ,VAL> implements GetCacheDataPort<KEY,
     public void put(KEY key, VAL val) {
         cache.put(key, val);
     }
+
+    protected void remove(KEY key) {
+        cache.remove(key);
+    }
 }

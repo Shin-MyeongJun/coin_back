@@ -89,6 +89,7 @@ dependencies {
 	//inner project shard
 	implementation(project(":contracts"))
 	implementation(project(":infra_shard"))
+	implementation(project(":infra_heartbeat"))
 	implementation(project(":infra_binance"))
 	implementation(project(":ingestion_exchange_shard"))
 

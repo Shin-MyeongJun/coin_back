@@ -20,6 +20,11 @@ public final class RedisKeys {
         return base(env) + ":premium:detail:latest:" + baseEx + ":" + compareEx + ":" + symbol;
     }
 
+    public static String health(String env, String moduleName, String subType, String uuid) {
+        String logicalSubType = (subType == null || subType.isBlank()) ? "none" : subType;
+        return base(env) + ":health:peer:" + moduleName + ":" + logicalSubType + ":" + uuid;
+    }
+
 
 
 

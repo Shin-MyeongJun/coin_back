@@ -1,4 +1,12 @@
+app:
+  moduleName: ingestion
+  heartbeat:
+    enabled: true
+    sub-type: crawling
+
 spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration

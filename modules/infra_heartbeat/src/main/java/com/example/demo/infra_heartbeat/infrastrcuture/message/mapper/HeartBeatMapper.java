@@ -11,7 +11,8 @@ public class HeartBeatMapper implements MessageToDomain<HeartBeatMessage, Health
     @Override
     public HealthMeta toDomain(HeartBeatMessage hbm) {
         return new HealthMeta(
-                ModuleName.valueOf(hbm.moduleName()),
+                ModuleName.from(hbm.moduleName()),
+                hbm.subType(),
                 hbm.uuid()
         );
     }

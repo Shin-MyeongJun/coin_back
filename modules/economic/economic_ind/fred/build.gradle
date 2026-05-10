@@ -22,6 +22,7 @@ dependencies {
 
     implementation(project(":contracts"))
     implementation(project(":infra_shard"))
+    implementation(project(":infra_heartbeat"))
     implementation(project(":economic_ind_shard"))
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

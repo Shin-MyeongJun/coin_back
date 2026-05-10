@@ -1,3 +1,13 @@
+app:
+  moduleName: ingestion
+  heartbeat:
+    enabled: true
+    sub-type: fred
+
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+
 fred:
  api-key: ${FRED_API_KEY}
  base-url: https://api.stlouisfed.org/fred

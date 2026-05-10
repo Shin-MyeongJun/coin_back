@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsumeHeartbeatService implements ConsumeHealthUseCase<HealthMeta> {
 
-    private OnHealthDataUseCase useCase;
+    private final OnHealthDataUseCase useCase;
 
     @Override
     public void consume(HealthMeta meta) {

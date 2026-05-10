@@ -1,10 +1,9 @@
 package com.example.demo.infra_heartbeat.infrastrcuture.message.producer;
 
-
 import com.example.demo.contracts.message.health.HeartBeatMessage;
 import com.example.demo.infra_heartbeat.application.out.PublishHealthPort;
+import com.example.demo.infra_heartbeat.infrastrcuture.message.HealthTopics;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,12 +11,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class HeartbeatProducer implements PublishHealthPort<HeartBeatMessage> {
 
-    private final KafkaTemplate<String,HeartBeatMessage> kafkaTemplate;
-    @Value("${app.moduleName}")
-    private String moduleName;
+    private final KafkaTemplate<String, HeartBeatMessage> kafkaTemplate;
 
     @Override
     public void publish(HeartBeatMessage hbm) {
-        kafkaTemplate.send("%s.heartbeat".formatted(moduleName),hbm);
+        kafkaTemplate.send(HealthTopics.HEARTBEAT, hbm);
     }
 }

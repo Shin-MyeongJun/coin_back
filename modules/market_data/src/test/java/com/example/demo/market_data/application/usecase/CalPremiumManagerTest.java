@@ -2,6 +2,7 @@ package com.example.demo.market_data.application.usecase;
 
 import com.example.demo.market_data.application.port.in.PublishPriceDataUseCase;
 import com.example.demo.market_data.application.port.out.GetCacheDataPort;
+import com.example.demo.market_data.application.port.out.PremiumMarketCodeRegistryPort;
 import com.example.demo.market_data.domain.buffer.base.PriceValueBuffer;
 import com.example.demo.market_data.domain.domain.Fx;
 import com.example.demo.market_data.domain.domain.FxKey;
@@ -10,6 +11,7 @@ import com.example.demo.market_data.domain.domain.PremiumDetail;
 import com.example.demo.market_data.domain.domain.Tick;
 import com.example.demo.market_data.domain.domain.snapshot.ExchangeSnapShotVal;
 import com.example.demo.market_data.domain.domain.snapshot.MarketCodeSnapShotVal;
+import com.example.demo.market_data.infrastructure.registry.BaseToMarketCodeIdRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -50,14 +52,17 @@ class CalPremiumManagerTest {
     @Captor ArgumentCaptor<Premium> premiumCaptor;
     @Captor ArgumentCaptor<PremiumDetail> premiumDetailCaptor;
 
+    PremiumMarketCodeRegistryPort marketCodeList;
     CalPremiumManager sut;
 
     @BeforeEach
     void setUp() {
+        marketCodeList = new BaseToMarketCodeIdRegistry();
         sut = new CalPremiumManager(
                 buffer, detailBuffer,
                 tickGetter, codeGetter, exchangeGetter, fxGetter,
-                premiumPublisher, premiumDetailPublisher
+                premiumPublisher, premiumDetailPublisher,
+                marketCodeList
         );
     }
 

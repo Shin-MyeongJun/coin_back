@@ -3,6 +3,7 @@ package com.example.demo.market_data.application.usecase;
 import com.example.demo.market_data.application.port.in.CalPremiumUseCase;
 import com.example.demo.market_data.application.port.in.PublishPriceDataUseCase;
 import com.example.demo.market_data.application.port.out.GetCacheDataPort;
+import com.example.demo.market_data.application.port.out.PremiumMarketCodeRegistryPort;
 import com.example.demo.market_data.domain.buffer.base.PriceValueBuffer;
 import com.example.demo.market_data.domain.domain.*;
 import com.example.demo.market_data.domain.domain.snapshot.ExchangeSnapShotVal;
@@ -13,10 +14,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
@@ -33,23 +32,24 @@ public class CalPremiumManager implements CalPremiumUseCase {
     private final GetCacheDataPort<Long, ExchangeSnapShotVal> exchangeGetter;
     private final GetCacheDataPort<FxKey, Fx> fxGetter;
 
+
     //publisher kafka
     private final PublishPriceDataUseCase<Premium> premiumPublisher;
     private final PublishPriceDataUseCase<PremiumDetail> premiumDetailPublisher;
 
     //mapList
-    private final Map<String, Set<Long>> marketCodeList = new ConcurrentHashMap<>();
+    private final PremiumMarketCodeRegistryPort marketCodeList;
+
 
 
 
 
     public void cal(Long id){
+
         Optional<MarketCodeSnapShotVal> snap = codeGetter.get(id);
         if(snap.isEmpty()){return;}
         String base = snap.get().baseAsset();
-        marketCodeList.computeIfAbsent(base, k -> ConcurrentHashMap.newKeySet());
-        marketCodeList.get(base).add(id);
-
+        marketCodeList.put(base,id);
         Optional<Tick> baseTick =tickGetter.get(id);
         if(baseTick.isEmpty())return;
 
@@ -114,6 +114,9 @@ public class CalPremiumManager implements CalPremiumUseCase {
         }
 
     }
+
+
+
 
     private String normalize(String input) {
         if (input == null) return null;
