@@ -1,7 +1,6 @@
 # Observability Stack
 
-This stack adds infrastructure-only monitoring for the local Docker environment.
-It does not change application module code, Gradle dependencies, or module `application.yml` files.
+This stack adds infrastructure monitoring for the local Docker environment and can scrape the API module's Spring Actuator Prometheus endpoint when the API is running on the host.
 
 ## Scope
 
@@ -11,13 +10,12 @@ Included:
 - Grafana
 - Kafka consumer lag through `kafka-exporter`
 - Redis memory, key count, command throughput, and latency signals through `redis-exporter`
+- API JVM/HTTP/application metrics through `/actuator/prometheus`
 
 Not included yet:
 
-- Spring Actuator or Micrometer inside application modules
 - heartbeat domain gauges from `infra_heartbeat`
-
-Those require application-module changes and should be handled as a later phase.
+- Grafana panels for application-level metrics
 
 ## Run
 
@@ -35,6 +33,7 @@ URLs:
 - Grafana: http://localhost:3000
 - Kafka exporter: http://localhost:9308/metrics
 - Redis exporter: http://localhost:9121/metrics
+- API actuator: http://localhost:8080/actuator/prometheus
 
 Grafana login:
 
@@ -65,11 +64,12 @@ The dashboard focuses on metrics that do not require app-module changes:
 - Redis latency signals
 - Redis connected clients
 
+The Prometheus config also includes a `coindata-api` scrape target for `host.docker.internal:8080`.
+That target is expected to be down until the API module is running locally.
+
 ## Later module-level additions
 
-When module changes are acceptable, add these in a separate phase:
+Add these in a separate phase:
 
-- Spring Actuator + Micrometer dependencies/config per runtime module
-- Prometheus scrape targets for `/actuator/prometheus`
 - `infra_heartbeat` gauges for module health summary
 - Grafana panels for heartbeat all-dead/recovered state

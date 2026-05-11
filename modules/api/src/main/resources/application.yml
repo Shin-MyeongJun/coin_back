@@ -3,11 +3,11 @@ server:
 
 spring:
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/coindb}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD}
+    username: ${DB_USER:${DB_USERNAME:postgres}}
+    password: ${DB_PASSWORD:${DB_PASS:}}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -27,3 +27,17 @@ app:
   moduleName: api
   heartbeat:
     enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}

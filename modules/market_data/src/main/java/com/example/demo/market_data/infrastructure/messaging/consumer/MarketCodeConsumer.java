@@ -22,7 +22,6 @@ public class MarketCodeConsumer  extends KafkaDomainConsumer<MarketCodeSnapShot,
 
     @KafkaListener(
             topics = "meta-data.market-code",
-            groupId = "market-data.market-code.cache",
             containerFactory = "marketCodeKafkaListenerContainerFactory"
     )
     @Override

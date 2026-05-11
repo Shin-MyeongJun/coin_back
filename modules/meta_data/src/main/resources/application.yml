@@ -14,10 +14,10 @@ spring:
       compose:
         enabled: false
     kafka:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
       admin:
         properties:
-          bootstrap.servers: localhost:9092
+          bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
     cloud:
       stream:
         defaultBinder: null
@@ -36,7 +36,7 @@ spring:
 
     jpa:
         hibernate:
-          ddl-auto: update # 또는 update, create, create-drop
+          ddl-auto: ${JPA_DDL_AUTO:update} # local default; use validate/none outside local
 
         show-sql: false
         properties:
@@ -64,6 +64,18 @@ spring:
         - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration #redis
         - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}
   datadog:
     metrics:
       export:
@@ -71,10 +83,10 @@ management:
 
 upbit:
   # Base URLs
-  base-url: "https://api.upbit.com"
+  base-url: "${UPBIT_BASE_URL:https://api.upbit.com}"
   websockets:
-    public-url: "wss://api.upbit.com/websocket/v1"
-    private-url: "wss://api.upbit.com/websocket/v1/private"
+    public-url: "${UPBIT_PUBLIC_WS_URL:wss://api.upbit.com/websocket/v1}"
+    private-url: "${UPBIT_PRIVATE_WS_URL:wss://api.upbit.com/websocket/v1/private}"
 
   access-key:     ${UPBIT_OPEN_API_ACCESS_KEY}
   secret-key:     ${UPBIT_OPEN_API_SECRET_KEY}
@@ -115,10 +127,10 @@ upbit:
 
 bithumb:
   # Base URLs
-  base-url: https://api.bithumb.com
+  base-url: ${BITHUMB_BASE_URL:https://api.bithumb.com}
   websocket:
-    public-url:  wss://ws-api.bithumb.com/websocket/v1        # 공개 WebSocket 엔드포인트 :contentReference[oaicite:0]{index=0}
-    private-url: wss://ws-api.bithumb.com/websocket/v1/private # 인증 WebSocket 엔드포인트 :contentReference[oaicite:1]{index=1}
+    public-url:  ${BITHUMB_PUBLIC_WS_URL:wss://ws-api.bithumb.com/websocket/v1}        # 공개 WebSocket 엔드포인트 :contentReference[oaicite:0]{index=0}
+    private-url: ${BITHUMB_PRIVATE_WS_URL:wss://ws-api.bithumb.com/websocket/v1/private} # 인증 WebSocket 엔드포인트 :contentReference[oaicite:1]{index=1}
 
   # PUBLIC REST API
   public:
@@ -159,13 +171,13 @@ binance:
   future:
     usdt:
       # Base URLs
-      base-url:               "https://fapi.binance.com"
-      testnet-base-url:       "https://testnet.binancefuture.com"
+      base-url:               "${BINANCE_FUTURE_BASE_URL:https://fapi.binance.com}"
+      testnet-base-url:       "${BINANCE_FUTURE_TESTNET_BASE_URL:https://testnet.binancefuture.com}"
 
       # WebSocket URLs
       websocket:
-        base-url:          "wss://ws-fapi.binance.com/ws-fapi/v1"
-        testnet-url:  "wss://testnet.binancefuture.com/ws-fapi/v1"
+        base-url:          "${BINANCE_FUTURE_WS_URL:wss://ws-fapi.binance.com/ws-fapi/v1}"
+        testnet-url:  "${BINANCE_FUTURE_TESTNET_WS_URL:wss://testnet.binancefuture.com/ws-fapi/v1}"
         stream-name:
             agg-trade: "@aggTrade"
             trade: "@trade"
@@ -226,13 +238,13 @@ binance:
 
   spot:
     # Base Endpoints
-    base-url:              https://api.binance.com                     # :contentReference[oaicite:0]{index=0}
+    base-url:              ${BINANCE_SPOT_BASE_URL:https://api.binance.com}                     # :contentReference[oaicite:0]{index=0}
     alt-base-urls:
-      api-gcp:             https://api-gcp.binance.com                 # :contentReference[oaicite:1]{index=1}
-      api1:                https://api1.binance.com                    # :contentReference[oaicite:2]{index=2}
-      api2:                https://api2.binance.com                    # :contentReference[oaicite:3]{index=3}
-      api3:                https://api3.binance.com                    # :contentReference[oaicite:4]{index=4}
-      api4:                https://api4.binance.com                    # :contentReference[oaicite:5]{index=5}
+      api-gcp:             ${BINANCE_SPOT_API_GCP_BASE_URL:https://api-gcp.binance.com}                 # :contentReference[oaicite:1]{index=1}
+      api1:                ${BINANCE_SPOT_API1_BASE_URL:https://api1.binance.com}                    # :contentReference[oaicite:2]{index=2}
+      api2:                ${BINANCE_SPOT_API2_BASE_URL:https://api2.binance.com}                    # :contentReference[oaicite:3]{index=3}
+      api3:                ${BINANCE_SPOT_API3_BASE_URL:https://api3.binance.com}                    # :contentReference[oaicite:4]{index=4}
+      api4:                ${BINANCE_SPOT_API4_BASE_URL:https://api4.binance.com}                    # :contentReference[oaicite:5]{index=5}
 
     # General REST API Endpoints
     general:
@@ -275,9 +287,8 @@ binance:
 
     # User Data Stream (WebSocket)
     user-stream:
-      base-url:            wss://stream.binance.com:9443/ws             # :contentReference[oaicite:34]{index=34}
+      base-url:            ${BINANCE_SPOT_WS_URL:wss://stream.binance.com:9443/ws}             # :contentReference[oaicite:34]{index=34}
       listen-key:
         create:            "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:35]{index=35}
         keep-alive:        "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:36]{index=36}
         close:             "${binance.spot.base-url}/api/v3/userDataStream" # :contentReference[oaicite:37]{index=37}
-

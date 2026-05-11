@@ -1,5 +1,6 @@
 package com.example.demo.infra_shard.redis;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -10,8 +11,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    private String host ="localhost";
-    private int port =6379;
+    private final String host;
+    private final int port;
+
+    public RedisConfig(
+            @Value("${spring.data.redis.host:${REDIS_HOST:localhost}}") String host,
+            @Value("${spring.data.redis.port:${REDIS_PORT:6379}}") int port
+    ) {
+        this.host = host;
+        this.port = port;
+    }
 
     // 💡 이 빈이 누락되어 에러가 발생했을 확률이 높습니다.
     @Bean

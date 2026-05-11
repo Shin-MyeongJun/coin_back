@@ -52,3 +52,19 @@ subprojects {
         useJUnitPlatform()
     }
 }
+
+configure([
+        project(':api'),
+        project(':market_data'),
+        project(':meta_data'),
+        project(':analytics'),
+        project(':fx_ingestion'),
+        project(':upbit_ingestion'),
+        project(':binance_ingestion'),
+        project(':fred'),
+        project(':crawling')
+]) {
+    dependencies {
+        runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    }
+}

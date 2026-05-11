@@ -27,8 +27,8 @@ public class UpbitTickMapper implements DomainToMessage<UpbitOrderbookDto, TickR
         );
         MarketCodeValue val = getter.get(key);
         if(val != null){
-            quote = val.quote();
-            base = val.base();
+            quote = val.quote().toUpperCase();
+            base = val.base().toUpperCase();
         }
 
         return new TickRawMessage(

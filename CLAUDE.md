@@ -33,6 +33,8 @@ Exchange WebSocket/API
 
 주요 인프라는 Kafka, PostgreSQL/TimescaleDB, Redis입니다. Kafka 직렬화는 실제 코드상 JSON record 중심이고, `contracts`에는 Java record와 `.proto`가 함께 존재합니다.
 
+관측성은 Docker Compose 기반 Prometheus/Grafana/exporter 스택에 더해, 주요 실행 모듈에 Actuator 및 Prometheus registry 설정을 적용합니다. API는 `/actuator/health`, `/actuator/prometheus`를 노출하고, Prometheus local stack은 `host.docker.internal:8080`의 API actuator endpoint를 scrape 대상으로 둡니다.
+
 ---
 
 ## 2. 실제 Gradle 모듈 구조
@@ -212,6 +214,8 @@ ys:{env}:v1:tick:indicator:state:{partitionId}:{tf}
 ys:{env}:v1:premium:indicator:state:{partitionId}:{tf}
 ```
 
+Redis 연결 기본값은 `localhost:6379`이며, `spring.data.redis.host`/`spring.data.redis.port` 또는 `REDIS_HOST`/`REDIS_PORT` 환경변수로 override할 수 있습니다.
+
 ---
 
 ## 7. 아키텍처와 코딩 컨벤션
@@ -292,11 +296,11 @@ Spring 규칙:
 
 1. build.gradle 과잉 의존성: 여러 실행 모듈에 Cassandra, security, template engine, MySQL, Datadog 등 실제 사용 범위를 넘는 dependency가 반복됩니다.
 2. `infra_heartbeat/build.gradle`: `implementation implementation(project(...))` 형태가 남아 있습니다. 현재 컴파일은 통과하지만 정리 대상입니다.
-3. application.yml 중복과 하드코딩: 여러 모듈이 `localhost:9092`, 거래소 endpoint 전체 덩어리, `ddl-auto: update`를 직접 포함합니다. `api`, `crawling` 일부는 env fallback을 사용하지만 일관적이지 않습니다.
+3. application.yml 중복과 하드코딩: 주요 실행 모듈의 Kafka bootstrap, 거래소/FRED endpoint, `ddl-auto`는 env fallback 형태로 정리했습니다. 새 설정은 `KAFKA_BOOTSTRAP_SERVERS`/`KAFKA_SERVERS`, `JPA_DDL_AUTO`, 거래소별 `*_BASE_URL`/`*_WS_URL` 환경변수를 우선합니다. 다만 각 모듈에 중복된 거래소 설정 블록 자체는 아직 남아 있어 별도 공통화 후보입니다.
 4. contracts 불일치 가능성: Java record와 proto가 공존합니다. Kafka JSON 직렬화 기준은 Java record입니다.
 5. analytics event payload: candle/indicator message record 일부가 비어 있고 publisher 연결 경로가 DB flush와 분리되어 있습니다. SSE/이벤트 발행 기능을 손볼 때 우선 확인하세요.
 6. economic publisher: `EcoIndPublisher.publish()`는 현재 빈 구현입니다. 경제지표 Kafka 발행은 완성 상태로 보지 않습니다.
-7. query modules test gap: query 모듈은 main 소스는 있으나 test 소스가 거의 없습니다. 조회 SQL이나 mapper 변경 시 targeted test를 추가하는 편이 안전합니다.
+7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
 8. trading: 소스가 없는 placeholder입니다.
 9. `TickBuffer.flush()` 관련 예전 문서의 버그는 현재 코드에서 해결되어 있습니다. `flush()`가 snapshot 후 `buffer.clear()`를 호출합니다.
 
@@ -357,3 +361,23 @@ Spring 규칙:
 - common abstraction은 `infra_shard`에 두되, 특정 도메인 규칙을 무리하게 공통화하지 않습니다.
 - 문서가 코드와 다르면 코드를 우선 확인하고 문서를 갱신합니다.
 - 한국어 문서는 UTF-8로 저장합니다.
+
+---
+
+## 13. MVP 제외 항목
+
+아래 항목은 현재 CoinData MVP 범위에서 제외합니다. 구현 흔적이나 계약 파일이 남아 있더라도, 면접/README/문서에서는 "미완성 기능"이 아니라 "이번 MVP에서 의도적으로 제외한 확장 후보"로 설명합니다.
+
+### 13.1 Trading module
+
+- `:trading` 모듈은 향후 자동매매/전략 실행/주문 연동을 위한 확장 후보입니다.
+- 현재 MVP는 실시간 시세 수집, 김치 프리미엄 계산, 캔들/지표 분석, 조회 API/SSE 제공까지를 범위로 삼습니다.
+- 주문 실행, 포지션 관리, 거래소 private API 연동, 리스크 관리, 백테스팅은 MVP 범위에 포함하지 않습니다.
+- 따라서 `:trading`에 구현 소스가 없거나 placeholder 상태인 것은 현재 MVP의 기능 누락으로 보지 않습니다. README 작성 시에도 "Future scope" 또는 "Out of MVP scope"로 명시합니다.
+
+### 13.2 Contracts proto files
+
+- 현재 런타임 Kafka 메시지 계약은 Java record + JSON 직렬화를 기준으로 합니다.
+- `contracts` 모듈에 남아 있는 `.proto` 파일은 향후 gRPC, schema registry, binary serialization, cross-language client 지원을 검토하기 위한 확장 후보입니다.
+- MVP에서는 proto 기반 직렬화나 gRPC 계약 생성을 사용하지 않습니다.
+- README 작성 시에는 "현재 MVP는 Java record 기반 Kafka JSON 계약을 사용하며, proto는 향후 계약 안정화/다언어 연동을 위한 후보"라고 설명합니다.

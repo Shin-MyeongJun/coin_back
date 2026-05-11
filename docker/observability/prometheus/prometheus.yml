@@ -22,5 +22,10 @@ scrape_configs:
         labels:
           component: redis
 
-  # Spring Actuator endpoints are intentionally omitted here.
-  # Add them later only after each module explicitly opts into Micrometer/Actuator.
+  - job_name: coindata-api
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:8080
+        labels:
+          component: api

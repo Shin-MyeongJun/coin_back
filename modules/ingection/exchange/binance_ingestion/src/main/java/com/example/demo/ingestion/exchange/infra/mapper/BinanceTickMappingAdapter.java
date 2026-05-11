@@ -26,8 +26,8 @@ public class BinanceTickMappingAdapter implements DomainToMessage<BinanceBookTic
         );
         MarketCodeValue val = getter.get(key);
         if(val != null){
-            quote = val.quote();
-            base = val.base();
+            quote = val.quote().toUpperCase();
+            base = val.base().toUpperCase();
             exchangeType = val.exchangeType();
         }
         return new TickRawMessage(

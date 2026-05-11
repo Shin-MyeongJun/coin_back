@@ -13,6 +13,6 @@ public class TickRawPublisher implements RawPublishPort<TickRawMessage> {
 
     @Override
     public void publish(TickRawMessage tickRawMessage) {
-        kafkaTemplate.send("ingestion-exchange.tick-raw", tickRawMessage);
+        kafkaTemplate.send("ingestion-exchange.tick-raw",tickRawMessage.base() ,tickRawMessage);
     }
 }

@@ -14,8 +14,8 @@ public class UpbitMarketCodMapper implements DomainToMessage<UpbitMarketCodeDto,
     @Override
     public MarketCodeRawMessage toMessage(UpbitMarketCodeDto dto) {
         String[] parts = dto.getMarket().split("-");
-        String base  = parts[1];
-        String quote = parts[0];
+        String base  = parts[1].toUpperCase();
+        String quote = parts[0].toUpperCase();
 
         return new MarketCodeRawMessage(
                 EXCHANGE_NAME,

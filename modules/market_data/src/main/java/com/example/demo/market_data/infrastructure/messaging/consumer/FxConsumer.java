@@ -22,7 +22,6 @@ public class FxConsumer extends KafkaDomainConsumer<Fx, FxMessage> {
     @Override
     @KafkaListener(
             topics = "ingestion-fx.fx",
-            groupId = "market-data.fx.cache",
             containerFactory = "fxKafkaListenerContainerFactory"
     )
     protected void onMessage(ConsumerRecord<String, FxMessage> record) {

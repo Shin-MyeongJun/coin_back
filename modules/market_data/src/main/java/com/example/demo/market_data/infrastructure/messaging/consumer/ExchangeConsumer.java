@@ -23,7 +23,6 @@ public class ExchangeConsumer extends KafkaDomainConsumer<ExchangeSnapShot, Exch
     @Override
     @KafkaListener(
             topics = "meta-data.exchange",
-            groupId = "market-data.exchange.cache",
             containerFactory = "exchangeKafkaListenerContainerFactory"
     )
     protected void onMessage(ConsumerRecord<String, ExchangeMessage> record) {

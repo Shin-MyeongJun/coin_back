@@ -16,9 +16,9 @@ public class BinanceMarketCodeMapper implements DomainToMessage<BinanceExchangeI
                 EXCHANGE_NAME,
                 symbol.getContractType(),
                 COUNTRY,
-                symbol.getQuoteAsset(),
-                symbol.getBaseAsset(),
-                symbol.getSymbol()
+                symbol.getQuoteAsset().toUpperCase(),
+                symbol.getBaseAsset().toUpperCase(),
+                symbol.getSymbol().toUpperCase()
         );
     }
 }

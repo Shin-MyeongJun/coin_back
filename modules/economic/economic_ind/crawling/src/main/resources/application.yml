@@ -6,7 +6,7 @@ app:
 
 spring:
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
@@ -15,8 +15,8 @@ spring:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/coindb}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASS:postgres}
+    username: ${DB_USER:${DB_USERNAME:postgres}}
+    password: ${DB_PASSWORD:${DB_PASS:postgres}}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -27,7 +27,7 @@ spring:
     show-sql: false
 
 kafka:
-  bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
 
 crawling-eco:
   burst:
@@ -104,3 +104,17 @@ crawling-eco:
       unit: PERCENT
       investing-event-name: "Core PCE Price Index"
       yahoo-event-name: "Core PCE Price Index"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}

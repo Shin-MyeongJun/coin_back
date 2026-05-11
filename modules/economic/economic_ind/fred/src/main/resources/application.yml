@@ -6,11 +6,11 @@ app:
 
 spring:
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
 
 fred:
  api-key: ${FRED_API_KEY}
- base-url: https://api.stlouisfed.org/fred
+ base-url: ${FRED_BASE_URL:https://api.stlouisfed.org/fred}
 
  tracked-series:
   - standard-ind-name: FFR
@@ -90,3 +90,17 @@ fred:
  schedule:
   release-sync-cron: "0 0 6 * * *"       # 매일 06:00 발표일정 동기화
   observation-check-ms: 1800000          # 30분마다 발표 체크
+
+management:
+ endpoints:
+  web:
+   exposure:
+    include: health,info,prometheus
+ endpoint:
+  health:
+   probes:
+    enabled: true
+ prometheus:
+  metrics:
+   export:
+    enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}
