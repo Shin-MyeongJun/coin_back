@@ -24,7 +24,17 @@ class TickIndicatorPublisherTest {
     @DisplayName("publish — 토픽 'analytics.tick-indicator'로 메시지 전송")
     void publish_sendsToCorrectTopic() {
         // given
-        TickIndicatorMessage msg = new TickIndicatorMessage();
+        TickIndicatorMessage msg = new TickIndicatorMessage(
+                "1",
+                "1m",
+                "EMA",
+                "14",
+                "105.25",
+                "1710000000000",
+                "1710000059999",
+                "1710000000100",
+                "1710000059900"
+        );
 
         // when
         sut.publish(msg);

@@ -24,7 +24,18 @@ class TickCandlePublisherTest {
     @DisplayName("publish — 토픽 'analytics.tick-candle'로 메시지 전송")
     void publish_sendsToCorrectTopic() {
         // given
-        TickCandleMessage msg = new TickCandleMessage();
+        TickCandleMessage msg = new TickCandleMessage(
+                "1",
+                "1m",
+                "100.00",
+                "110.00",
+                "95.00",
+                "105.00",
+                "1710000000000",
+                "1710000059999",
+                "1710000000100",
+                "1710000059900"
+        );
 
         // when
         sut.publish(msg);

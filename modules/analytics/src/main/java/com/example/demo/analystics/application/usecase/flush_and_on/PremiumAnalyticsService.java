@@ -1,6 +1,7 @@
 package com.example.demo.analystics.application.usecase.flush_and_on;
 
 import com.example.demo.analystics.application.port.in.PremiumAnalyticsUseCase;
+import com.example.demo.analystics.application.port.in.PublishAnalyticsDataUseCase;
 import com.example.demo.analystics.application.port.out.WriteAnalyticsValuePort;
 import com.example.demo.analystics.domain.domain.Interval;
 import com.example.demo.analystics.domain.domain.candle.close.PremiumCloseCandle;
@@ -20,6 +21,10 @@ public class PremiumAnalyticsService implements PremiumAnalyticsUseCase {
     private final WriteAnalyticsValuePort<PremiumCloseCandle> candleWriter;
     private final WriteAnalyticsValuePort<PremiumCloseIndicator> indicatorWriter;
 
+    private final PublishAnalyticsDataUseCase<PremiumCloseCandle> candlePublisher;
+    private final PublishAnalyticsDataUseCase<PremiumCloseIndicator> indicatorPublisher;
+
+
     @Override
     public void onData(int partitionId, PremiumKey key, BigDecimal price) {
         registry.update(partitionId, key, price);
@@ -30,6 +35,9 @@ public class PremiumAnalyticsService implements PremiumAnalyticsUseCase {
         var closed = registry.flushCandles(interval);
         if (!closed.isEmpty()) {
             candleWriter.write(closed);
+            for (PremiumCloseCandle candle : closed) {
+                candlePublisher.publish(candle);
+            }
         }
     }
 
@@ -38,6 +46,9 @@ public class PremiumAnalyticsService implements PremiumAnalyticsUseCase {
         var closed = registry.flushIndicators(interval);
         if (!closed.isEmpty()) {
             indicatorWriter.write(closed);
+            for (PremiumCloseIndicator candle : closed) {
+                indicatorPublisher.publish(candle);
+            }
         }
     }
 }

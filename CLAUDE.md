@@ -43,7 +43,7 @@ Exchange WebSocket/API
 
 | Gradle project | Path | Main/Test Java | 역할 및 현재 평가 |
 | --- | --- | ---: | --- |
-| `:contracts` | `modules/contracts` | 24 / 0 | Kafka 메시지 record와 proto 계약. 실제 런타임 계약은 Java record가 중심입니다. candle/indicator 계열 record 일부는 아직 빈 placeholder입니다. |
+| `:contracts` | `modules/contracts` | 24 / 0 | Kafka 메시지 record와 proto 계약. 실제 런타임 계약은 Java record가 중심입니다. candle/indicator 계열 record는 analytics `Close*` domain 형태를 따라 String payload로 정의되어 있습니다. |
 | `:infra_shard` | `modules/infra_shard` | 21 / 0 | 공통 mapper, Kafka consumer base, Redis config/key, JSON/DSL-JSON, SQL loader, exchange connector interface. 안정적인 공통 모듈입니다. |
 | `:infra_heartbeat` | `modules/infra_heartbeat` | 32 / 0 | 모듈 heartbeat/health-change Kafka, health cache/status manager. 패키지 오타 `infrastrcuture`가 실제 코드에 남아 있습니다. |
 | `:infra_upbit` | `modules/infra_exchange/upbit` | 12 / 0 | Upbit REST/WebSocket client, DTO, 인증 필터, properties. 패키지명은 `infre_exchange.upbit`입니다. |
@@ -298,7 +298,7 @@ Spring 규칙:
 2. `infra_heartbeat/build.gradle`: `implementation implementation(project(...))` 형태가 남아 있습니다. 현재 컴파일은 통과하지만 정리 대상입니다.
 3. application.yml 중복과 하드코딩: 주요 실행 모듈의 Kafka bootstrap, 거래소/FRED endpoint, `ddl-auto`는 env fallback 형태로 정리했습니다. 새 설정은 `KAFKA_BOOTSTRAP_SERVERS`/`KAFKA_SERVERS`, `JPA_DDL_AUTO`, 거래소별 `*_BASE_URL`/`*_WS_URL` 환경변수를 우선합니다. 다만 각 모듈에 중복된 거래소 설정 블록 자체는 아직 남아 있어 별도 공통화 후보입니다.
 4. contracts 불일치 가능성: Java record와 proto가 공존합니다. Kafka JSON 직렬화 기준은 Java record입니다.
-5. analytics event payload: candle/indicator message record 일부가 비어 있고 publisher 연결 경로가 DB flush와 분리되어 있습니다. SSE/이벤트 발행 기능을 손볼 때 우선 확인하세요.
+5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있지만, publisher 연결 경로가 DB flush와 분리되어 있습니다. SSE/이벤트 발행 기능을 손볼 때 우선 확인하세요.
 6. economic publisher: `EcoIndPublisher.publish()`는 현재 빈 구현입니다. 경제지표 Kafka 발행은 완성 상태로 보지 않습니다.
 7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
 8. trading: 소스가 없는 placeholder입니다.

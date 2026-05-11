@@ -1,4 +1,5 @@
 package com.example.demo.contracts.message.candle;
 
-public record CandleMessage() {
+public sealed interface CandleMessage
+        permits TickCandleMessage, PremiumCandleMessage, PremiumDetailCandleMessage {
 }
