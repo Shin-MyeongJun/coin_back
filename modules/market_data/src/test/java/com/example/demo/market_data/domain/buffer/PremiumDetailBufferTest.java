@@ -66,7 +66,7 @@ class PremiumDetailBufferTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().baseBid()).isEqualByComparingTo(new BigDecimal("51000000"));
+        assertThat(result.get(0).baseBid()).isEqualByComparingTo(new BigDecimal("51000000"));
     }
 
     @Test

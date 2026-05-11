@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         pd.setTitle("Validation Failed");
-        pd.setDetail(ex.getBindingResult().getAllErrors().getFirst().getDefaultMessage());
+        pd.setDetail(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
         return pd;
     }
 

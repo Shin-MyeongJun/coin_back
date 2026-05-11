@@ -38,7 +38,7 @@ public abstract class IndicatorStateWriteAdapter<
 
         final String tf = interval.getPeriod();
         final long tfSecond = interval.getSecond();
-        final long openTime =cs.getFirst().getOpenTimestamp();
+        final long openTime =cs.get(0).getOpenTimestamp();
         byte[] rawKey = makeKey(env,partitionId,tf).getBytes();
         redis.executePipelined((RedisCallback<Object>) connection -> {
             for (IND ind : cs) {

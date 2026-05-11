@@ -30,7 +30,7 @@ public class YahooEcoClient {
                 Elements cells = row.select("td");
                 if (cells.size() < 4) continue;
 
-                String event = cells.getFirst().text();
+                String event = cells.get(0).text();
                 String actual = cells.get(3).text().trim();
 
                 if (event.toLowerCase().contains(eventName.toLowerCase())) {

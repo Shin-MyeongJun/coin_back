@@ -79,7 +79,7 @@ class PremiumRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        PremiumEntity stored = found.getFirst();
+        PremiumEntity stored = found.get(0);
         assertThat(stored.getSymbol()).isEqualTo("BTC");
         assertThat(stored.getBaseExchangeId()).isEqualTo(10L);
         assertThat(stored.getCompareExchangeId()).isEqualTo(20L);

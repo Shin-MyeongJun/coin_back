@@ -37,8 +37,8 @@ public class UpbitTickMapper implements DomainToMessage<UpbitOrderbookDto, TickR
                 EXCHANGE_TYPE,
                 quote,
                 base,
-                dto.obu().getFirst().bp().toString(),
-                dto.obu().getFirst().ap().toString(),
+                dto.obu().get(0).bp().toString(),
+                dto.obu().get(0).ap().toString(),
                 System.currentTimeMillis()
         );
     }

@@ -77,7 +77,7 @@ class TickRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        TickEntity stored = found.getFirst();
+        TickEntity stored = found.get(0);
         assertThat(stored.getMarketCodeId()).isEqualTo(42L);
         assertThat(stored.getBid()).isEqualByComparingTo(new BigDecimal("50000.12345678"));
         assertThat(stored.getAsk()).isEqualByComparingTo(new BigDecimal("50100.98765432"));

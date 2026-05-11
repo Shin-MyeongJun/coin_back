@@ -65,7 +65,7 @@ class TickCandleStoreTest {
         // then
         List<TickCandle> candles = sut.getCandles(Interval.M1);
         assertThat(candles).hasSize(1);
-        TickCandle candle = candles.getFirst();
+        TickCandle candle = candles.get(0);
         assertThat(candle.getOpen()).isEqualByComparingTo("100");
         assertThat(candle.getHigh()).isEqualByComparingTo("200");
         assertThat(candle.getClose()).isEqualByComparingTo("200");
@@ -116,7 +116,7 @@ class TickCandleStoreTest {
         // then
         List<TickCandle> candles = sut.getCandles(Interval.M1);
         assertThat(candles).hasSize(1);
-        assertThat(candles.getFirst().getKey()).isEqualTo(key2);
+        assertThat(candles.get(0).getKey()).isEqualTo(key2);
     }
 
     @Test

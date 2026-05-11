@@ -84,7 +84,7 @@ class TickCandleRepositoryTest {
 
         // then
         assertThat(found).hasSize(1);
-        TickCandleEntity stored = found.getFirst();
+        TickCandleEntity stored = found.get(0);
         assertThat(stored.getMarketCodeId()).isEqualTo(42L);
         assertThat(stored.getInterval()).isEqualTo(Interval.M1);
         assertThat(stored.getOpen()).isEqualByComparingTo("100.00");
