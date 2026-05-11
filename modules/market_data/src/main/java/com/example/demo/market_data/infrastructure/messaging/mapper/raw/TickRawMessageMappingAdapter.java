@@ -40,8 +40,8 @@ public class TickRawMessageMappingAdapter implements MessageToDomain<TickRawMess
 
         return marketCodeId.map(aLong -> new Tick(
                 aLong,
-                BigDecimal.valueOf(Double.parseDouble(raw.bid())),
-                BigDecimal.valueOf(Double.parseDouble(raw.ask())),
+                new BigDecimal(raw.bid()),
+                new BigDecimal(raw.ask()),
                 raw.timestamp()
         )).orElse(null);
 

@@ -175,6 +175,7 @@ api
 | `ingestion-exchange.tick-raw` | `ingestion_exchange_shard` | `market_data` |
 | `ingestion-exchange.market-code-raw` | `ingestion_exchange_shard` | `meta_data` |
 | `ingestion-fx.fx` | `fx_ingestion` | `market_data` |
+| `economic-ind.indicator` | `economic_ind_shard` | MVP 내 downstream consumer 없음 |
 | `meta-data.exchange` | `meta_data` | `market_data` |
 | `meta-data.market-code` | `meta_data` | `market_data` |
 | `market-data.tick` | `market_data` | `analytics`, `api` SSE |
@@ -299,7 +300,7 @@ Spring 규칙:
 3. application.yml 중복과 하드코딩: 주요 실행 모듈의 Kafka bootstrap, 거래소/FRED endpoint, `ddl-auto`는 env fallback 형태로 정리했습니다. 새 설정은 `KAFKA_BOOTSTRAP_SERVERS`/`KAFKA_SERVERS`, `JPA_DDL_AUTO`, 거래소별 `*_BASE_URL`/`*_WS_URL` 환경변수를 우선합니다. 다만 각 모듈에 중복된 거래소 설정 블록 자체는 아직 남아 있어 별도 공통화 후보입니다.
 4. contracts 불일치 가능성: Java record와 proto가 공존합니다. Kafka JSON 직렬화 기준은 Java record입니다.
 5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있고, flush 시점에 DB write 이후 Kafka publish까지 이어집니다. 운영 수준 보강 시에는 Kafka publish 실패 처리와 outbox 패턴 적용 여부를 우선 검토하세요.
-6. economic publisher: `EcoIndPublisher.publish()`는 현재 빈 구현입니다. 경제지표 Kafka 발행은 완성 상태로 보지 않습니다.
+6. economic publisher: `EcoIndPublisher.publish()`는 `economic-ind.indicator` Kafka 발행까지 구현되어 있습니다. 다만 MVP 내 downstream consumer/API stream은 아직 없으므로 필요 시 별도 read/stream 통합이 필요합니다.
 7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
 8. trading: 소스가 없는 placeholder입니다.
 9. `TickBuffer.flush()` 관련 예전 문서의 버그는 현재 코드에서 해결되어 있습니다. `flush()`가 snapshot 후 `buffer.clear()`를 호출합니다.

@@ -20,11 +20,13 @@ public class FredProperties {
     @Getter
     @Setter
     public static class TrackedSeries {
+        private String country;
         private String standardIndName;
         private String seriesId;
         private Integer releaseId;
         private String name;
         private String frequency;   // DAILY, MONTHLY, QUARTERLY
+        private String unit;
     }
 
     @Getter @Setter

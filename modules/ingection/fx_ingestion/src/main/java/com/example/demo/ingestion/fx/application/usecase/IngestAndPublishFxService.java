@@ -14,9 +14,11 @@ public class IngestAndPublishFxService implements IngestAndPublishFxUseCase {
     private final IngestFxDataUseCase useCase;
 
     @Override
-    public void run(String quote, String base) {
-        //일단 달러만 처리
-        FxMessage message = useCase.get("USD","KRW");
+    public void run(String base, String quote) {
+        FxMessage message = useCase.get(base, quote);
+        if (message == null) {
+            return;
+        }
         publishPort.publish(message);
     }
 }

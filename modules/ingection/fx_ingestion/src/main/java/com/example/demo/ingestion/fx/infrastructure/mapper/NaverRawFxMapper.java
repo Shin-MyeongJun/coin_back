@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Component
 public class NaverRawFxMapper implements RawToMessage<String,FxMessage>  {
-    private final String pair_format ="{%s}_{%s}";
+    private final String pair_format ="%s/%s";
 
     @Override
     public FxMessage toMessage( String s, Map<String, String> args)  {

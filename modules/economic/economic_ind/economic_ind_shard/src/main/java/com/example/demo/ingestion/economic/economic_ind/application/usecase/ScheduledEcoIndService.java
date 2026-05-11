@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseCase {
@@ -23,7 +24,9 @@ public abstract class ScheduledEcoIndService<RAW> implements ScheduledEcoIndUseC
     public void process() {
         List<EconomicRawIndicator> indList = loadRawIndDataPort.getRaws()
                 .stream()
+                .filter(Objects::nonNull)
                 .map(raw -> rawMapper.toDomain(raw, new HashMap<>()))
+                .filter(Objects::nonNull)
                 .toList();
 
         codeSave.saveAll(indList.stream().map(EconomicRawIndicator::code).toList());

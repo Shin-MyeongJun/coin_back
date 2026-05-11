@@ -17,11 +17,11 @@ public class NaverFxAdapter implements IngestFxDataUseCase {
     private final NaverRawFxMapper mapper;
     private final NaverRealTimeFxClient client;
 
-    public FxMessage get(String quote , String base){
-        String raw = client.getRaw(quote, base).block();
+    public FxMessage get(String base, String quote){
+        String raw = client.getRaw(base, quote).block();
         Map<String,String > args = new HashMap<>();
-        args.put("compare", quote);
         args.put("base", base);
+        args.put("compare", quote);
         return mapper.toMessage(raw, args);
     }
 }

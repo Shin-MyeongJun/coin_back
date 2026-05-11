@@ -28,31 +28,36 @@ class IngestAndPublishFxServiceTest {
     IngestAndPublishFxService sut;
 
     @Test
-    @DisplayName("run — useCase.get('USD','KRW') 호출 후 publishPort.publish에 전달")
-    void run_getsAndPublishes() {
-        // given
+    @DisplayName("run은 전달받은 base/quote로 FX를 조회하고 발행한다")
+    void runGetsAndPublishesRequestedPair() {
         FxMessage msg = new FxMessage("USD/KRW", "USD", "KRW", new BigDecimal("1320.50"), 1_000L);
         given(useCase.get("USD", "KRW")).willReturn(msg);
 
-        // when
         sut.run("USD", "KRW");
 
-        // then
         then(useCase).should().get("USD", "KRW");
         then(publishPort).should().publish(msg);
     }
 
     @Test
-    @DisplayName("run — quote/base 인수 무관하게 항상 'USD','KRW'로 조회")
-    void run_alwaysUsesUsdKrw() {
-        // given
-        FxMessage msg = new FxMessage("USD/KRW", "USD", "KRW", new BigDecimal("1300"), 2_000L);
-        given(useCase.get("USD", "KRW")).willReturn(msg);
+    @DisplayName("run은 USD/KRW 외의 요청도 고정값으로 덮지 않는다")
+    void runDoesNotForceUsdKrw() {
+        FxMessage msg = new FxMessage("EUR/JPY", "EUR", "JPY", new BigDecimal("160"), 2_000L);
+        given(useCase.get("EUR", "JPY")).willReturn(msg);
 
-        // when  — 인수가 달라도 내부에서 USD/KRW 고정
         sut.run("EUR", "JPY");
 
-        // then
-        then(useCase).should().get("USD", "KRW");
+        then(useCase).should().get("EUR", "JPY");
+        then(publishPort).should().publish(msg);
+    }
+
+    @Test
+    @DisplayName("run은 FX 조회 실패 시 null 메시지를 발행하지 않는다")
+    void runDoesNotPublishNullMessage() {
+        given(useCase.get("USD", "KRW")).willReturn(null);
+
+        sut.run("USD", "KRW");
+
+        then(publishPort).shouldHaveNoInteractions();
     }
 }

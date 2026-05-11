@@ -24,9 +24,16 @@ public class EcoIndEntityMapper implements DomainToEntity<EconomicRawIndicator,E
         return EcoIndEntity.builder()
                 .indCodeId(cache.getId(code))
                 .value(value.value())
-                .observationDate(Long.valueOf(value.observationDate()))
+                .observationDate(toObservationDate(value.observationDate()))
                 .releaseDate(value.releaseDate())
                 .timestamp(value.timestamp())
                 .build();
+    }
+
+    private Long toObservationDate(String observationDate) {
+        if (observationDate == null || observationDate.isBlank()) {
+            return null;
+        }
+        return Long.valueOf(observationDate.replace("-", ""));
     }
 }

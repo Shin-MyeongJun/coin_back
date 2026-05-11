@@ -17,6 +17,9 @@ public enum ReleaseFrequency {
     }
 
     public static ReleaseFrequency fromValue(String value) {
+        if (value == null || value.isBlank()) {
+            return UNKNOWN;
+        }
         for (ReleaseFrequency frequency : ReleaseFrequency.values()) {
             if (frequency.value.equalsIgnoreCase(value)) {
                 return frequency;

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class FredClientAdapter implements LoadRawIndSchedulePort<ReleaseDateDto>
     public List<FredObservationResultDto> getRaws() {
         List<FredObservationResultDto> targets = properties.getTrackedSeries().stream()
                 .map(data -> client.fetchLatestObservation(data.getSeriesId()))
+                .filter(Objects::nonNull)
                 .toList();
         return targets;
     }

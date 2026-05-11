@@ -69,4 +69,17 @@ class ScheduledEcoIndServiceTest {
         then(codeSave).should().saveAll(List.of());
         then(indSave).should().saveAll(List.of());
     }
+
+    @Test
+    @DisplayName("process — null raw와 null mapping 결과는 저장 대상에서 제외")
+    void process_ignoresNullRawAndNullMappedValue() {
+        given(loadPort.getRaws()).willReturn(List.of("raw1", "raw2"));
+        given(rawMapper.toDomain(eq("raw1"), any())).willReturn(null);
+        given(rawMapper.toDomain(eq("raw2"), any())).willReturn(ind2);
+
+        sut.process();
+
+        then(codeSave).should().saveAll(List.of(code2));
+        then(indSave).should().saveAll(List.of(ind2));
+    }
 }

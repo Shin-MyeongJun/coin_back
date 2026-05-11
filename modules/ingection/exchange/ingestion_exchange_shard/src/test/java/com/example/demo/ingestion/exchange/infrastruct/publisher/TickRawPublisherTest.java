@@ -30,6 +30,6 @@ class TickRawPublisherTest {
         sut.publish(msg);
 
         // then
-        then(kafkaTemplate).should().send("ingestion-exchange.tick-raw", msg);
+        then(kafkaTemplate).should().send("ingestion-exchange.tick-raw", "BTC", msg);
     }
 }

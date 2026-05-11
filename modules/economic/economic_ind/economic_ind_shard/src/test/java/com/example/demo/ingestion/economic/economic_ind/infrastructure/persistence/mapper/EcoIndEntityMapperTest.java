@@ -32,9 +32,8 @@ class EcoIndEntityMapperTest {
     @DisplayName("toEntity — cache로 indCodeId를 조회하고 value 필드를 모두 매핑")
     void toEntity_usesCache_andMapsAllValueFields() {
         EconomicIndicatorCode code = EconomicIndicatorCode.of("US", "CPI", ReleaseFrequency.MONTHLY, IndicatorUnit.PERCENT);
-        // observationDate must be a numeric string (Long.valueOf is called internally)
         EconomicIndicatorValue value = new EconomicIndicatorValue(
-                new BigDecimal("3.5"), "1700000000", 1_699_000_000L, 1_700_000_001L);
+                new BigDecimal("3.5"), "2026-05-11", 1_699_000_000L, 1_700_000_001L);
         EconomicRawIndicator domain = new EconomicRawIndicator(code, value);
 
         given(cache.getId(code)).willReturn(42L);
@@ -43,7 +42,7 @@ class EcoIndEntityMapperTest {
 
         assertThat(entity.getIndCodeId()).isEqualTo(42L);
         assertThat(entity.getValue()).isEqualByComparingTo(new BigDecimal("3.5"));
-        assertThat(entity.getObservationDate()).isEqualTo(1_700_000_000L);
+        assertThat(entity.getObservationDate()).isEqualTo(20260511L);
         assertThat(entity.getReleaseDate()).isEqualTo(1_699_000_000L);
         assertThat(entity.getTimestamp()).isEqualTo(1_700_000_001L);
     }
