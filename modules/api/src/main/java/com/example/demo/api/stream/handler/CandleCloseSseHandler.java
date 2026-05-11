@@ -27,6 +27,12 @@ public class CandleCloseSseHandler {
                             err -> emitter.completeWithError(err),
                             emitter::complete
                     );
+            case "premium-detail" -> analyticsStream.premiumDetailCandleSink.asFlux()
+                    .subscribe(
+                            msg -> sendEvent(emitter, "candle-close", msg),
+                            err -> emitter.completeWithError(err),
+                            emitter::complete
+                    );
             default -> analyticsStream.tickCandleSink.asFlux()
                     .subscribe(
                             msg -> sendEvent(emitter, "candle-close", msg),

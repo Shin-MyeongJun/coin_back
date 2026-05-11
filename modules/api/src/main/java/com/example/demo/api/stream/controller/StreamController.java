@@ -2,6 +2,7 @@ package com.example.demo.api.stream.controller;
 
 import com.example.demo.api.stream.handler.CandleCloseSseHandler;
 import com.example.demo.api.stream.handler.IndicatorCloseSseHandler;
+import com.example.demo.api.stream.handler.PremiumDetailSseHandler;
 import com.example.demo.api.stream.handler.PremiumSseHandler;
 import com.example.demo.api.stream.handler.TickSseHandler;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class StreamController {
 
     private final TickSseHandler tickSseHandler;
     private final PremiumSseHandler premiumSseHandler;
+    private final PremiumDetailSseHandler premiumDetailSseHandler;
     private final CandleCloseSseHandler candleCloseSseHandler;
     private final IndicatorCloseSseHandler indicatorCloseSseHandler;
 
@@ -31,6 +33,11 @@ public class StreamController {
     @GetMapping(value = "/premium", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamPremium() {
         return premiumSseHandler.subscribe();
+    }
+
+    @GetMapping(value = "/premium-detail/raw", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamPremiumDetailRaw() {
+        return premiumDetailSseHandler.subscribe();
     }
 
     @GetMapping(value = "/candles/close", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

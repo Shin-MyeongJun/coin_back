@@ -2,6 +2,7 @@ package com.example.demo.api.stream.consumer;
 
 import com.example.demo.api.stream.sink.AnalyticsStream;
 import com.example.demo.contracts.message.candle.PremiumCandleMessage;
+import com.example.demo.contracts.message.candle.PremiumDetailCandleMessage;
 import com.example.demo.contracts.message.candle.TickCandleMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,20 @@ public class CandleCloseStreamConsumer {
             analyticsStream.premiumCandleSink.tryEmitNext(message);
         } catch (Exception e) {
             log.warn("Failed to deserialize PremiumCandleMessage: {}", e.getMessage());
+        }
+    }
+
+    @KafkaListener(
+            topics = "analytics.premium-detail-candle",
+            groupId = "#{T(java.util.UUID).randomUUID().toString()}",
+            containerFactory = "streamKafkaListenerContainerFactory"
+    )
+    public void onPremiumDetailCandle(ConsumerRecord<String, String> record) {
+        try {
+            PremiumDetailCandleMessage message = objectMapper.readValue(record.value(), PremiumDetailCandleMessage.class);
+            analyticsStream.premiumDetailCandleSink.tryEmitNext(message);
+        } catch (Exception e) {
+            log.warn("Failed to deserialize PremiumDetailCandleMessage: {}", e.getMessage());
         }
     }
 }

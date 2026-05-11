@@ -4,6 +4,7 @@ import com.example.demo.api.config.CorsConfig;
 import com.example.demo.api.config.SecurityConfig;
 import com.example.demo.api.stream.handler.CandleCloseSseHandler;
 import com.example.demo.api.stream.handler.IndicatorCloseSseHandler;
+import com.example.demo.api.stream.handler.PremiumDetailSseHandler;
 import com.example.demo.api.stream.handler.PremiumSseHandler;
 import com.example.demo.api.stream.handler.TickSseHandler;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +30,7 @@ class StreamControllerTest {
 
     @MockitoBean TickSseHandler tickSseHandler;
     @MockitoBean PremiumSseHandler premiumSseHandler;
+    @MockitoBean PremiumDetailSseHandler premiumDetailSseHandler;
     @MockitoBean CandleCloseSseHandler candleCloseSseHandler;
     @MockitoBean IndicatorCloseSseHandler indicatorCloseSseHandler;
 
@@ -76,6 +78,20 @@ class StreamControllerTest {
     }
 
     @Test
+    @DisplayName("GET /stream/premium-detail/raw ??premiumDetailSseHandler.subscribe() ?꾩엫")
+    void streamPremiumDetailRaw_delegatesToHandler() throws Exception {
+        // given
+        given(premiumDetailSseHandler.subscribe()).willReturn(new SseEmitter());
+
+        // when / then
+        mvc.perform(get("/api/v1/stream/premium-detail/raw")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk());
+
+        then(premiumDetailSseHandler).should().subscribe();
+    }
+
+    @Test
     @DisplayName("GET /stream/candles/close?type=premium — candleCloseSseHandler.subscribe(\"premium\") 위임")
     void streamCandleClose_withType_delegatesToHandler() throws Exception {
         // given
@@ -88,6 +104,21 @@ class StreamControllerTest {
                 .andExpect(status().isOk());
 
         then(candleCloseSseHandler).should().subscribe("premium");
+    }
+
+    @Test
+    @DisplayName("GET /stream/candles/close?type=premium-detail ??candleCloseSseHandler.subscribe(\"premium-detail\") ?꾩엫")
+    void streamPremiumDetailCandleClose_delegatesToHandler() throws Exception {
+        // given
+        given(candleCloseSseHandler.subscribe("premium-detail")).willReturn(new SseEmitter());
+
+        // when / then
+        mvc.perform(get("/api/v1/stream/candles/close")
+                        .param("type", "premium-detail")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk());
+
+        then(candleCloseSseHandler).should().subscribe("premium-detail");
     }
 
     @Test

@@ -161,7 +161,7 @@ market-data.tick / premium / premium-detail
 api
   -> query modules: REST 조회
   -> Kafka stream consumers: market-data.*, analytics.*
-  -> SSE handlers: tick, premium, candle close, indicator close
+  -> SSE handlers: tick, premium, premium-detail raw, candle close, indicator close
 ```
 
 ---
@@ -179,10 +179,10 @@ api
 | `meta-data.market-code` | `meta_data` | `market_data` |
 | `market-data.tick` | `market_data` | `analytics`, `api` SSE |
 | `market-data.premium` | `market_data` | `analytics`, `api` SSE |
-| `market-data.premium-detail` | `market_data` | `analytics` |
+| `market-data.premium-detail` | `market_data` | `analytics`, `api` SSE |
 | `analytics.tick-candle` | `analytics` publisher class | `api` SSE |
 | `analytics.premium-candle` | `analytics` publisher class | `api` SSE |
-| `analytics.premium-detail-candle` | `analytics` publisher class | currently no API consumer found |
+| `analytics.premium-detail-candle` | `analytics` publisher class | `api` SSE |
 | `analytics.tick-indicator` | `analytics` publisher class | `api` SSE |
 | `analytics.premium-indicator` | `analytics` publisher class | `api` SSE |
 | `{moduleName}.heartbeat` | `infra_heartbeat` | `infra_heartbeat` |
@@ -298,7 +298,7 @@ Spring 규칙:
 2. `infra_heartbeat/build.gradle`: `implementation implementation(project(...))` 형태가 남아 있습니다. 현재 컴파일은 통과하지만 정리 대상입니다.
 3. application.yml 중복과 하드코딩: 주요 실행 모듈의 Kafka bootstrap, 거래소/FRED endpoint, `ddl-auto`는 env fallback 형태로 정리했습니다. 새 설정은 `KAFKA_BOOTSTRAP_SERVERS`/`KAFKA_SERVERS`, `JPA_DDL_AUTO`, 거래소별 `*_BASE_URL`/`*_WS_URL` 환경변수를 우선합니다. 다만 각 모듈에 중복된 거래소 설정 블록 자체는 아직 남아 있어 별도 공통화 후보입니다.
 4. contracts 불일치 가능성: Java record와 proto가 공존합니다. Kafka JSON 직렬화 기준은 Java record입니다.
-5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있지만, publisher 연결 경로가 DB flush와 분리되어 있습니다. SSE/이벤트 발행 기능을 손볼 때 우선 확인하세요.
+5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있고, flush 시점에 DB write 이후 Kafka publish까지 이어집니다. 운영 수준 보강 시에는 Kafka publish 실패 처리와 outbox 패턴 적용 여부를 우선 검토하세요.
 6. economic publisher: `EcoIndPublisher.publish()`는 현재 빈 구현입니다. 경제지표 Kafka 발행은 완성 상태로 보지 않습니다.
 7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
 8. trading: 소스가 없는 placeholder입니다.

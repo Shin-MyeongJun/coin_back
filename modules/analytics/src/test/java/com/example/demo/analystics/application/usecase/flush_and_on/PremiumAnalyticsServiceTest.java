@@ -3,10 +3,11 @@ package com.example.demo.analystics.application.usecase.flush_and_on;
 import com.example.demo.analystics.application.port.in.PublishAnalyticsDataUseCase;
 import com.example.demo.analystics.application.port.out.WriteAnalyticsValuePort;
 import com.example.demo.analystics.domain.domain.Interval;
-import com.example.demo.analystics.domain.domain.candle.close.TickCloseCandle;
-import com.example.demo.analystics.domain.domain.indicator.close.TickCloseIndicator;
-import com.example.demo.analystics.domain.domain.key.TickKey;
-import com.example.demo.analystics.domain.partition_registry.TickPartitionRegistry;
+import com.example.demo.analystics.domain.domain.candle.close.PremiumCloseCandle;
+import com.example.demo.analystics.domain.domain.indicator.TradeIndicatorType;
+import com.example.demo.analystics.domain.domain.indicator.close.PremiumCloseIndicator;
+import com.example.demo.analystics.domain.domain.key.PremiumKey;
+import com.example.demo.analystics.domain.partition_registry.PremiumPartitionRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,48 +25,49 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-class TickAnalyticsServiceTest {
+class PremiumAnalyticsServiceTest {
 
     @Mock
-    TickPartitionRegistry registry;
+    PremiumPartitionRegistry registry;
 
     @Mock
-    WriteAnalyticsValuePort<TickCloseCandle> candleWriter;
+    WriteAnalyticsValuePort<PremiumCloseCandle> candleWriter;
 
     @Mock
-    WriteAnalyticsValuePort<TickCloseIndicator> indicatorWriter;
+    WriteAnalyticsValuePort<PremiumCloseIndicator> indicatorWriter;
 
     @Mock
-    PublishAnalyticsDataUseCase<TickCloseCandle> candlePublisher;
+    PublishAnalyticsDataUseCase<PremiumCloseCandle> candlePublisher;
 
     @Mock
-    PublishAnalyticsDataUseCase<TickCloseIndicator> indicatorPublisher;
+    PublishAnalyticsDataUseCase<PremiumCloseIndicator> indicatorPublisher;
 
-    TickAnalyticsService sut;
+    PremiumAnalyticsService sut;
 
     @BeforeEach
     void setUp() {
-        sut = new TickAnalyticsService(registry, candleWriter, indicatorWriter, candlePublisher, indicatorPublisher);
+        sut = new PremiumAnalyticsService(registry, candleWriter, indicatorWriter, candlePublisher, indicatorPublisher);
     }
 
     @Test
-    @DisplayName("onData — registry.update(partitionId, key, price) 위임")
+    @DisplayName("onData ??registry.update(partitionId, key, price) ?꾩엫")
     void onData_delegatesToRegistry() {
         // given
-        TickKey key = new TickKey(1L);
+        PremiumKey key = new PremiumKey("BTC", 1L, 2L);
 
         // when
-        sut.onData(0, key, new BigDecimal("100"));
+        sut.onData(0, key, new BigDecimal("1.25"));
 
         // then
-        then(registry).should().update(0, key, new BigDecimal("100"));
+        then(registry).should().update(0, key, new BigDecimal("1.25"));
     }
 
     @Test
-    @DisplayName("flushCandles — non-empty → candleWriter.write 호출")
-    void flushCandles_nonEmpty_writesCandles() {
+    @DisplayName("flushCandles ??non-empty ??DB write ??Kafka publish ?쒖꽌濡?泥섎━")
+    void flushCandles_nonEmpty_writesAndPublishes() {
         // given
-        TickCloseCandle fake = new TickCloseCandle(1L, Interval.M1,
+        PremiumCloseCandle fake = new PremiumCloseCandle(
+                "BTC", 1L, 2L, Interval.M1,
                 BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, null);
         given(registry.flushCandles(Interval.M1)).willReturn(List.of(fake));
 
@@ -79,8 +81,8 @@ class TickAnalyticsServiceTest {
     }
 
     @Test
-    @DisplayName("flushCandles — empty → candleWriter.write 미호출")
-    void flushCandles_empty_skipWrite() {
+    @DisplayName("flushCandles ??empty ??write/publish 誘명샇異?")
+    void flushCandles_empty_skipWriteAndPublish() {
         // given
         given(registry.flushCandles(Interval.M1)).willReturn(List.of());
 
@@ -93,11 +95,11 @@ class TickAnalyticsServiceTest {
     }
 
     @Test
-    @DisplayName("flushIndicators — non-empty → indicatorWriter.write 호출")
-    void flushIndicators_nonEmpty_writesIndicators() {
+    @DisplayName("flushIndicators ??non-empty ??DB write ??Kafka publish ?쒖꽌濡?泥섎━")
+    void flushIndicators_nonEmpty_writesAndPublishes() {
         // given
-        TickCloseIndicator fake = new TickCloseIndicator(
-                1L, Interval.M1, null, 0, BigDecimal.ZERO, null);
+        PremiumCloseIndicator fake = new PremiumCloseIndicator(
+                "BTC", 1L, 2L, Interval.M1, TradeIndicatorType.EMA, 14, BigDecimal.TEN, null);
         given(registry.flushIndicators(Interval.M1)).willReturn(List.of(fake));
 
         // when
@@ -110,8 +112,8 @@ class TickAnalyticsServiceTest {
     }
 
     @Test
-    @DisplayName("flushIndicators — empty → indicatorWriter.write 미호출")
-    void flushIndicators_empty_skipWrite() {
+    @DisplayName("flushIndicators ??empty ??write/publish 誘명샇異?")
+    void flushIndicators_empty_skipWriteAndPublish() {
         // given
         given(registry.flushIndicators(Interval.M1)).willReturn(List.of());
 
