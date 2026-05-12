@@ -1,10 +1,10 @@
-# Stream smoke test
+# 스트림 스모크 테스트
 
-This folder contains a small end-to-end smoke script for the API SSE stream.
+이 폴더는 API SSE 스트림 경로를 빠르게 확인하는 작은 E2E 스모크 테스트 스크립트를 담고 있습니다.
 
-The script does not connect to real exchange WebSockets. Instead, it injects one JSON message directly into Kafka and checks whether the running API receives that Kafka record and emits it through SSE.
+이 스크립트는 실제 거래소 WebSocket에 연결하지 않습니다. 대신 Kafka 토픽에 테스트 JSON 메시지 1개를 직접 넣고, 실행 중인 API가 그 Kafka 레코드를 받아 SSE로 다시 내보내는지 확인합니다.
 
-Covered scenarios:
+## 확인 시나리오
 
 - `tick-raw`: `market-data.tick` -> `/api/v1/stream/ticks`
 - `premium-raw`: `market-data.premium` -> `/api/v1/stream/premium`
@@ -15,57 +15,59 @@ Covered scenarios:
 - `tick-indicator`: `analytics.tick-indicator` -> `/api/v1/stream/indicators/close?type=tick`
 - `premium-indicator`: `analytics.premium-indicator` -> `/api/v1/stream/indicators/close?type=premium`
 
-Prerequisites:
+## 사전 준비
 
 ```powershell
 docker compose -f .\docker\docker-compose.yml up -d zookeeper kafka postgres redis
 .\gradlew.bat :api:bootRun
 ```
 
-Run every scenario:
+## 전체 시나리오 실행
 
 ```powershell
 .\scripts\e2e\stream-smoke.ps1
 ```
 
-If PowerShell blocks script execution:
+PowerShell 실행 정책 때문에 스크립트가 막히면 다음처럼 실행합니다.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\e2e\stream-smoke.ps1
 ```
 
-Run one scenario:
+## 단일 시나리오 실행
 
 ```powershell
 .\scripts\e2e\stream-smoke.ps1 -Scenario premium-detail-candle
 ```
 
-Use a custom API URL:
+## API 주소 변경
 
 ```powershell
 .\scripts\e2e\stream-smoke.ps1 -ApiBaseUrl http://localhost:8081
 ```
 
-List available scenarios without touching Docker or the API:
+## 시나리오 목록 확인
+
+Docker나 API를 건드리지 않고 사용 가능한 시나리오만 확인합니다.
 
 ```powershell
 .\scripts\e2e\stream-smoke.ps1 -ListScenarios
 ```
 
-What a pass means:
+## 성공 의미
 
 ```text
-Kafka topic receives test JSON
-  -> API Kafka listener deserializes the record
-  -> API emits the record into the in-memory stream sink
-  -> SSE endpoint sends the record to a connected client
-  -> script captures the SSE line and finds expected text
+Kafka topic이 테스트 JSON을 받음
+  -> API Kafka listener가 레코드를 역직렬화함
+  -> API가 레코드를 인메모리 stream sink로 전달함
+  -> SSE endpoint가 연결된 클라이언트로 레코드를 전송함
+  -> 스크립트가 SSE 응답 라인을 캡처하고 기대 문자열을 찾음
 ```
 
-What this does not prove:
+## 검증하지 않는 범위
 
-- It does not prove that real exchange WebSocket ingestion is working.
-- It does not prove that analytics can compute candles from live ticks.
-- It does not prove that PostgreSQL or Redis persistence is correct.
+- 실제 거래소 WebSocket ingestion이 동작하는지는 검증하지 않습니다.
+- analytics가 실시간 tick으로 candle을 계산하는지는 검증하지 않습니다.
+- PostgreSQL이나 Redis 영속화가 정확한지는 검증하지 않습니다.
 
-It is intentionally a narrow smoke test for the Kafka-to-API-SSE path.
+이 스크립트는 의도적으로 Kafka -> API -> SSE 경로만 좁게 확인하는 스모크 테스트입니다.

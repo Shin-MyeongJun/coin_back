@@ -4,14 +4,14 @@ CoinData는 거래소 tick, 환율, 메타데이터를 Kafka로 수집하고 Pos
 
 이 저장소의 기준 문서는 [CLAUDE.md](CLAUDE.md)입니다. 모듈 구조, Kafka 토픽, Redis key, 기존 패키지 오타, MVP 제외 항목은 해당 문서를 source of truth로 봅니다.
 
-## What It Proves
+## 검증 포인트
 
 - Kafka 기반 ingestion -> processing -> analytics -> API 흐름을 실제 모듈로 분리했습니다.
 - `market_data`, `analytics`, `query`, `api`가 write/read/stream 책임을 나누며 hexagonal architecture를 유지합니다.
 - PostgreSQL/TimescaleDB, Redis latest/state cache, Kafka topic, SSE stream까지 로컬 Docker 환경에서 검증할 수 있습니다.
 - `scripts/e2e/stream-smoke.ps1`로 API SSE와 Kafka publish/consume 경로를 반복 검증할 수 있습니다.
 
-## Architecture
+## 아키텍처
 
 ```text
 Exchange WebSocket/API
@@ -26,9 +26,9 @@ Exchange WebSocket/API
 
 자세한 구조는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)를 보세요.
 
-## Main Modules
+## 주요 모듈
 
-| Module | Role |
+| 모듈 | 역할 |
 | --- | --- |
 | `contracts` | Kafka JSON message record와 향후 proto 계약 후보 |
 | `infra_shard` | 공통 mapper, Kafka/Redis/JSON/SQL utility |
@@ -41,7 +41,7 @@ Exchange WebSocket/API
 | `api` | REST API, Kafka stream consumer, SSE fanout |
 | `trading` | MVP 제외. 향후 자동매매/주문 연동 확장 후보 |
 
-## Tech Stack
+## 기술 스택
 
 - Java 21, Spring Boot 3.4.5, Gradle 8.4
 - Kafka, PostgreSQL/TimescaleDB, Redis
@@ -50,7 +50,7 @@ Exchange WebSocket/API
 - Testcontainers, WireMock, AssertJ, BDDMockito, StepVerifier, ArchUnit
 - Prometheus, Grafana, kafka-exporter, redis-exporter
 
-## Quick Start
+## 빠른 시작
 
 Docker 인프라를 먼저 실행합니다.
 
@@ -88,7 +88,7 @@ API health check:
 curl.exe http://localhost:8080/actuator/health
 ```
 
-## Demo Verification
+## 데모 검증
 
 SSE smoke script는 Kafka topic에 테스트 메시지를 넣고 API SSE로 수신되는지 확인합니다.
 
@@ -125,7 +125,7 @@ Get-Help .\scripts\e2e\stream-smoke.ps1 -Full
 
 전체 엔드포인트는 [docs/API.md](docs/API.md)에 정리했습니다.
 
-## Verified Scope
+## 검증된 범위
 
 최근 로컬 Docker 환경에서 확인한 범위:
 
@@ -139,7 +139,7 @@ Get-Help .\scripts\e2e\stream-smoke.ps1 -Full
 
 전체 `test`는 Kafka/PostgreSQL/Redis/Testcontainers 상태에 영향을 받을 수 있으므로, 실패 시 모듈별로 나눠 확인합니다.
 
-## MVP Scope
+## MVP 범위
 
 MVP에 포함:
 
@@ -160,7 +160,7 @@ MVP 제외:
 
 이 항목들은 미완성으로 숨기는 대상이 아니라, 이번 MVP에서 의도적으로 제외한 확장 후보입니다.
 
-## Documents
+## 문서
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/DEMO.md](docs/DEMO.md)
