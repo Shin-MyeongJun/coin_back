@@ -382,3 +382,17 @@ Spring 규칙:
 - `contracts` 모듈에 남아 있는 `.proto` 파일은 향후 gRPC, schema registry, binary serialization, cross-language client 지원을 검토하기 위한 확장 후보입니다.
 - MVP에서는 proto 기반 직렬화나 gRPC 계약 생성을 사용하지 않습니다.
 - README 작성 시에는 "현재 MVP는 Java record 기반 Kafka JSON 계약을 사용하며, proto는 향후 계약 안정화/다언어 연동을 위한 후보"라고 설명합니다.
+
+### 13.3 Economic realtime downstream
+
+- 경제지표 수집, 저장, 조회 계층은 프로젝트 안에 존재합니다.
+- 다만 현재 MVP의 핵심 검증 범위는 거래소 tick, 환율, premium, candle, indicator로 이어지는 market data pipeline입니다.
+- 경제지표를 `analytics` 실시간 계산이나 API SSE stream으로 연결하는 downstream 통합은 MVP 범위에서 제외합니다.
+- README/API 문서에서는 경제지표 REST 조회는 제공하되, 실시간 분석 이벤트 파이프라인의 핵심 데모 범위는 아니라고 명시합니다.
+
+### 13.4 Frontend dashboard
+
+- CoinData 백엔드 MVP는 REST/SSE API 제공까지를 범위로 삼습니다.
+- 실시간 차트, dashboard, 사용자 화면은 별도 프론트엔드 프로젝트에서 담당합니다.
+- 따라서 이 저장소에 화면이 없는 것은 현재 MVP의 결함으로 보지 않습니다.
+- README에서는 "프론트엔드 대시보드는 별도 프로젝트에서 담당"한다고 명시합니다.

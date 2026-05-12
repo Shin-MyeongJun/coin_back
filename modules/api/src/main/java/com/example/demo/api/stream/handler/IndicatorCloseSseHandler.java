@@ -37,6 +37,9 @@ public class IndicatorCloseSseHandler {
         emitter.onCompletion(subscription::dispose);
         emitter.onTimeout(subscription::dispose);
         emitter.onError(e -> subscription.dispose());
+        if (!SseEmitters.sendConnected(emitter)) {
+            subscription.dispose();
+        }
         return emitter;
     }
 

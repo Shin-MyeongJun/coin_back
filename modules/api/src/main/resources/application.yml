@@ -16,6 +16,11 @@ spring:
   mvc:
     problem-details:
       enabled: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.cassandra.CassandraReactiveDataAutoConfiguration
 
 springdoc:
   swagger-ui:
@@ -41,3 +46,7 @@ management:
     metrics:
       export:
         enabled: ${MANAGEMENT_PROMETHEUS_ENABLED:true}
+  datadog:
+    metrics:
+      export:
+        enabled: false

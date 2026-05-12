@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@RestController
+@RestController("economicIndicatorController")
 @RequestMapping("/api/v1/economic/indicators")
 @RequiredArgsConstructor
 public class IndicatorController {

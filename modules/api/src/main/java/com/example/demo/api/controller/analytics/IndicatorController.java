@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@RestController
+@RestController("analyticsIndicatorController")
 @RequestMapping("/api/v1/analytics/indicators")
 @RequiredArgsConstructor
 public class IndicatorController {

@@ -1,3 +1,26 @@
+<#
+.SYNOPSIS
+Runs Kafka-to-API SSE smoke tests for CoinData.
+
+.DESCRIPTION
+This script opens one API SSE endpoint, produces one JSON message to the matching Kafka topic, and verifies that the expected text is captured from the SSE stream.
+It is intended for local Docker-based validation after Kafka and the API module are running.
+
+.EXAMPLE
+.\scripts\e2e\stream-smoke.ps1 -Scenario all -TimeoutSeconds 5
+
+Runs every supported stream scenario.
+
+.EXAMPLE
+.\scripts\e2e\stream-smoke.ps1 -Scenario tick-raw -ApiBaseUrl http://localhost:8080
+
+Runs only the market-data tick SSE scenario.
+
+.EXAMPLE
+.\scripts\e2e\stream-smoke.ps1 -ListScenarios
+
+Prints the available scenario names.
+#>
 [CmdletBinding()]
 param(
     [ValidateSet("all", "tick-raw", "premium-raw", "premium-detail-raw", "tick-candle", "premium-candle", "premium-detail-candle", "tick-indicator", "premium-indicator")]
@@ -24,13 +47,13 @@ $Scenarios = [ordered]@{
         Endpoint = "/api/v1/stream/ticks?marketCodeId=9001"
         Topic    = "market-data.tick"
         Payload  = '{"marketCodeId":9001,"bid":100.00,"ask":101.00,"timestamp":1710000000000}'
-        Expected = @('"marketCodeId":9001', '"bid":100.00', '"timestamp":1710000000000')
+        Expected = @('"marketCodeId":9001', '"bid":"100.00"', '"timestamp":1710000000000')
     }
     "premium-raw" = @{
         Endpoint = "/api/v1/stream/premium"
         Topic    = "market-data.premium"
         Payload  = '{"symbol":"E2E-PREMIUM","baseExchangeId":1,"compareExchangeId":2,"bid":1.23,"ask":1.45,"timestamp":1710000000000}'
-        Expected = @('"symbol":"E2E-PREMIUM"', '"bid":1.23', '"timestamp":1710000000000')
+        Expected = @('"symbol":"E2E-PREMIUM"', '"bid":"1.23"', '"timestamp":1710000000000')
     }
     "premium-detail-raw" = @{
         Endpoint = "/api/v1/stream/premium-detail/raw"
@@ -155,61 +178,11 @@ function Start-SseCapture {
     )
 
     Set-Content -LiteralPath $OutputFile -Value "" -NoNewline
+    $errorFile = "$OutputFile.err"
+    Set-Content -LiteralPath $errorFile -Value "" -NoNewline
+    $arguments = "--no-buffer --silent --show-error --max-time $ReadTimeoutSeconds -H `"Accept: text/event-stream`" `"$Url`""
 
-    return Start-Job -Name "stream-smoke-sse" -ScriptBlock {
-        param(
-            [string]$Url,
-            [string]$OutputFile,
-            [int]$ReadTimeoutSeconds
-        )
-
-        $ErrorActionPreference = "Stop"
-
-        try {
-            Add-Type -AssemblyName System.Net.Http
-
-            $client = [System.Net.Http.HttpClient]::new()
-            $client.Timeout = [TimeSpan]::FromSeconds($ReadTimeoutSeconds)
-
-            $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Get, $Url)
-            $request.Headers.Accept.ParseAdd("text/event-stream")
-
-            $response = $client.SendAsync(
-                $request,
-                [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead
-            ).GetAwaiter().GetResult()
-
-            $response.EnsureSuccessStatusCode() | Out-Null
-
-            $stream = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
-            $reader = [System.IO.StreamReader]::new($stream)
-
-            while (-not $reader.EndOfStream) {
-                $line = $reader.ReadLine()
-                if ($null -ne $line) {
-                    Add-Content -LiteralPath $OutputFile -Value $line
-                }
-            }
-        } catch {
-            Add-Content -LiteralPath $OutputFile -Value "sse-error: $($_.Exception.Message)"
-        } finally {
-            if ($null -ne $reader) {
-                $reader.Dispose()
-            }
-            if ($null -ne $stream) {
-                $stream.Dispose()
-            }
-            if ($null -ne $response) {
-                $response.Dispose()
-            }
-            if ($null -ne $request) {
-                $request.Dispose()
-            }
-            if ($null -ne $client) {
-                $client.Dispose()
-            }
-        }
-    } -ArgumentList $Url, $OutputFile, $ReadTimeoutSeconds
+    return Start-Process -WindowStyle Hidden -FilePath "curl.exe" -ArgumentList $arguments -RedirectStandardOutput $OutputFile -RedirectStandardError $errorFile -PassThru
 }
 
 function Wait-ForText {
@@ -224,7 +197,10 @@ function Wait-ForText {
     while ((Get-Date) -lt $deadline) {
         if (Test-Path -LiteralPath $OutputFile) {
             $content = Get-Content -LiteralPath $OutputFile -Raw -ErrorAction SilentlyContinue
-            $missing = @($Expected | Where-Object { $content -notlike "*$_*" })
+            if ($null -eq $content) {
+                $content = ""
+            }
+            $missing = @($Expected | Where-Object { -not $content.Contains($_) })
 
             if ($missing.Count -eq 0) {
                 return $content
@@ -250,29 +226,32 @@ function Invoke-StreamScenario {
 
     $url = Join-Url $ApiBaseUrl $Config.Endpoint
     $outputFile = Join-Path ([System.IO.Path]::GetTempPath()) "coindata-stream-smoke-$Name.log"
-    $job = $null
+    $captureProcess = $null
 
     Write-Step "Running scenario '$Name'"
     Ensure-KafkaTopic $Config.Topic
 
     try {
         Write-Step "Opening SSE stream $url"
-        $job = Start-SseCapture -Url $url -OutputFile $outputFile -ReadTimeoutSeconds ($TimeoutSeconds + 10)
+        $captureProcess = Start-SseCapture -Url $url -OutputFile $outputFile -ReadTimeoutSeconds $TimeoutSeconds
 
         Start-Sleep -Milliseconds 1000
         Send-KafkaMessage -Topic $Config.Topic -Payload $Config.Payload
 
-        $captured = Wait-ForText -OutputFile $outputFile -Expected $Config.Expected -TimeoutSeconds $TimeoutSeconds
+        [void]$captureProcess.WaitForExit(($TimeoutSeconds + 2) * 1000)
+        if (-not $captureProcess.HasExited) {
+            Stop-Process -Id $captureProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+
+        $captured = Wait-ForText -OutputFile $outputFile -Expected $Config.Expected -TimeoutSeconds 1
         Write-Step "Scenario '$Name' passed"
         Write-Host ""
         Write-Host "Captured SSE output:"
         Write-Host $captured
         Write-Host ""
     } finally {
-        if ($null -ne $job) {
-            Stop-Job -Job $job -ErrorAction SilentlyContinue
-            Receive-Job -Job $job -ErrorAction SilentlyContinue | Out-Null
-            Remove-Job -Job $job -ErrorAction SilentlyContinue
+        if ($null -ne $captureProcess -and -not $captureProcess.HasExited) {
+            Stop-Process -Id $captureProcess.Id -Force -ErrorAction SilentlyContinue
         }
     }
 }
