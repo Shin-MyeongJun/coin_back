@@ -32,9 +32,6 @@ spring:
     autoconfigure:
       exclude: #에외 나중에 제거하기
 #        - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration #jdbc
-        - org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration #cassandra
-        - org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration
-        - org.springframework.boot.autoconfigure.data.cassandra.CassandraReactiveDataAutoConfiguration
         - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration #kafka
         - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration #redis
         - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration

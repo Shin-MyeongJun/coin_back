@@ -9,6 +9,7 @@ import com.example.demo.analystics.infrastructure.cache.indicator.IndicatorRedis
 import com.example.demo.analystics.infrastructure.cache.indicator.codec.IndicatorStateCodecManager;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.IndicatorKeyCodec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,6 +18,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class IndicatorStateReadAdapter<KEY extends DataKey<KEY>> implements ReadAnalyticsStatePort<IndicatorPriceDataKey<KEY>,RecoveryIndicatorState> {
 
@@ -45,7 +47,7 @@ public abstract class IndicatorStateReadAdapter<KEY extends DataKey<KEY>> implem
                 result.put(key, stateCodecManager.decode(key.indicatorKey().type(),value));
             }
         } catch (Exception e) {
-
+            log.warn("Redis state scan failed: redisKey={}", redisKey, e);
         }
         return result;
     }

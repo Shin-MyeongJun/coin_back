@@ -46,25 +46,9 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra'
-	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra-reactive'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
-	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
-	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
-	implementation 'org.springframework.boot:spring-boot-starter-groovy-templates'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-web-services'
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'io.github.wimdeblauwe:htmx-spring-boot-thymeleaf:4.0.1'
 //	implementation 'org.apache.kafka:kafka-streams'
 //	implementation 'org.springframework.cloud:spring-cloud-bus'
 //	implementation 'org.springframework.cloud:spring-cloud-stream'
@@ -75,22 +59,14 @@ dependencies {
 
 //	implementation 'org.springframework.session:spring-session-data-redis'
 //	implementation 'org.springframework.session:spring-session-jdbc'
-	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	runtimeOnly 'io.micrometer:micrometer-registry-datadog'
 
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.projectreactor:reactor-test'
-	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'org.springframework.security:spring-security-test'
-	implementation 'com.auth0:java-jwt:4.5.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// Testcontainers
@@ -101,8 +77,6 @@ dependencies {
 	testImplementation 'org.awaitility:awaitility:4.2.2'
 
 	// WebFlux: WebClient & WebSocket support
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'io.projectreactor.netty:reactor-netty'
     
     // Jackson for DTO (JsonNaming, etc.)
     implementation 'com.fasterxml.jackson.core:jackson-databind'
@@ -112,15 +86,10 @@ dependencies {
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
 	// Binnace connector 
-	implementation 'io.github.binance:binance-connector-java:3.4.1'
-	implementation "io.github.binance:binance-derivatives-trading-usds-futures:2.0.0"
 
 	//dsl json
-	implementation 'com.dslplatform:dsl-json:2.0.2'
-	annotationProcessor 'com.dslplatform:dsl-json:2.0.2'
 
 	//jsoniter
-	implementation 'com.jsoniter:jsoniter:0.9.23'
 
 	//postgresql
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

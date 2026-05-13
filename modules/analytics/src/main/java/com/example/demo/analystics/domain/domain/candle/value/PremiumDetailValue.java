@@ -1,7 +1,5 @@
 package com.example.demo.analystics.domain.domain.candle.value;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -15,7 +13,7 @@ public record PremiumDetailValue(
 
 
     @Override
-    public int compareTo(@NotNull PremiumDetailValue o) {
+    public int compareTo(PremiumDetailValue o) {
         return  hedgeVal().compareTo(o.hedgeVal());
     }
 

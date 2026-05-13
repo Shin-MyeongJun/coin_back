@@ -6,15 +6,19 @@ import com.example.demo.ingestion.economic.economic_ind.infrastructure.dto.Relea
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class FredClientAdapterTest {
@@ -67,5 +71,26 @@ class FredClientAdapterTest {
         List<ReleaseDateDto> result = sut.getRawSchedules();
 
         assertThat(result).containsExactly(release);
+    }
+
+    @Test
+    @DisplayName("getRawSchedules passes ISO local date range")
+    void getRawSchedules_passesIsoLocalDateRange() {
+        given(client.fetchReleaseDates(any(), any())).willReturn(List.of());
+
+        sut.getRawSchedules();
+
+        ArgumentCaptor<String> startCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> endCaptor = ArgumentCaptor.forClass(String.class);
+        verify(client).fetchReleaseDates(startCaptor.capture(), endCaptor.capture());
+
+        String start = startCaptor.getValue();
+        String end = endCaptor.getValue();
+        assertThat(start).matches("\\d{4}-\\d{2}-\\d{2}");
+        assertThat(end).matches("\\d{4}-\\d{2}-\\d{2}");
+
+        LocalDate startDate = LocalDate.parse(start, DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate endDate = LocalDate.parse(end, DateTimeFormatter.ISO_LOCAL_DATE);
+        assertThat(endDate).isEqualTo(startDate.plusDays(1));
     }
 }

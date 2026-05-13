@@ -10,6 +10,7 @@ import com.example.demo.analystics.infrastructure.cache.candle.CandleRedisKeyGen
 import com.example.demo.analystics.infrastructure.cache.candle.codec.CandleStateCodec;
 import com.example.demo.analystics.infrastructure.cache.key_codec.base.DataKeyCodec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,6 +19,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract   class CandleStateReadAdapter<CANDLE extends OpenCandle<KEY,VAL>,KEY extends DataKey<KEY>,VAL extends Comparable<VAL>>
         implements ReadAnalyticsStatePort< KEY,RecoveryCandleState<VAL>> {
@@ -34,11 +36,11 @@ public abstract   class CandleStateReadAdapter<CANDLE extends OpenCandle<KEY,VAL
             .build();
 
     public Map<KEY, RecoveryCandleState<VAL>> read(int partitionId,Interval interval) {
-        String key = makeKey(env,partitionId,interval.getPeriod());
+        String redisKey = makeKey(env,partitionId,interval.getPeriod());
         Map<KEY, RecoveryCandleState<VAL>> result = new HashMap<>();
 
         try (Cursor<Map.Entry<Object, Object>> cursor =
-                     redis.opsForHash().scan(key, options)) {
+                     redis.opsForHash().scan(redisKey, options)) {
             while (cursor.hasNext()) {
                 Map.Entry<Object, Object> entry = cursor.next();
                 byte[] field = (byte[]) entry.getKey();
@@ -46,7 +48,7 @@ public abstract   class CandleStateReadAdapter<CANDLE extends OpenCandle<KEY,VAL
                 result.put(keyCodec.decode(field), stateCodec.decode(value));
             }
         } catch (Exception e) {
-
+            log.warn("Redis state scan failed: redisKey={}", redisKey, e);
         }
         return result;
     }

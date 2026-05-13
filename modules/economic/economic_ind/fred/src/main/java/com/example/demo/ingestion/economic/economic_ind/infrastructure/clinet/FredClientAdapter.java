@@ -8,6 +8,8 @@ import com.example.demo.ingestion.economic.economic_ind.infrastructure.dto.Relea
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,8 +36,12 @@ public class FredClientAdapter implements LoadRawIndSchedulePort<ReleaseDateDto>
 
     @Override
     public List<ReleaseDateDto> getRawSchedules() {
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis() + 86400000 ;
-        return client.fetchReleaseDates(Long.toString(startTime),Long.toString(endTime));
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusDays(1);
+        // FRED releases/dates expects realtime_start and realtime_end as ISO local dates.
+        return client.fetchReleaseDates(
+                startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                endDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        );
     }
 }
