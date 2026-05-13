@@ -1,15 +1,16 @@
 # CoinData Platform Project Context
 
-> 2026-05-10 기준으로 실제 Gradle 설정, 모듈 소스, 패키지, Kafka 토픽, 애플리케이션 진입점, 주요 리스크를 점검해 갱신한 문서입니다. Claude 및 다른 AI 에이전트는 이 파일을 프로젝트 기준 문서로 먼저 읽으세요.
+> 2026-05-13 기준으로 실제 Gradle 설정, 모듈 소스, 패키지, Kafka 토픽, 애플리케이션 진입점, 주요 리스크, 프론트엔드 연계 항목을 점검해 갱신한 문서입니다. Claude 및 다른 AI 에이전트는 이 파일을 프로젝트 기준 문서로 먼저 읽으세요.
+> 이전 갱신: 2026-05-10 (모듈 구조·Kafka·Redis·MVP 제외 항목 1차 정비).
 
 ---
 
 ## 0. 점검 스냅샷
 
 - 기준 경로: `C:\Users\smj\Desktop\COIN_SERVER\demo`
-- 빌드: Java 21, Gradle 8.4, Spring Boot 3.4.5, Spring Cloud 2024.0.1
-- 확인한 범위: `settings.gradle`, 루트 및 모듈 `build.gradle`, `src/main/java`, `src/test/java`, `application.yml`, 주요 Kafka producer/consumer, Redis key generator
-- 검증 명령:
+- 빌드: Java 21, Gradle 8.4, Spring Boot 3.4.5, Spring Cloud 2024.0.1, Spring Modulith 1.3.5
+- 확인한 범위: `settings.gradle`, 루트 및 모듈 `build.gradle`, `src/main/java`, `src/test/java`, `application.yml`, 주요 Kafka producer/consumer, Redis key generator, `modules/api/_PLAN.md` 진행 상태, `coin_front/docs/PLAN.md` 인터페이스 합의
+- 검증 명령 (2026-05-10 통과, 이후 컴파일 영향 변경 없음):
   - `.\gradlew.bat compileJava` 성공
   - `.\gradlew.bat compileTestJava` 성공
 - 미실행 범위: 전체 `test`는 Kafka/PostgreSQL/Redis/Testcontainers 의존도가 있어 이번 문서 갱신 범위에서는 실행하지 않았습니다.
@@ -18,7 +19,7 @@
 
 ## 1. 프로젝트 개요
 
-CoinData Platform은 거래소 시세, 환율, 경제지표를 수집하고 김치 프리미엄, 캔들, 기술지표, 조회 API/SSE 스트림을 구성하는 실시간 데이터 파이프라인입니다.
+CoinData Platform은 거래소 시세, 환율, 경제지표를 수집하고 김치 프리미엄, 캔들, 기술지표, 조회 API/SSE 스트림을 구성하는 실시간 데이터 파이프라인입니다. 프론트엔드 대시보드는 별도 프로젝트 `coin_front`가 담당하고, 본 저장소는 REST/SSE API 제공까지를 범위로 합니다.
 
 핵심 흐름은 다음과 같습니다.
 
@@ -29,9 +30,10 @@ Exchange WebSocket/API
   -> market-data.tick / market-data.premium / market-data.premium-detail
   -> analytics
   -> query modules + api REST/SSE
+  -> coin_front (별도 프로젝트)
 ```
 
-주요 인프라는 Kafka, PostgreSQL/TimescaleDB, Redis입니다. Kafka 직렬화는 실제 코드상 JSON record 중심이고, `contracts`에는 Java record와 `.proto`가 함께 존재합니다.
+주요 인프라는 Kafka, PostgreSQL/TimescaleDB, Redis입니다. Kafka 직렬화는 실제 코드상 JSON record 중심이고, `contracts`에는 Java record와 `.proto`가 함께 존재합니다 (proto는 MVP 미사용).
 
 관측성은 Docker Compose 기반 Prometheus/Grafana/exporter 스택에 더해, 주요 실행 모듈에 Actuator 및 Prometheus registry 설정을 적용합니다. API는 `/actuator/health`, `/actuator/prometheus`를 노출하고, Prometheus local stack은 `host.docker.internal:8080`의 API actuator endpoint를 scrape 대상으로 둡니다.
 
@@ -62,7 +64,7 @@ Exchange WebSocket/API
 | `:meta_data_query` | `modules/query/meta_data_query` | 24 / 0 | metadata read side. list/search/integrity query, QueryDSL repository가 있습니다. |
 | `:analytics_query` | `modules/query/analytics_query` | 77 / 0 | candle/indicator/screener/downsample/latest read side. SQL + QueryDSL + JPA adapter 조합입니다. |
 | `:economic_query` | `modules/query/economic_query` | 32 / 0 | 경제지표 read side. indicator, calendar, correlation 조회 adapter를 제공합니다. |
-| `:api` | `modules/api` | 43 / 11 | REST API, composition service, SSE stream, Kafka stream consumer. query 모듈들을 scan하여 조회 API를 구성합니다. |
+| `:api` | `modules/api` | 43 / 11 | REST API, composition service, SSE stream, Kafka stream consumer. query 모듈들을 scan하여 조회 API를 구성합니다. `modules/api/_PLAN.md`의 7단계(skeleton → controller × 4 → composition → stream)가 **모두 완료** 상태입니다. |
 | `:trading` | `modules/trading` | 0 / 0 | Gradle 모듈과 의존성만 있고 Java 소스는 아직 없습니다. placeholder 상태입니다. |
 
 ---
@@ -91,7 +93,7 @@ contracts
 - `economic_ind_shard`는 경제지표 domain/usecase/persistence 공통 모듈이고, `fred`, `crawling`은 공급자별 adapter/app입니다.
 - `market_data`, `meta_data`, `analytics`는 write-side 서비스입니다.
 - `query/*`는 read-side 모듈입니다. write-side 모듈에 역참조를 만들지 않습니다.
-- `api`는 query 모듈과 stream consumer/SSE를 조합하는 진입점입니다.
+- `api`는 query 모듈과 stream consumer/SSE를 조합하는 진입점입니다. 도메인 모듈 직접 의존 금지 (ArchUnit 가드 권장).
 - `trading`은 아직 비어 있으므로 새 기능 추가 전 실제 경계부터 정의해야 합니다.
 
 ---
@@ -159,10 +161,21 @@ market-data.tick / premium / premium-detail
 
 ```text
 api
-  -> query modules: REST 조회
+  -> query modules: REST 조회 (controller × 4 + composition × 3 ✅ DONE)
   -> Kafka stream consumers: market-data.*, analytics.*
-  -> SSE handlers: tick, premium, premium-detail raw, candle close, indicator close
+  -> SSE handlers (✅ DONE):
+       /api/v1/stream/ticks
+       /api/v1/stream/premium
+       /api/v1/stream/candles/close       (?type=tick|premium)
+       /api/v1/stream/indicators/close    (?type=tick|premium)
 ```
+
+응답 컨벤션 (프론트 합의 기준 — §14 참조):
+
+- 페이징: 시계열 = cursor (`?cursor={epochMs}&limit=`), 메타/리스트 = offset (`?page=&size=`)
+- 시간: epoch milliseconds (long), UTC 단일 기준
+- 에러: RFC 7807 `ProblemDetail` (`@RestControllerAdvice` 글로벌 핸들러)
+- envelope: 단건/리스트 raw, 페이징만 envelope (`{items, nextCursor, hasMore}` / `{items, page, size, total}`)
 
 ---
 
@@ -189,7 +202,7 @@ api
 | `{moduleName}.heartbeat` | `infra_heartbeat` | `infra_heartbeat` |
 | `{moduleName}.health-change` | `infra_heartbeat` | `infra_heartbeat` |
 
-토픽명을 바꿀 때는 producer, consumer, `NewTopic` config, 테스트 assertion을 함께 갱신해야 합니다.
+토픽명을 바꿀 때는 producer, consumer, `NewTopic` config, 테스트 assertion, API stream test, coin_front의 SSE 이벤트명까지 함께 갱신해야 합니다.
 
 ---
 
@@ -304,6 +317,7 @@ Spring 규칙:
 7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
 8. trading: 소스가 없는 placeholder입니다.
 9. `TickBuffer.flush()` 관련 예전 문서의 버그는 현재 코드에서 해결되어 있습니다. `flush()`가 snapshot 후 `buffer.clear()`를 호출합니다.
+10. **api 모듈은 `permitAll`**: 현재 `SecurityFilterChain`이 모든 요청을 허용합니다. 외부 클라이언트 단계 진입 시 §14 합의에 따른 인증/CORS 보강이 필요합니다.
 
 ---
 
@@ -325,6 +339,15 @@ Spring 규칙:
 .\gradlew.bat :economic_ind_shard:test
 .\gradlew.bat :fred:test
 .\gradlew.bat :crawling:test
+```
+
+런타임 실행 (`scripts/run/start-runtime.ps1`):
+
+```powershell
+.\scripts\run\start-runtime.ps1
+.\scripts\run\start-runtime.ps1 -ApiInstances 2 -ApiBasePort 8080
+.\scripts\run\start-runtime.ps1 -IncludeIngestion -IncludeEconomic
+.\scripts\run\start-runtime.ps1 -All
 ```
 
 전체 테스트는 Testcontainers, Kafka, PostgreSQL, Redis 상태에 영향을 받을 수 있습니다. 실패 시 먼저 실패한 모듈과 외부 의존성을 분리해서 확인하세요.
@@ -357,7 +380,7 @@ Spring 규칙:
 ## 12. AI 에이전트 작업 원칙
 
 - 새 코드는 주변 모듈의 기존 패키지/오타/패턴에 맞춥니다.
-- topic, Redis key, DB entity/table, message record를 바꾸면 producer/consumer/query/API/test를 같이 추적합니다.
+- topic, Redis key, DB entity/table, message record를 바꾸면 producer/consumer/query/API/test/coin_front SSE 이벤트명을 같이 추적합니다.
 - read-side query 모듈은 write-side 모듈에 의존하지 않게 유지합니다.
 - common abstraction은 `infra_shard`에 두되, 특정 도메인 규칙을 무리하게 공통화하지 않습니다.
 - 문서가 코드와 다르면 코드를 우선 확인하고 문서를 갱신합니다.
@@ -393,6 +416,78 @@ Spring 규칙:
 ### 13.4 Frontend dashboard
 
 - CoinData 백엔드 MVP는 REST/SSE API 제공까지를 범위로 삼습니다.
-- 실시간 차트, dashboard, 사용자 화면은 별도 프론트엔드 프로젝트에서 담당합니다.
+- 실시간 차트, dashboard, 사용자 화면은 별도 프론트엔드 프로젝트 `coin_front`에서 담당합니다.
 - 따라서 이 저장소에 화면이 없는 것은 현재 MVP의 결함으로 보지 않습니다.
 - README에서는 "프론트엔드 대시보드는 별도 프로젝트에서 담당"한다고 명시합니다.
+
+### 13.5 사용자 기능 백엔드 (인증/알람/워치리스트/API Key)
+
+- coin_front의 화면(로그인, 알람 규칙, 관심 목록, API Key 관리)에 대응하는 백엔드 모듈은 본 MVP에 포함되지 않습니다.
+- 프론트는 인터페이스 placeholder(`features/*/api/*.ts`)만 갖춘 상태로 진행하며, 백엔드 모듈 추가 후 어댑터 레이어만 교체하는 구조입니다.
+- 향후 작업 항목과 합의 사항은 §14를 참조하세요.
+
+---
+
+## 14. 프론트엔드(coin_front) 연계
+
+coin_front는 Next.js 15 / Vite + React 19, TailwindCSS + shadcn/ui, lightweight-charts v4, TanStack Query v5, EventSource(SSE), Zustand, react-hook-form + zod 스택으로 본 백엔드의 REST/SSE를 소비합니다. 자세한 화면 계획과 백엔드 합의 항목은 coin_front 저장소의 `docs/PLAN.md`(특히 §14 "백엔드와의 합의 필요 사항")와 `docs/FRONTEND_GUIDE.md`를 참조합니다.
+
+### 14.1 합의된 응답 컨벤션
+
+| 항목 | 결정 |
+|------|------|
+| 페이징 | 시계열 = cursor (`?cursor={epochMs}&limit=`), 메타/리스트 = offset (`?page=&size=`) |
+| 시간 | epoch milliseconds (long), UTC 단일 기준 |
+| 에러 | RFC 7807 `ProblemDetail` |
+| envelope | 단건/리스트 raw, 페이징만 envelope (`{items, nextCursor, hasMore}` / `{items, page, size, total}`) |
+| 토픽 / SSE 이벤트명 | 백엔드 컨벤션 그대로 사용 (`tick`, `premium`, `tick-candle`, `premium-candle`, `tick-indicator`, `premium-indicator`) |
+
+### 14.2 프론트가 사용하는 백엔드 엔드포인트 (현재 가용)
+
+- `/api/v1/meta/*` — `meta_data_query` 4 UseCase
+- `/api/v1/market/*` — `market_data_query` 10 UseCase
+- `/api/v1/analytics/*` — `analytics_query` 9 UseCase (캔들·지표·screener·downsample·latest)
+- `/api/v1/economic/*` — `economic_query` 6 UseCase
+- `/api/v1/compose/*` — 합성 엔드포인트 3종 (market-overview, chart, dashboard)
+- `/api/v1/stream/*` — SSE 4종 (ticks, premium, candles/close, indicators/close)
+
+전체 매핑은 `modules/api/_PLAN.md`를 정본으로 합니다.
+
+### 14.3 백엔드 작업 대기 항목 (MVP 이후 후보)
+
+프론트는 인터페이스만 정의하고 백엔드 모듈 추가 대기 중입니다.
+
+| # | 영역 | 프론트 가정 | 백엔드 작업 필요 |
+|---|------|-------------|------------------|
+| 1 | 인증 | JWT (access in-memory + refresh httpOnly cookie) | `/api/v1/auth/{login,signup,refresh,me}`, 인증 필터 |
+| 2 | API Key | label / scopes / IP whitelist / cooldown / usage | `/api/v1/api-keys/*`, scope 모델, usage 집계 |
+| 3 | 권한 스코프 | 6개 1차안 (coin_front §7) | scope enum 합의 |
+| 4 | 알람 규칙 | threshold / cooldown / 채널 / label | `/api/v1/alert/{rules,firings}`, 규칙 평가 엔진 |
+| 5 | 워치리스트 | 로그인 전 localStorage → 서버 머지 | `/api/v1/watchlist/*` |
+| 6 | SSE 인증 | URL 쿼리 토큰 (EventSource 헤더 제약) | 토큰 검증 + UUID consumer group fanout 보강 |
+| 7 | CORS prod | 화이트리스트 | 현재 dev 와일드카드 → prod 화이트리스트 전환 |
+| 8 | OpenAPI 노출 | dev 프로파일에서만 | 현행 유지, prod 차단 검증 |
+
+위 항목은 본 저장소의 향후 작업(별도 모듈 또는 `api` 모듈 확장)으로 진입할 때 §14가 source가 됩니다. coin_front 측은 어댑터 레이어(`lib/api/*`)만 수정해서 mock → real 전환을 처리합니다.
+
+### 14.4 외부 의존 (백엔드 미경유)
+
+coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 호출합니다. 백엔드는 관여하지 않으나, 향후 운영 단계에서 캐시/프록시 후보로 검토할 수 있습니다.
+
+- alternative.me Fear & Greed Index
+- 금/은 시세
+- 나스닥 지수
+- 미국 10년물 국채 금리
+
+---
+
+## 15. 문서 갱신 절차
+
+`CLAUDE.md`는 source of truth입니다. 본 문서를 갱신할 때는:
+
+1. 점검 스냅샷(§0) 날짜와 검증 명령 통과 여부 갱신
+2. 모듈 표(§2) Main/Test Java 개수가 크게 달라졌으면 갱신
+3. Kafka 토픽(§5) / Redis 키(§6) 추가·변경 시 producer·consumer·테스트·coin_front까지 cross-reference
+4. 패키지 오타 목록(§8) 신규 발견 시 추가
+5. MVP 제외(§13) / 프론트 연계(§14) 항목 변경 시 `02_PROJECT_CONTEXT.md`도 함께 갱신
+6. 본 문서 갱신 후 `02_PROJECT_CONTEXT.md` §검증 포인트 cross-check 통과 확인

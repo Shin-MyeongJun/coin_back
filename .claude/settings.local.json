@@ -85,7 +85,8 @@
       "Bash(./gradlew compileJava)",
       "Bash(./gradlew :market_data:test --rerun --info)",
       "Bash(python -c ' *)",
-      "Bash(./gradlew :ingestion_exchange_shard:test)"
+      "Bash(./gradlew :ingestion_exchange_shard:test)",
+      "Bash(.\\\\gradlew.bat --stop)"
     ]
   }
 }
