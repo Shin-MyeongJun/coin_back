@@ -1,5 +1,8 @@
 package com.example.demo.api.controller.market;
 
+import com.example.demo.api.common.CursorPage;
+import com.example.demo.infra_shard.paging.CursorDirection;
+import com.example.demo.infra_shard.paging.CursorSlice;
 import com.example.demo.market_data_query.application.dto.FxView;
 import com.example.demo.market_data_query.application.usecase.GetFxDownsampledUseCase;
 import com.example.demo.market_data_query.application.usecase.GetFxRawUseCase;
@@ -39,6 +42,18 @@ public class FxController {
         return getFxRawUseCase.execute(baseCurrency, quoteCurrency, fromTs, toTs);
     }
 
+    @GetMapping("/raw/cursor")
+    public CursorPage<FxView> getRawCursor(
+            @RequestParam String baseCurrency,
+            @RequestParam String quoteCurrency,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "200") int limit,
+            @RequestParam(required = false) String direction) {
+        CursorSlice<FxView> slice = getFxRawUseCase.executeCursor(
+                baseCurrency, quoteCurrency, cursor, limit, CursorDirection.parseOrDefault(direction));
+        return new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
+    }
+
     @GetMapping("/downsampled")
     public List<FxView> getDownsampled(
             @RequestParam String baseCurrency,
@@ -47,5 +62,19 @@ public class FxController {
             @RequestParam Long fromTs,
             @RequestParam Long toTs) {
         return getFxDownsampledUseCase.execute(baseCurrency, quoteCurrency, bucketSeconds, fromTs, toTs);
+    }
+
+    @GetMapping("/downsampled/cursor")
+    public CursorPage<FxView> getDownsampledCursor(
+            @RequestParam String baseCurrency,
+            @RequestParam String quoteCurrency,
+            @RequestParam int bucketSeconds,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "200") int limit,
+            @RequestParam(required = false) String direction) {
+        CursorSlice<FxView> slice = getFxDownsampledUseCase.executeCursor(
+                baseCurrency, quoteCurrency, bucketSeconds, cursor, limit,
+                CursorDirection.parseOrDefault(direction));
+        return new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
     }
 }

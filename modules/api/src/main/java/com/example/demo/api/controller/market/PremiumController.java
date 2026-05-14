@@ -1,5 +1,8 @@
 package com.example.demo.api.controller.market;
 
+import com.example.demo.api.common.CursorPage;
+import com.example.demo.infra_shard.paging.CursorDirection;
+import com.example.demo.infra_shard.paging.CursorSlice;
 import com.example.demo.market_data_query.application.dto.PremiumRankingView;
 import com.example.demo.market_data_query.application.dto.PremiumSnapshotView;
 import com.example.demo.market_data_query.application.dto.PremiumTimeSeriesView;
@@ -38,6 +41,21 @@ public class PremiumController {
             @RequestParam Long fromTs,
             @RequestParam Long toTs) {
         return getPremiumTimeSeriesUseCase.execute(baseExchangeId, compareExchangeId, symbol, bucketSeconds, fromTs, toTs);
+    }
+
+    @GetMapping("/series/cursor")
+    public CursorPage<PremiumTimeSeriesView> getSeriesCursor(
+            @RequestParam Long baseExchangeId,
+            @RequestParam Long compareExchangeId,
+            @RequestParam String symbol,
+            @RequestParam int bucketSeconds,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "200") int limit,
+            @RequestParam(required = false) String direction) {
+        CursorSlice<PremiumTimeSeriesView> slice = getPremiumTimeSeriesUseCase.executeCursor(
+                baseExchangeId, compareExchangeId, symbol, bucketSeconds, cursor, limit,
+                CursorDirection.parseOrDefault(direction));
+        return new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
     }
 
     @GetMapping("/ranking")

@@ -17,6 +17,28 @@ public interface TickCandleJpaRepository extends JpaRepository<TickCandleQueryEn
     List<TickCandleQueryEntity> findByMarketCodeIdAndIntervalOrderByBucketOpenTsDesc(
             Long marketCodeId, String interval, Pageable pageable);
 
+    @Query("""
+            SELECT e FROM TickCandleQueryEntity e
+            WHERE e.marketCodeId = :marketCodeId
+              AND e.interval     = :interval
+              AND (:cursor IS NULL OR e.bucketOpenTs <= :cursor)
+            ORDER BY e.bucketOpenTs DESC
+            """)
+    List<TickCandleQueryEntity> findCursorBackward(
+            @Param("marketCodeId") Long marketCodeId, @Param("interval") String interval,
+            @Param("cursor") Long cursor, Pageable pageable);
+
+    @Query("""
+            SELECT e FROM TickCandleQueryEntity e
+            WHERE e.marketCodeId = :marketCodeId
+              AND e.interval     = :interval
+              AND (:cursor IS NULL OR e.bucketOpenTs >= :cursor)
+            ORDER BY e.bucketOpenTs ASC
+            """)
+    List<TickCandleQueryEntity> findCursorForward(
+            @Param("marketCodeId") Long marketCodeId, @Param("interval") String interval,
+            @Param("cursor") Long cursor, Pageable pageable);
+
     @Query("SELECT MAX(e.bucketCloseTs) FROM TickCandleQueryEntity e WHERE e.marketCodeId = :marketCodeId AND e.interval = :interval")
     Optional<Long> findMaxBucketCloseTs(@Param("marketCodeId") Long marketCodeId, @Param("interval") String interval);
 }

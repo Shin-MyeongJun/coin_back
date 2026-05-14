@@ -86,7 +86,24 @@
       "Bash(./gradlew :market_data:test --rerun --info)",
       "Bash(python -c ' *)",
       "Bash(./gradlew :ingestion_exchange_shard:test)",
-      "Bash(.\\\\gradlew.bat --stop)"
+      "Bash(.\\\\gradlew.bat --stop)",
+      "Bash(.\\\\gradlew.bat compileJava)",
+      "Bash(./gradlew.bat :infra_shard:compileJava :contracts:compileJava :infra_shard:compileTestJava :contracts:compileTestJava)",
+      "Bash(./gradlew.bat :infra_shard:test :contracts:test)",
+      "Bash(./gradlew.bat :user:compileJava --console=plain)",
+      "Bash(./gradlew.bat :user:compileTestJava --console=plain)",
+      "Bash(./gradlew.bat compileJava --console=plain)",
+      "PowerShell(Get-ChildItem 'C:\\\\Users\\\\smj\\\\Desktop\\\\COIN_SERVER' -Directory -Force | ForEach-Object { $_.Name })",
+      "Bash(./gradlew.bat :user:compileJava :user:compileTestJava --console=plain)",
+      "Bash(./gradlew.bat :user:test --tests \"com.example.demo.user.domain.*\" --tests \"com.example.demo.user.application.usecase.*\" --tests \"com.example.demo.user.infrastructure.security.*\" --tests \"com.example.demo.user.infrastructure.cache.*\" --tests \"com.example.demo.user.infrastructure.web.ApiKeyControllerTest\" --console=plain)",
+      "Bash(./gradlew.bat :user:test --tests \"com.example.demo.user.infrastructure.security.*\" --tests \"com.example.demo.user.infrastructure.web.ApiKeyControllerTest\" --console=plain)",
+      "Bash(./gradlew.bat :user:test --console=plain)",
+      "Bash(git checkout *)",
+      "Bash(./gradlew.bat :infra_shard:compileJava :market_data_query:compileJava :api:compileJava)",
+      "Bash(./gradlew.bat :market_data_query:compileJava :api:compileJava)",
+      "Bash(./gradlew.bat :infra_shard:compileJava :market_data_query:compileJava :analytics_query:compileJava :api:compileJava)",
+      "Bash(./gradlew.bat :infra_shard:test :market_data_query:test :analytics_query:test :api:test)",
+      "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.controller.meta.ExchangeControllerTest\")"
     ]
   }
 }

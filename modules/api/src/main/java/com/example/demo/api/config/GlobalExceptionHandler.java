@@ -1,54 +1,97 @@
 package com.example.demo.api.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.net.URI;
 import java.util.NoSuchElementException;
 
+/**
+ * RFC 7807 ProblemDetail 글로벌 핸들러.
+ * <p>
+ * 응답 Content-Type은 Spring 6 디폴트로 {@code application/problem+json}.
+ * 응답 필드:
+ * <ul>
+ *   <li>{@code type} = {@code https://docs.coindata.example/errors/{slug}} (FRONT 합의)</li>
+ *   <li>{@code title} = 사람이 읽는 짧은 라벨</li>
+ *   <li>{@code status} = HTTP status</li>
+ *   <li>{@code detail} = 발생 메시지</li>
+ *   <li>{@code instance} = 발생한 요청 path (디버깅용)</li>
+ * </ul>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        pd.setTitle("Validation Failed");
-        pd.setDetail(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+    private static final String TYPE_PREFIX = "https://docs.coindata.example/errors/";
+
+    private ProblemDetail build(HttpStatus status, String slug, String title, String detail,
+                                HttpServletRequest request) {
+        ProblemDetail pd = ProblemDetail.forStatus(status);
+        pd.setType(URI.create(TYPE_PREFIX + slug));
+        pd.setTitle(title);
+        pd.setDetail(detail);
+        if (request != null) {
+            pd.setInstance(URI.create(request.getRequestURI()));
+        }
         return pd;
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidation(MethodArgumentNotValidException ex,
+                                          HttpServletRequest request) {
+        String detail = ex.getBindingResult().getAllErrors().isEmpty()
+                ? ex.getMessage()
+                : ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return build(HttpStatus.BAD_REQUEST, "validation",
+                "Validation Failed", detail, request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        pd.setTitle("Constraint Violation");
-        pd.setDetail(ex.getMessage());
-        return pd;
+    public ProblemDetail handleConstraintViolation(ConstraintViolationException ex,
+                                                   HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "constraint-violation",
+                "Constraint Violation", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail handleMissingParam(MissingServletRequestParameterException ex,
+                                            HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "missing-parameter",
+                "Missing Request Parameter", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                            HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "type-mismatch",
+                "Type Mismatch", ex.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        pd.setTitle("Bad Request");
-        pd.setDetail(ex.getMessage());
-        return pd;
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex,
+                                               HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "bad-request",
+                "Bad Request", ex.getMessage(), request);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ProblemDetail handleNotFound(NoSuchElementException ex) {
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        pd.setTitle("Not Found");
-        pd.setDetail(ex.getMessage());
-        return pd;
+    public ProblemDetail handleNotFound(NoSuchElementException ex,
+                                        HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "not-found",
+                "Not Found", ex.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)
-    public ProblemDetail handleGeneral(Exception ex) {
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-        pd.setTitle("Internal Server Error");
-        pd.setDetail("An unexpected error occurred.");
-        return pd;
+    public ProblemDetail handleGeneral(Exception ex,
+                                       HttpServletRequest request) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "internal",
+                "Internal Server Error", "An unexpected error occurred.", request);
     }
 }

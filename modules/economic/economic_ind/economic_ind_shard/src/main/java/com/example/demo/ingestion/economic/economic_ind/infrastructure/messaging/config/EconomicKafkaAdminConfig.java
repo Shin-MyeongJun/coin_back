@@ -25,6 +25,12 @@ public class EconomicKafkaAdminConfig {
         return TopicBuilder.name(EconomicTopics.INDICATOR)
                 .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "604800000",
+                        "segment.ms", "86400000",
+                        "retention.bytes", "1073741824"
+                ))
                 .build();
     }
 }

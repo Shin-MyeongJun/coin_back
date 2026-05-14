@@ -21,16 +21,22 @@ public class MetaDataKafkaAdminConfig {
     @Bean
     public NewTopic exchangeTopic() {
         return TopicBuilder.name("meta-data.exchange")
-                .partitions(1)    // 원하는 파티션 개수
+                .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "compact"
+                ))
                 .build();
     }
 
     @Bean
     public NewTopic marketCodeTopic() {
         return TopicBuilder.name("meta-data.market-code")
-                .partitions(1)    // 원하는 파티션 개수
+                .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "compact"
+                ))
                 .build();
     }
 

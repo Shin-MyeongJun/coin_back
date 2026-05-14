@@ -27,4 +27,32 @@ public interface PremiumCandleJpaRepository extends JpaRepository<PremiumCandleQ
     Optional<Long> findMaxBucketCloseTs(
             @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
             @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval);
+
+    @Query("""
+            SELECT e FROM PremiumCandleQueryEntity e
+            WHERE e.symbol             = :symbol
+              AND e.baseExchangeId     = :baseExchangeId
+              AND e.compareExchangeId  = :compareExchangeId
+              AND e.interval           = :interval
+              AND (:cursor IS NULL OR e.bucketOpenTs <= :cursor)
+            ORDER BY e.bucketOpenTs DESC
+            """)
+    List<PremiumCandleQueryEntity> findCursorBackward(
+            @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
+            @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval,
+            @Param("cursor") Long cursor, Pageable pageable);
+
+    @Query("""
+            SELECT e FROM PremiumCandleQueryEntity e
+            WHERE e.symbol             = :symbol
+              AND e.baseExchangeId     = :baseExchangeId
+              AND e.compareExchangeId  = :compareExchangeId
+              AND e.interval           = :interval
+              AND (:cursor IS NULL OR e.bucketOpenTs >= :cursor)
+            ORDER BY e.bucketOpenTs ASC
+            """)
+    List<PremiumCandleQueryEntity> findCursorForward(
+            @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
+            @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval,
+            @Param("cursor") Long cursor, Pageable pageable);
 }

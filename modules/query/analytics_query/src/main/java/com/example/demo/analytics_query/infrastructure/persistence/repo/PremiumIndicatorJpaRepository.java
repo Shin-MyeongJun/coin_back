@@ -20,4 +20,36 @@ public interface PremiumIndicatorJpaRepository extends JpaRepository<PremiumIndi
             @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
             @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval,
             @Param("type") String type, org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+            SELECT e FROM PremiumIndicatorQueryEntity e
+            WHERE e.symbol             = :symbol
+              AND e.baseExchangeId     = :baseExchangeId
+              AND e.compareExchangeId  = :compareExchangeId
+              AND e.interval           = :interval
+              AND e.type               = :type
+              AND (:cursor IS NULL OR e.bucketOpenTs <= :cursor)
+            ORDER BY e.bucketOpenTs DESC
+            """)
+    List<PremiumIndicatorQueryEntity> findCursorBackward(
+            @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
+            @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval,
+            @Param("type") String type, @Param("cursor") Long cursor,
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+            SELECT e FROM PremiumIndicatorQueryEntity e
+            WHERE e.symbol             = :symbol
+              AND e.baseExchangeId     = :baseExchangeId
+              AND e.compareExchangeId  = :compareExchangeId
+              AND e.interval           = :interval
+              AND e.type               = :type
+              AND (:cursor IS NULL OR e.bucketOpenTs >= :cursor)
+            ORDER BY e.bucketOpenTs ASC
+            """)
+    List<PremiumIndicatorQueryEntity> findCursorForward(
+            @Param("symbol") String symbol, @Param("baseExchangeId") Long baseExchangeId,
+            @Param("compareExchangeId") Long compareExchangeId, @Param("interval") String interval,
+            @Param("type") String type, @Param("cursor") Long cursor,
+            org.springframework.data.domain.Pageable pageable);
 }

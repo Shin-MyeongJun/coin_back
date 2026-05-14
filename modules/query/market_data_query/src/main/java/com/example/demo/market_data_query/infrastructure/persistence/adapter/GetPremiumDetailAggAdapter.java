@@ -1,13 +1,18 @@
 package com.example.demo.market_data_query.infrastructure.persistence.adapter;
 
+import com.example.demo.infra_shard.paging.CursorDirection;
 import com.example.demo.infra_shard.sql.SqlLoader;
 import com.example.demo.market_data_query.application.dto.PremiumTimeSeriesView;
 import com.example.demo.market_data_query.application.port.out.GetPremiumDetailAggPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.DataClassRowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,5 +36,32 @@ public class GetPremiumDetailAggAdapter implements GetPremiumDetailAggPort {
                        "fromTs", fromTs,
                        "toTs", toTs),
                 new DataClassRowMapper<>(PremiumTimeSeriesView.class));
+    }
+
+    @Override
+    public List<PremiumTimeSeriesView> findAggCursor(Long baseExchangeId, Long compareExchangeId,
+                                                     String symbol, int bucketSeconds,
+                                                     Long cursor, int limit, CursorDirection direction) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("baseExchangeId", baseExchangeId)
+                .addValue("compareExchangeId", compareExchangeId)
+                .addValue("symbol", symbol)
+                .addValue("bucketSeconds", bucketSeconds)
+                .addValue("cursor", cursor, Types.BIGINT)
+                .addValue("limit", limit);
+
+        return switch (direction) {
+            case BACKWARD -> {
+                String sql = sqlLoader.load("sql/cursor/cursor_premium_detail_agg_backward.sql");
+                List<PremiumTimeSeriesView> desc = new ArrayList<>(jdbcTemplate.query(
+                        sql, params, new DataClassRowMapper<>(PremiumTimeSeriesView.class)));
+                Collections.reverse(desc);
+                yield desc;
+            }
+            case FORWARD -> {
+                String sql = sqlLoader.load("sql/cursor/cursor_premium_detail_agg_forward.sql");
+                yield jdbcTemplate.query(sql, params, new DataClassRowMapper<>(PremiumTimeSeriesView.class));
+            }
+        };
     }
 }

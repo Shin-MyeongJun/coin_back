@@ -25,6 +25,11 @@ public class HealthKafkaAdminConfig {
         return TopicBuilder.name(HealthTopics.HEARTBEAT)
                 .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "1800000",
+                        "segment.ms", "600000"
+                ))
                 .build();
     }
 
@@ -33,6 +38,11 @@ public class HealthKafkaAdminConfig {
         return TopicBuilder.name(HealthTopics.HEALTH_CHANGE)
                 .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "1800000",
+                        "segment.ms", "600000"
+                ))
                 .build();
     }
 }

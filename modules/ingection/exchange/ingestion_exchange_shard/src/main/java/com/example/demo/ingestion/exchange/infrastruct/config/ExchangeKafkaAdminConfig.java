@@ -21,13 +21,13 @@ public class ExchangeKafkaAdminConfig {
     @Bean
     public NewTopic tickRawTopic() {
         return TopicBuilder.name("ingestion-exchange.tick-raw")
-                .partitions(10)    // 원하는 파티션 개수
+                .partitions(10)
                 .replicas(1)
                 .configs(Map.of(
                         "cleanup.policy", "delete",
-                        "retention.ms", "60000",      // 1분
-                        "segment.ms", "10000",        // 10초
-                        "retention.bytes", "1048576" // 1MB
+                        "retention.ms", "3600000",
+                        "segment.ms", "1800000",
+                        "retention.bytes", "21474836480"
                 ))
                 .build();
     }
@@ -35,13 +35,10 @@ public class ExchangeKafkaAdminConfig {
     @Bean
     public NewTopic marketCodeRawTopic() {
         return TopicBuilder.name("ingestion-exchange.market-code-raw")
-                .partitions(1)    // 원하는 파티션 개수
+                .partitions(1)
                 .replicas(1)
                 .configs(Map.of(
-                        "cleanup.policy", "delete",
-                        "retention.ms", "60000",      // 1분
-                        "segment.ms", "10000",        // 10초
-                        "retention.bytes", "1048576" // 1MB
+                        "cleanup.policy", "compact"
                 ))
                 .build();
     }

@@ -21,38 +21,70 @@ public class AnalyticsKafkaAdminConfig {
     @Bean
     public NewTopic tickCandleTopic() {
         return TopicBuilder.name("analytics.tick-candle")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "86400000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "5368709120"
+                ))
                 .build();
     }
+
     @Bean
     public NewTopic tickIndicatorTopic() {
         return TopicBuilder.name("analytics.tick-indicator")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "86400000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "5368709120"
+                ))
                 .build();
     }
 
     @Bean
     public NewTopic premiumCandleTopic() {
         return TopicBuilder.name("analytics.premium-candle")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "86400000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "5368709120"
+                ))
                 .build();
     }
+
     @Bean
     public NewTopic premiumIndicatorTopic() {
         return TopicBuilder.name("analytics.premium-indicator")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "86400000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "5368709120"
+                ))
                 .build();
     }
 
     @Bean
     public NewTopic premiumDetailCandleTopic() {
         return TopicBuilder.name("analytics.premium-detail-candle")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "86400000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "5368709120"
+                ))
                 .build();
     }
 }

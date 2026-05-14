@@ -21,32 +21,42 @@ public class MarketDataKafkaAdminConfig {
     @Bean
     public NewTopic tickTopic() {
         return TopicBuilder.name("market-data.tick")
-                .partitions(3)    // 원하는 파티션 개수
+                .partitions(3)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "21600000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "32212254720"
+                ))
                 .build();
     }
 
     @Bean
     public NewTopic premiumTopic() {
         return TopicBuilder.name("market-data.premium")
-                .partitions(15)    // 원하는 파티션 개수
+                .partitions(15)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "21600000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "10737418240"
+                ))
                 .build();
     }
 
     @Bean
     public NewTopic premiumDetailTopic() {
         return TopicBuilder.name("market-data.premium-detail")
-                .partitions(15)    // 원하는 파티션 개수
+                .partitions(15)
                 .replicas(1)
-                .build();
-    }
-
-    @Bean
-    public NewTopic requestMetaTopic() {
-        return TopicBuilder.name("market-data.request-meta")
-                .partitions(1)    // 원하는 파티션 개수
-                .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "10800000",
+                        "segment.ms", "3600000",
+                        "retention.bytes", "16106127360"
+                ))
                 .build();
     }
 }

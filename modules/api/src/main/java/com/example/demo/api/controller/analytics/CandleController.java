@@ -2,6 +2,8 @@ package com.example.demo.api.controller.analytics;
 
 import com.example.demo.analytics_query.application.dto.CandleView;
 import com.example.demo.analytics_query.application.dto.LastBucketMeta;
+import com.example.demo.analytics_query.application.dto.PremiumCandleView;
+import com.example.demo.analytics_query.application.dto.TickCandleView;
 import com.example.demo.analytics_query.application.usecase.GetLastClosedBucketUseCase;
 import com.example.demo.analytics_query.application.usecase.GetPremiumCandleDownsampledUseCase;
 import com.example.demo.analytics_query.application.usecase.GetPremiumCandleMiniChartUseCase;
@@ -9,6 +11,9 @@ import com.example.demo.analytics_query.application.usecase.GetPremiumCandleSeri
 import com.example.demo.analytics_query.application.usecase.GetTickCandleDownsampledUseCase;
 import com.example.demo.analytics_query.application.usecase.GetTickCandleMiniChartUseCase;
 import com.example.demo.analytics_query.application.usecase.GetTickCandleSeriesUseCase;
+import com.example.demo.api.common.CursorPage;
+import com.example.demo.infra_shard.paging.CursorDirection;
+import com.example.demo.infra_shard.paging.CursorSlice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -98,6 +103,62 @@ public class CandleController {
             case "premium-detail" -> getLastClosedBucketUseCase.executeForPremiumDetail(symbol, baseExchangeId, compareExchangeId, interval)
                     .orElseThrow(() -> new NoSuchElementException("No closed premium-detail bucket found"));
             default -> throw new IllegalArgumentException("Unknown type: " + type);
+        };
+    }
+
+    @GetMapping("/cursor")
+    public CursorPage<? extends CandleView> getSeriesCursor(
+            @RequestParam String type,
+            @RequestParam(required = false) Long marketCodeId,
+            @RequestParam(required = false) String symbol,
+            @RequestParam(required = false) Long baseExchangeId,
+            @RequestParam(required = false) Long compareExchangeId,
+            @RequestParam String interval,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "200") int limit,
+            @RequestParam(required = false) String direction) {
+        CursorDirection dir = CursorDirection.parseOrDefault(direction);
+        return switch (type) {
+            case "tick" -> {
+                CursorSlice<TickCandleView> slice = getTickCandleSeriesUseCase.executeCursor(
+                        marketCodeId, interval, cursor, limit, dir);
+                yield new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
+            }
+            case "premium" -> {
+                CursorSlice<PremiumCandleView> slice = getPremiumCandleSeriesUseCase.executeCursor(
+                        symbol, baseExchangeId, compareExchangeId, interval, cursor, limit, dir);
+                yield new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
+            }
+            default -> throw new IllegalArgumentException("Unknown candle type: " + type);
+        };
+    }
+
+    @GetMapping("/downsampled/cursor")
+    public CursorPage<? extends CandleView> getDownsampledCursor(
+            @RequestParam String type,
+            @RequestParam(required = false) Long marketCodeId,
+            @RequestParam(required = false) String symbol,
+            @RequestParam(required = false) Long baseExchangeId,
+            @RequestParam(required = false) Long compareExchangeId,
+            @RequestParam String sourceInterval,
+            @RequestParam int targetBucketSeconds,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "200") int limit,
+            @RequestParam(required = false) String direction) {
+        CursorDirection dir = CursorDirection.parseOrDefault(direction);
+        return switch (type) {
+            case "tick" -> {
+                CursorSlice<TickCandleView> slice = getTickCandleDownsampledUseCase.executeCursor(
+                        marketCodeId, sourceInterval, targetBucketSeconds, cursor, limit, dir);
+                yield new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
+            }
+            case "premium" -> {
+                CursorSlice<PremiumCandleView> slice = getPremiumCandleDownsampledUseCase.executeCursor(
+                        symbol, baseExchangeId, compareExchangeId, sourceInterval, targetBucketSeconds,
+                        cursor, limit, dir);
+                yield new CursorPage<>(slice.items(), slice.nextCursor(), slice.hasMore());
+            }
+            default -> throw new IllegalArgumentException("Unknown candle type: " + type);
         };
     }
 }

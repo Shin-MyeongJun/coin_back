@@ -21,8 +21,14 @@ public class FxKafkaAdminConfig {
     @Bean
     public NewTopic fxTopic() {
         return TopicBuilder.name("ingestion-fx.fx")
-                .partitions(1)    // 원하는 파티션 개수
+                .partitions(1)
                 .replicas(1)
+                .configs(Map.of(
+                        "cleanup.policy", "delete",
+                        "retention.ms", "7200000",
+                        "segment.ms", "1800000",
+                        "retention.bytes", "2147483648"
+                ))
                 .build();
     }
 }
