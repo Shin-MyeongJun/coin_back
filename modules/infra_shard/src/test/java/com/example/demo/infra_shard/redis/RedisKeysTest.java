@@ -181,5 +181,37 @@ class RedisKeysTest {
         Assertions.assertTrue(RedisKeys.rateLimitAccount("test", "a", "1m").startsWith("ys:test:v1:"));
         Assertions.assertTrue(RedisKeys.alertCooldown("test", "r").startsWith("ys:test:v1:"));
         Assertions.assertTrue(RedisKeys.alertState("test", "r").startsWith("ys:test:v1:"));
+        Assertions.assertTrue(RedisKeys.rateLimitIp("test", "1.2.3.4", "m1").startsWith("ys:test:v1:"));
+        Assertions.assertTrue(RedisKeys.sseTicket("test", "tok").startsWith("ys:test:v1:"));
+    }
+
+    @Test
+    void createsRateLimitIpKey() {
+        String key = RedisKeys.rateLimitIp("test", "203.0.113.5", "m17560");
+
+        Assertions.assertEquals("ys:test:v1:ratelimit:ip:203.0.113.5:m17560", key);
+    }
+
+    @Test
+    void rateLimitIpRejectsBlankParams() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RedisKeys.rateLimitIp("test", null, "m1"));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RedisKeys.rateLimitIp("test", "1.2.3.4", " "));
+    }
+
+    @Test
+    void createsSseTicketKey() {
+        String key = RedisKeys.sseTicket("test", "abc-xyz");
+
+        Assertions.assertEquals("ys:test:v1:sse:ticket:abc-xyz", key);
+    }
+
+    @Test
+    void sseTicketRejectsBlankParams() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RedisKeys.sseTicket("test", null));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RedisKeys.sseTicket("test", ""));
     }
 }

@@ -127,4 +127,26 @@ public final class RedisKeys {
     public static String alertState(String env, String ruleId) {
         return base(env) + ":alert:state:" + requireNonBlank(ruleId, "ruleId");
     }
+
+    /**
+     * IP 기반 rate limit 버킷 키(익명/anonymous 요청 fallback).
+     * Format: {@code ys:{env}:v1:ratelimit:ip:{ip}:{bucket}}
+     * TTL 가이드: bucket window 길이에 맞춰 설정(예: 1m).
+     */
+    public static String rateLimitIp(String env, String ip, String bucket) {
+        return base(env)
+                + ":ratelimit:ip:"
+                + requireNonBlank(ip, "ip")
+                + ":"
+                + requireNonBlank(bucket, "bucket");
+    }
+
+    /**
+     * SSE 1회용 ticket 키(브라우저 EventSource 헤더 제약 회피용).
+     * Format: {@code ys:{env}:v1:sse:ticket:{token}}
+     * TTL 가이드: 짧게(예: 60s). GETDEL로 1회 소비.
+     */
+    public static String sseTicket(String env, String token) {
+        return base(env) + ":sse:ticket:" + requireNonBlank(token, "token");
+    }
 }

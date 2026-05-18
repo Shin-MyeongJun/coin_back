@@ -103,7 +103,21 @@
       "Bash(./gradlew.bat :market_data_query:compileJava :api:compileJava)",
       "Bash(./gradlew.bat :infra_shard:compileJava :market_data_query:compileJava :analytics_query:compileJava :api:compileJava)",
       "Bash(./gradlew.bat :infra_shard:test :market_data_query:test :analytics_query:test :api:test)",
-      "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.controller.meta.ExchangeControllerTest\")"
+      "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.controller.meta.ExchangeControllerTest\")",
+      "Bash(git fetch *)",
+      "Bash(git rev-list *)",
+      "Bash(git remote *)",
+      "Bash(grep -rn \"private final String env\\\\|@Value\\(\\\\\"\\\\${ys.env\" modules/analytics/src/main/java --include=\"*.java\")",
+      "Bash(./gradlew.bat :api:compileJava)",
+      "Bash(./gradlew.bat :api:compileTestJava :infra_shard:compileTestJava)",
+      "Bash(./gradlew.bat :infra_shard:test :api:test)",
+      "Bash(./gradlew.bat :api:test :infra_shard:test)",
+      "Bash(./gradlew.bat :api:test --tests com.example.demo.api.controller.meta.ExchangeControllerTest)",
+      "Bash(./gradlew.bat :infra_shard:test :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\")",
+      "Bash(./gradlew.bat :api:test)",
+      "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\" --tests \"com.example.demo.api.composition.*\" --tests \"com.example.demo.api.stream.consumer.*\" --tests \"com.example.demo.api.common.*\")",
+      "Bash(./gradlew.bat compileJava compileTestJava)",
+      "Bash(./gradlew.bat :infra_shard:test :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\" --tests \"com.example.demo.api.composition.*\" --tests \"com.example.demo.api.stream.consumer.*\" --tests \"com.example.demo.api.common.*\")"
     ]
   }
 }

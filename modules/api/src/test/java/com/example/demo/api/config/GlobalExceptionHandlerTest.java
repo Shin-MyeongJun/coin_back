@@ -2,6 +2,7 @@ package com.example.demo.api.config;
 
 import com.example.demo.api.config.CorsConfig;
 import com.example.demo.api.config.SecurityConfig;
+import com.example.demo.api.config.security.SecurityTestSupport;
 import com.example.demo.market_data_query.application.usecase.GetLatestTickBulkUseCase;
 import com.example.demo.market_data_query.application.usecase.GetLatestTickUseCase;
 import com.example.demo.api.controller.market.TickController;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TickController.class)
-@Import({CorsConfig.class, SecurityConfig.class})
+@Import({CorsConfig.class, SecurityConfig.class, SecurityTestSupport.class})
 class GlobalExceptionHandlerTest {
 
     @Autowired MockMvc mvc;

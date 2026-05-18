@@ -2,6 +2,7 @@ package com.example.demo.api.stream.controller;
 
 import com.example.demo.api.config.CorsConfig;
 import com.example.demo.api.config.SecurityConfig;
+import com.example.demo.api.config.security.SecurityTestSupport;
 import com.example.demo.api.stream.handler.CandleCloseSseHandler;
 import com.example.demo.api.stream.handler.IndicatorCloseSseHandler;
 import com.example.demo.api.stream.handler.PremiumDetailSseHandler;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StreamController.class)
-@Import({CorsConfig.class, SecurityConfig.class})
+@Import({CorsConfig.class, SecurityConfig.class, SecurityTestSupport.class})
 class StreamControllerTest {
 
     @Autowired MockMvc mvc;

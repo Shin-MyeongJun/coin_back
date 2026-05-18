@@ -4,6 +4,7 @@ import com.example.demo.meta_data_query.application.dto.ExchangeView;
 import com.example.demo.meta_data_query.application.dto.MarketCodeView;
 import com.example.demo.api.config.CorsConfig;
 import com.example.demo.api.config.SecurityConfig;
+import com.example.demo.api.config.security.SecurityTestSupport;
 import com.example.demo.meta_data_query.application.usecase.GetExchangeListUseCase;
 import com.example.demo.meta_data_query.application.usecase.GetMarketCodesByExchangeUseCase;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ExchangeController.class)
-@Import({CorsConfig.class, SecurityConfig.class})
+@Import({CorsConfig.class, SecurityConfig.class, SecurityTestSupport.class})
 class ExchangeControllerTest {
 
     @Autowired MockMvc mvc;
