@@ -119,6 +119,10 @@ public final class RedisKeys {
         return base(env) + ":alert:cooldown:" + requireNonBlank(ruleId, "ruleId");
     }
 
+    public static String alertCooldown(String env, long ruleId) {
+        return base(env) + ":alert:cooldown:" + ruleId;
+    }
+
     /**
      * Alert rule 평가 상태 캐시(직전 observed value/방향 등 hysteresis 판단용).
      * Format: {@code ys:{env}:v1:alert:state:{ruleId}}

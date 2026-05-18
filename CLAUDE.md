@@ -491,3 +491,14 @@ coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 �
 4. 패키지 오타 목록(§8) 신규 발견 시 추가
 5. MVP 제외(§13) / 프론트 연계(§14) 항목 변경 시 `02_PROJECT_CONTEXT.md`도 함께 갱신
 6. 본 문서 갱신 후 `02_PROJECT_CONTEXT.md` §검증 포인트 cross-check 통과 확인
+
+---
+
+## 16. Alert module update (2026-05-19)
+
+- `:alert` is a standalone Spring Boot runtime at `modules/alert`, root package `com.example.demo.alert`, default port `${ALERT_PORT:8090}`.
+- It depends on `:contracts`, `:infra_shard`, and `:infra_heartbeat`; it must not depend directly on `:market_data` or `:analytics`.
+- It consumes `market-data.tick`, `market-data.premium`, `market-data.premium-detail`, `analytics.tick-indicator`, and `analytics.premium-indicator`.
+- It publishes `alert.firing` with `com.example.demo.contracts.message.alert.AlertFiringMessage`.
+- Redis cooldown keys use `RedisKeys.alertCooldown(env, ruleId)` with format `ys:{env}:v1:alert:cooldown:{ruleId}`.
+- REST endpoints live inside the alert runtime only: `/api/v1/alert/rules`, `/api/v1/alert/firings`, and `/api/v1/stream/alerts`.
