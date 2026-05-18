@@ -11,10 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -57,6 +60,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         AuthenticatedAccount account = result.get();
         PrincipalSupport.store(request, new JwtPrincipal(account.id(), account.tier()));
+        String rawToken = header.substring(BEARER_PREFIX.length()).trim();
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(account, rawToken, List.of())
+        );
         chain.doFilter(request, response);
     }
 }

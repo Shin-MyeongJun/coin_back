@@ -19,7 +19,7 @@ public class SaveApiKeyAdapter implements SaveApiKeyPort {
     @Override
     @Transactional
     public ApiKey save(ApiKey apiKey) {
-        ApiKeyEntity saved = repo.save(mapper.toEntity(apiKey));
+        ApiKeyEntity saved = repo.saveAndFlush(mapper.toEntity(apiKey));
         return mapper.toDomain(saved);
     }
 }

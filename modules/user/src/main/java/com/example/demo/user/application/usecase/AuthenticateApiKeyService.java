@@ -5,6 +5,7 @@ import com.example.demo.user.application.port.in.AuthenticatedApiKey;
 import com.example.demo.user.application.port.out.ApiKeyLookupCachePort;
 import com.example.demo.user.application.port.out.LoadAccountPort;
 import com.example.demo.user.application.port.out.LoadApiKeyByPrefixPort;
+import com.example.demo.user.application.port.out.SaveApiKeyPort;
 import com.example.demo.user.domain.domain.Account;
 import com.example.demo.user.domain.domain.ApiKey;
 import com.example.demo.user.domain.domain.ApiKeyPrefix;
@@ -27,6 +28,7 @@ public class AuthenticateApiKeyService implements AuthenticateApiKeyUseCase {
     private final ApiKeyLookupCachePort apiKeyLookupCachePort;
     private final ApiKeyHasher apiKeyHasher;
     private final LoadAccountPort loadAccountPort;
+    private final SaveApiKeyPort saveApiKeyPort;
 
     @Override
     public Optional<AuthenticatedApiKey> authenticate(String authorizationHeader, String clientIp, Instant now) {
@@ -41,7 +43,6 @@ public class AuthenticateApiKeyService implements AuthenticateApiKeyUseCase {
             Optional<ApiKey> fromDb = loadApiKeyByPrefixPort.findByPrefix(parsed.prefix());
             if (fromDb.isEmpty()) return Optional.empty();
             apiKey = fromDb.get();
-            apiKeyLookupCachePort.put(apiKey);
         }
 
         // Hash comparison runs even on cache hit — defends against prefix collisions / cache poisoning.
@@ -52,12 +53,16 @@ public class AuthenticateApiKeyService implements AuthenticateApiKeyUseCase {
         Optional<Account> accountOpt = loadAccountPort.findById(apiKey.getAccountId());
         if (accountOpt.isEmpty()) return Optional.empty();
 
+        apiKey.touchUsage(now);
+        ApiKey saved = saveApiKeyPort.save(apiKey);
+        apiKeyLookupCachePort.put(saved);
+
         return Optional.of(new AuthenticatedApiKey(
-                apiKey.getId(),
-                apiKey.getAccountId(),
+                saved.getId(),
+                saved.getAccountId(),
                 accountOpt.get().getTier(),
-                apiKey.getScopes(),
-                apiKey.getPolicy()
+                saved.getScopes(),
+                saved.getPolicy()
         ));
     }
 

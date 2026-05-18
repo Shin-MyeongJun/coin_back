@@ -4,6 +4,7 @@ import com.example.demo.user.application.port.in.AuthenticatedApiKey;
 import com.example.demo.user.application.port.out.ApiKeyLookupCachePort;
 import com.example.demo.user.application.port.out.LoadAccountPort;
 import com.example.demo.user.application.port.out.LoadApiKeyByPrefixPort;
+import com.example.demo.user.application.port.out.SaveApiKeyPort;
 import com.example.demo.user.domain.domain.Account;
 import com.example.demo.user.domain.domain.AccountId;
 import com.example.demo.user.domain.domain.AccountTier;
@@ -42,6 +43,7 @@ class AuthenticateApiKeyServiceTest {
     @Mock ApiKeyLookupCachePort apiKeyLookupCachePort;
     @Mock ApiKeyHasher apiKeyHasher;
     @Mock LoadAccountPort loadAccountPort;
+    @Mock SaveApiKeyPort saveApiKeyPort;
 
     @InjectMocks AuthenticateApiKeyService service;
 
@@ -131,13 +133,15 @@ class AuthenticateApiKeyServiceTest {
         given(apiKeyLookupCachePort.get(any())).willReturn(Optional.of(apiKey));
         given(apiKeyHasher.matches(any(), any())).willReturn(true);
         given(loadAccountPort.findById(accountId)).willReturn(Optional.of(account));
+        given(saveApiKeyPort.save(any())).willAnswer(inv -> inv.getArgument(0));
 
         Optional<AuthenticatedApiKey> result = service.authenticate(VALID_HEADER, "1.1.1.1", now);
 
         assertThat(result).isPresent();
         assertThat(result.get().tier()).isEqualTo(AccountTier.PRO);
         assertThat(result.get().scopes()).containsExactly(ApiKeyScope.READ_MARKET);
-        verify(apiKeyLookupCachePort, never()).put(any());
+        assertThat(apiKey.getLastUsedAt()).isEqualTo(now);
+        verify(apiKeyLookupCachePort).put(apiKey);
     }
 
     @Test
@@ -147,6 +151,7 @@ class AuthenticateApiKeyServiceTest {
         given(loadApiKeyByPrefixPort.findByPrefix(any())).willReturn(Optional.of(apiKey));
         given(apiKeyHasher.matches(any(), any())).willReturn(true);
         given(loadAccountPort.findById(accountId)).willReturn(Optional.of(account));
+        given(saveApiKeyPort.save(any())).willAnswer(inv -> inv.getArgument(0));
 
         Optional<AuthenticatedApiKey> result = service.authenticate(VALID_HEADER, "1.1.1.1", now);
 

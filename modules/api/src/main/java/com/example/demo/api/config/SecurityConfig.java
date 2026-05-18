@@ -130,7 +130,7 @@ public class SecurityConfig {
                             "/api/v1/auth/logout",
                             "/api/v1/auth/me",
                             "/api/v1/api-keys/**"
-                    ).access(new PrincipalAuthorization());
+                    ).access(new JwtPrincipalAuthorization());
 
                     // SSE stream: ticket 으로만 인증 (필터에서 principal 주입됨)
                     auth.requestMatchers("/api/v1/stream/**")

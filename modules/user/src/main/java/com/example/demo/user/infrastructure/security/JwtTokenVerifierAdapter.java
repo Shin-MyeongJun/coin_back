@@ -57,11 +57,23 @@ public class JwtTokenVerifierAdapter implements TokenVerifierPort {
             if (!expectedType.equals(type)) {
                 return Optional.empty();
             }
+            if (c.getId() == null || c.getId().isBlank()) {
+                return Optional.empty();
+            }
+            if (c.getSubject() == null || c.getSubject().isBlank()) {
+                return Optional.empty();
+            }
+            if (c.getExpiration() == null) {
+                return Optional.empty();
+            }
             Instant exp = c.getExpiration().toInstant();
             if (!exp.isAfter(now)) {
                 return Optional.empty();
             }
             String tierName = c.get(JwtTokenIssuerAdapter.CLAIM_TIER, String.class);
+            if (tierName == null || tierName.isBlank()) {
+                return Optional.empty();
+            }
             AccountTier tier = AccountTier.valueOf(tierName);
             AccountId id = AccountId.of(c.getSubject());
             return Optional.of(new VerifiedClaims(id, c.getId(), tier, exp));

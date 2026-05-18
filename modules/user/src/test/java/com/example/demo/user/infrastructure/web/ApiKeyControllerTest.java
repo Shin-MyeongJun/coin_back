@@ -5,7 +5,6 @@ import com.example.demo.user.application.port.in.IssueApiKeyUseCase;
 import com.example.demo.user.application.port.in.IssuedApiKey;
 import com.example.demo.user.application.port.in.ListApiKeysQuery;
 import com.example.demo.user.application.port.in.RevokeApiKeyUseCase;
-import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.example.demo.user.domain.domain.AccountId;
 import com.example.demo.user.domain.domain.AccountTier;
 import com.example.demo.user.domain.domain.ApiKey;
@@ -21,6 +20,7 @@ import com.example.demo.user.domain.exception.ApiKeyOwnershipException;
 import com.example.demo.user.domain.exception.ApiKeyQuotaExceededException;
 import com.example.demo.user.infrastructure.web.error.UserErrorAdvice;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +28,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.Instant;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +57,6 @@ class ApiKeyControllerTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper om;
 
-    @MockitoBean VerifyAccessTokenUseCase verifyAccessTokenUseCase;
     @MockitoBean IssueApiKeyUseCase issueApiKeyUseCase;
     @MockitoBean RevokeApiKeyUseCase revokeApiKeyUseCase;
     @MockitoBean ListApiKeysQuery listApiKeysQuery;
@@ -65,9 +66,20 @@ class ApiKeyControllerTest {
     @BeforeEach
     void setup() {
         accountId = AccountId.generate();
-        given(verifyAccessTokenUseCase.verify(any(), any())).willReturn(Optional.of(
-                new AuthenticatedAccount(accountId, Email.of("a@b.com"), AccountTier.PRO)
-        ));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private RequestPostProcessor authenticated() {
+        AuthenticatedAccount account = new AuthenticatedAccount(accountId, Email.of("a@b.com"), AccountTier.PRO);
+        return request -> {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new TestingAuthenticationToken(account, null, "ROLE_USER"));
+            return request;
+        };
     }
 
     @Test
@@ -86,6 +98,7 @@ class ApiKeyControllerTest {
         given(issueApiKeyUseCase.issue(any(), any(), any(), any(), any())).willReturn(issued);
 
         mvc.perform(post("/api/v1/api-keys")
+                        .with(authenticated())
                         .header("Authorization", "Bearer AT")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of(
@@ -108,6 +121,7 @@ class ApiKeyControllerTest {
                 .willThrow(new ApiKeyQuotaExceededException(AccountTier.FREE, 3, 3));
 
         mvc.perform(post("/api/v1/api-keys")
+                        .with(authenticated())
                         .header("Authorization", "Bearer AT")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of(
@@ -131,7 +145,9 @@ class ApiKeyControllerTest {
         );
         given(listApiKeysQuery.list(any())).willReturn(List.of(k));
 
-        mvc.perform(get("/api/v1/api-keys").header("Authorization", "Bearer AT"))
+        mvc.perform(get("/api/v1/api-keys")
+                        .with(authenticated())
+                        .header("Authorization", "Bearer AT"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].prefix").value("ABCD1234"))
                 .andExpect(jsonPath("$[0].label").value("trading-bot"))
@@ -142,7 +158,9 @@ class ApiKeyControllerTest {
     @Test
     void revoke_returns_204() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/api-keys/" + id).header("Authorization", "Bearer AT"))
+        mvc.perform(delete("/api/v1/api-keys/" + id)
+                        .with(authenticated())
+                        .header("Authorization", "Bearer AT"))
                 .andExpect(status().isNoContent());
     }
 
@@ -153,7 +171,9 @@ class ApiKeyControllerTest {
         willThrow(new ApiKeyOwnershipException(accountId, apiKeyId))
                 .given(revokeApiKeyUseCase).revoke(any(), any(), any());
 
-        mvc.perform(delete("/api/v1/api-keys/" + id).header("Authorization", "Bearer AT"))
+        mvc.perform(delete("/api/v1/api-keys/" + id)
+                        .with(authenticated())
+                        .header("Authorization", "Bearer AT"))
                 .andExpect(status().isForbidden());
     }
 
@@ -164,14 +184,14 @@ class ApiKeyControllerTest {
         willThrow(new ApiKeyNotFoundException(apiKeyId))
                 .given(revokeApiKeyUseCase).revoke(any(), any(), any());
 
-        mvc.perform(delete("/api/v1/api-keys/" + id).header("Authorization", "Bearer AT"))
+        mvc.perform(delete("/api/v1/api-keys/" + id)
+                        .with(authenticated())
+                        .header("Authorization", "Bearer AT"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void issue_returns_401_when_no_auth() throws Exception {
-        given(verifyAccessTokenUseCase.verify(any(), any())).willReturn(Optional.empty());
-
         mvc.perform(post("/api/v1/api-keys")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of(

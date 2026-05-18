@@ -49,7 +49,7 @@ public class IssueApiKeyService implements IssueApiKeyUseCase {
             Set<String> ipAllowlist,
             Instant now
     ) {
-        Account account = loadAccountPort.findById(accountId)
+        Account account = loadAccountPort.findByIdForUpdate(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
         long activeCount = loadApiKeyPort.countActiveByAccountId(accountId);

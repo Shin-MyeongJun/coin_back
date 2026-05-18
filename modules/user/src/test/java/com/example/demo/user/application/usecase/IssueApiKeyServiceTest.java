@@ -64,7 +64,7 @@ class IssueApiKeyServiceTest {
     @Test
     void rejects_when_quota_exceeded() {
         Account a = account(AccountTier.FREE);
-        given(loadAccountPort.findById(a.getId())).willReturn(Optional.of(a));
+        given(loadAccountPort.findByIdForUpdate(a.getId())).willReturn(Optional.of(a));
         given(loadApiKeyPort.countActiveByAccountId(a.getId())).willReturn(3L);
 
         assertThatThrownBy(() -> service.issue(
@@ -78,7 +78,7 @@ class IssueApiKeyServiceTest {
     @Test
     void rejects_when_scope_not_allowed_for_tier() {
         Account a = account(AccountTier.FREE);
-        given(loadAccountPort.findById(a.getId())).willReturn(Optional.of(a));
+        given(loadAccountPort.findByIdForUpdate(a.getId())).willReturn(Optional.of(a));
         given(loadApiKeyPort.countActiveByAccountId(a.getId())).willReturn(0L);
 
         assertThatThrownBy(() -> service.issue(
@@ -99,7 +99,7 @@ class IssueApiKeyServiceTest {
         );
         ApiKeyHash hash = ApiKeyHash.of("$2a$12$AAAAAAAAAAAAAAAAAAAAAA");
 
-        given(loadAccountPort.findById(a.getId())).willReturn(Optional.of(a));
+        given(loadAccountPort.findByIdForUpdate(a.getId())).willReturn(Optional.of(a));
         given(loadApiKeyPort.countActiveByAccountId(a.getId())).willReturn(0L);
         given(apiKeySecretGeneratorPort.generate()).willReturn(credentials);
         given(loadApiKeyByPrefixPort.findByPrefix(credentials.prefix())).willReturn(Optional.empty());
@@ -137,7 +137,7 @@ class IssueApiKeyServiceTest {
                 now
         );
 
-        given(loadAccountPort.findById(a.getId())).willReturn(Optional.of(a));
+        given(loadAccountPort.findByIdForUpdate(a.getId())).willReturn(Optional.of(a));
         given(loadApiKeyPort.countActiveByAccountId(a.getId())).willReturn(0L);
         given(apiKeySecretGeneratorPort.generate()).willReturn(first, second);
         given(loadApiKeyByPrefixPort.findByPrefix(first.prefix())).willReturn(Optional.of(existing));

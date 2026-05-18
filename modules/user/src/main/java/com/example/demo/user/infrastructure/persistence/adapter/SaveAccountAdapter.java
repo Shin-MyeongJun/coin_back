@@ -19,7 +19,7 @@ public class SaveAccountAdapter implements SaveAccountPort {
     @Override
     @Transactional
     public Account save(Account account) {
-        AccountEntity saved = repo.save(mapper.toEntity(account));
+        AccountEntity saved = repo.saveAndFlush(mapper.toEntity(account));
         return mapper.toDomain(saved);
     }
 }

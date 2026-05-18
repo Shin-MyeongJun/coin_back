@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface LoadAccountPort {
     Optional<Account> findById(AccountId id);
+    Optional<Account> findByIdForUpdate(AccountId id);
     Optional<Account> findByEmail(Email email);
     boolean existsByEmail(Email email);
 }

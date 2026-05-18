@@ -7,9 +7,11 @@ import com.example.demo.user.domain.domain.AccountTier;
 import com.example.demo.user.domain.domain.Email;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -35,10 +37,16 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
+        SecurityContextHolder.clearContext();
         verify = mock(VerifyAccessTokenUseCase.class);
         objectMapper = new ObjectMapper();
         Clock clock = Clock.fixed(Instant.parse("2026-05-14T00:00:00Z"), ZoneOffset.UTC);
         sut = new JwtAuthenticationFilter(verify, clock, objectMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -91,6 +99,8 @@ class JwtAuthenticationFilterTest {
         JwtPrincipal jp = (JwtPrincipal) p;
         assertThat(jp.accountId()).isEqualTo(id);
         assertThat(jp.tier()).isEqualTo(AccountTier.PRO);
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).isEqualTo(account);
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getCredentials()).isEqualTo("abc");
     }
 
     @Test

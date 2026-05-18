@@ -16,8 +16,21 @@ spring:
   mvc:
     problem-details:
       enabled: true
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
   autoconfigure:
     exclude:
+
+ys:
+  auth:
+    jwt:
+      secret: ${JWT_SECRET}
+      access-ttl-seconds: ${JWT_ACCESS_TTL:300}
+      refresh-ttl-seconds: ${JWT_REFRESH_TTL:1209600}
+      issuer: ${JWT_ISSUER:ys-coin}
 
 springdoc:
   swagger-ui:

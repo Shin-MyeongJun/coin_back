@@ -5,7 +5,6 @@ import com.example.demo.user.application.port.in.LoginUseCase;
 import com.example.demo.user.application.port.in.LogoutUseCase;
 import com.example.demo.user.application.port.in.RefreshTokenUseCase;
 import com.example.demo.user.application.port.in.SignupUseCase;
-import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.example.demo.user.domain.domain.Account;
 import com.example.demo.user.domain.domain.Email;
 import com.example.demo.user.domain.domain.RefreshToken;
@@ -24,11 +23,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,7 +45,6 @@ public class AuthController {
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUseCase logoutUseCase;
-    private final VerifyAccessTokenUseCase verifyAccessTokenUseCase;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/signup")
@@ -81,11 +80,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @AuthenticationPrincipal AuthenticatedAccount account,
+            Authentication authentication,
             @CookieValue(value = REFRESH_COOKIE, required = false) String refreshCookie,
             HttpServletRequest httpRequest
     ) {
-        String accessRaw = stripBearer(authHeader);
+        requireAccount(account);
+        String accessRaw = rawAccessToken(authentication);
         logoutUseCase.logout(accessRaw, refreshCookie, Instant.now());
         ResponseCookie cleared = clearCookie(httpRequest.isSecure());
         return ResponseEntity.noContent()
@@ -93,11 +94,9 @@ public class AuthController {
                 .build();
     }
 
-    // TODO Step 4: replace direct header parsing with SecurityContext-derived AuthenticatedAccount.
     @GetMapping("/me")
-    public MeResponse me(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        AuthenticatedAccount me = verifyAccessTokenUseCase.verify(authHeader, Instant.now())
-                .orElseThrow(() -> new TokenInvalidException("missing or invalid access token"));
+    public MeResponse me(@AuthenticationPrincipal AuthenticatedAccount account) {
+        AuthenticatedAccount me = requireAccount(account);
         return new MeResponse(me.id().asString(), me.email().value(), me.tier().name());
     }
 
@@ -134,9 +133,16 @@ public class AuthController {
                 .build();
     }
 
-    private String stripBearer(String header) {
-        if (header == null || header.isBlank()) return null;
-        String trimmed = header.trim();
-        return trimmed.startsWith("Bearer ") ? trimmed.substring("Bearer ".length()).trim() : trimmed;
+    private AuthenticatedAccount requireAccount(AuthenticatedAccount account) {
+        if (account == null) {
+            throw new TokenInvalidException("missing or invalid access token");
+        }
+        return account;
+    }
+
+    private String rawAccessToken(Authentication authentication) {
+        if (authentication == null) return null;
+        Object credentials = authentication.getCredentials();
+        return credentials instanceof String raw && !raw.isBlank() ? raw : null;
     }
 }

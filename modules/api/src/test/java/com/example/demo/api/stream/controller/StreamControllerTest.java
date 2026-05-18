@@ -3,11 +3,15 @@ package com.example.demo.api.stream.controller;
 import com.example.demo.api.config.CorsConfig;
 import com.example.demo.api.config.SecurityConfig;
 import com.example.demo.api.config.security.SecurityTestSupport;
+import com.example.demo.api.config.security.filter.JwtPrincipal;
+import com.example.demo.api.config.security.filter.PrincipalSupport;
 import com.example.demo.api.stream.handler.CandleCloseSseHandler;
 import com.example.demo.api.stream.handler.IndicatorCloseSseHandler;
 import com.example.demo.api.stream.handler.PremiumDetailSseHandler;
 import com.example.demo.api.stream.handler.PremiumSseHandler;
 import com.example.demo.api.stream.handler.TickSseHandler;
+import com.example.demo.user.domain.domain.AccountId;
+import com.example.demo.user.domain.domain.AccountTier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import static org.mockito.BDDMockito.given;
@@ -44,6 +49,7 @@ class StreamControllerTest {
         // when / then
         mvc.perform(get("/api/v1/stream/ticks")
                         .param("marketCodeId", "100")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -58,6 +64,7 @@ class StreamControllerTest {
 
         // when / then
         mvc.perform(get("/api/v1/stream/ticks")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -72,6 +79,7 @@ class StreamControllerTest {
 
         // when / then
         mvc.perform(get("/api/v1/stream/premium")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -86,6 +94,7 @@ class StreamControllerTest {
 
         // when / then
         mvc.perform(get("/api/v1/stream/premium-detail/raw")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -101,6 +110,7 @@ class StreamControllerTest {
         // when / then
         mvc.perform(get("/api/v1/stream/candles/close")
                         .param("type", "premium")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -116,6 +126,7 @@ class StreamControllerTest {
         // when / then
         mvc.perform(get("/api/v1/stream/candles/close")
                         .param("type", "premium-detail")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
@@ -130,9 +141,17 @@ class StreamControllerTest {
 
         // when / then
         mvc.perform(get("/api/v1/stream/indicators/close")
+                        .with(authenticatedStream())
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
 
         then(indicatorCloseSseHandler).should().subscribe("tick");
+    }
+
+    private static RequestPostProcessor authenticatedStream() {
+        return request -> {
+            PrincipalSupport.store(request, new JwtPrincipal(AccountId.generate(), AccountTier.FREE));
+            return request;
+        };
     }
 }

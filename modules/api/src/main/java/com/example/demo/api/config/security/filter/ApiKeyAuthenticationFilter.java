@@ -11,10 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -59,6 +62,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         AuthenticatedApiKey k = result.get();
         PrincipalSupport.store(request, new ApiKeyPrincipal(
                 k.apiKeyId(), k.accountId(), k.tier(), k.scopes(), k.policy()));
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(k, null, List.of())
+        );
         chain.doFilter(request, response);
     }
 }

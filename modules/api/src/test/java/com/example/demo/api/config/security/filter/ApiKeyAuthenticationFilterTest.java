@@ -9,9 +9,11 @@ import com.example.demo.user.domain.domain.ApiKeyScope;
 import com.example.demo.user.domain.domain.RateLimitPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -38,10 +40,16 @@ class ApiKeyAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
+        SecurityContextHolder.clearContext();
         auth = mock(AuthenticateApiKeyUseCase.class);
         objectMapper = new ObjectMapper();
         Clock clock = Clock.fixed(Instant.parse("2026-05-14T00:00:00Z"), ZoneOffset.UTC);
         sut = new ApiKeyAuthenticationFilter(auth, clock, objectMapper);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -85,6 +93,8 @@ class ApiKeyAuthenticationFilterTest {
         assertThat(ap.apiKeyId()).isEqualTo(apiKeyId);
         assertThat(ap.scopes()).containsExactlyInAnyOrderElementsOf(scopes);
         assertThat(ap.policy()).isEqualTo(policy);
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                .isInstanceOf(AuthenticatedApiKey.class);
     }
 
     @Test

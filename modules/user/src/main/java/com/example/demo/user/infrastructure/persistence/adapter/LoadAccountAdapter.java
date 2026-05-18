@@ -26,6 +26,12 @@ public class LoadAccountAdapter implements LoadAccountPort {
     }
 
     @Override
+    @Transactional
+    public Optional<Account> findByIdForUpdate(AccountId id) {
+        return repo.findByIdForUpdate(id.value()).map(mapper::toDomain);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Account> findByEmail(Email email) {
         return repo.findByEmail(email.value()).map(mapper::toDomain);

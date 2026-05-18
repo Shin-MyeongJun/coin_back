@@ -5,7 +5,6 @@ import com.example.demo.user.application.port.in.LoginUseCase;
 import com.example.demo.user.application.port.in.LogoutUseCase;
 import com.example.demo.user.application.port.in.RefreshTokenUseCase;
 import com.example.demo.user.application.port.in.SignupUseCase;
-import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.example.demo.user.domain.domain.AccessToken;
 import com.example.demo.user.domain.domain.Account;
 import com.example.demo.user.domain.domain.AccountId;
@@ -18,19 +17,22 @@ import com.example.demo.user.domain.exception.DuplicateEmailException;
 import com.example.demo.user.infrastructure.security.JwtProperties;
 import com.example.demo.user.infrastructure.web.error.UserErrorAdvice;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -56,7 +58,6 @@ class AuthControllerTest {
     @MockitoBean LoginUseCase loginUseCase;
     @MockitoBean RefreshTokenUseCase refreshTokenUseCase;
     @MockitoBean LogoutUseCase logoutUseCase;
-    @MockitoBean VerifyAccessTokenUseCase verifyAccessTokenUseCase;
 
     @org.springframework.boot.test.context.TestConfiguration
     static class TestJwtConfig {
@@ -64,6 +65,19 @@ class AuthControllerTest {
         JwtProperties jwtProperties() {
             return new JwtProperties("0123456789012345678901234567890123456789012345678901234567890123", 300, 1209600, "ys-coin");
         }
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private RequestPostProcessor authenticated(AuthenticatedAccount account, String rawToken) {
+        return request -> {
+            SecurityContextHolder.getContext().setAuthentication(
+                    new TestingAuthenticationToken(account, rawToken, "ROLE_USER"));
+            return request;
+        };
     }
 
     @Test
@@ -120,9 +134,9 @@ class AuthControllerTest {
     void me_returns_200_when_verified() throws Exception {
         AccountId id = AccountId.generate();
         AuthenticatedAccount me = new AuthenticatedAccount(id, Email.of("a@b.com"), AccountTier.FREE);
-        given(verifyAccessTokenUseCase.verify(any(), any())).willReturn(Optional.of(me));
 
-        mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer AT"))
+        mvc.perform(get("/api/v1/auth/me")
+                        .with(authenticated(me, "AT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("a@b.com"))
                 .andExpect(jsonPath("$.tier").value("FREE"));
@@ -130,16 +144,16 @@ class AuthControllerTest {
 
     @Test
     void me_returns_401_when_missing_token() throws Exception {
-        given(verifyAccessTokenUseCase.verify(any(), any())).willReturn(Optional.empty());
-
         mvc.perform(get("/api/v1/auth/me"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void logout_returns_204_and_clears_cookie() throws Exception {
+        AuthenticatedAccount me = new AuthenticatedAccount(AccountId.generate(), Email.of("a@b.com"), AccountTier.FREE);
+
         mvc.perform(post("/api/v1/auth/logout")
-                        .header("Authorization", "Bearer AT")
+                        .with(authenticated(me, "AT"))
                         .cookie(new jakarta.servlet.http.Cookie("refresh", "RT")))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh=")))

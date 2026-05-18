@@ -10,6 +10,7 @@ import com.example.demo.user.domain.domain.PasswordHash;
 import com.example.demo.user.domain.exception.DuplicateEmailException;
 import com.example.demo.user.domain.service.AccountFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,10 @@ public class SignupService implements SignupUseCase {
         }
         PasswordHash hash = passwordEncoderPort.encode(rawPassword);
         Account account = AccountFactory.create(email, hash, now);
-        return saveAccountPort.save(account);
+        try {
+            return saveAccountPort.save(account);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateEmailException(email.value());
+        }
     }
 }

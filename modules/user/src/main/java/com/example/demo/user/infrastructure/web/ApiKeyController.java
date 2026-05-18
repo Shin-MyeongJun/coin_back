@@ -5,7 +5,6 @@ import com.example.demo.user.application.port.in.IssueApiKeyUseCase;
 import com.example.demo.user.application.port.in.IssuedApiKey;
 import com.example.demo.user.application.port.in.ListApiKeysQuery;
 import com.example.demo.user.application.port.in.RevokeApiKeyUseCase;
-import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.example.demo.user.domain.domain.AccountId;
 import com.example.demo.user.domain.domain.ApiKey;
 import com.example.demo.user.domain.domain.ApiKeyId;
@@ -17,15 +16,14 @@ import com.example.demo.user.infrastructure.web.dto.IssueApiKeyResponse;
 import com.example.demo.user.infrastructure.web.dto.PolicyResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,17 +40,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyController {
 
-    private final VerifyAccessTokenUseCase verifyAccessTokenUseCase;
     private final IssueApiKeyUseCase issueApiKeyUseCase;
     private final RevokeApiKeyUseCase revokeApiKeyUseCase;
     private final ListApiKeysQuery listApiKeysQuery;
 
     @PostMapping
     public ResponseEntity<IssueApiKeyResponse> issue(
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @AuthenticationPrincipal AuthenticatedAccount account,
             @Valid @RequestBody IssueApiKeyRequest req
     ) {
-        AccountId accountId = resolveAccount(authHeader);
+        AccountId accountId = resolveAccount(account);
         Set<ApiKeyScope> scopes = parseScopes(req.scopes());
         Set<String> ipAllowlist = req.ipAllowlist() == null
                 ? Collections.emptySet()
@@ -78,27 +75,27 @@ public class ApiKeyController {
 
     @GetMapping
     public List<ApiKeySummaryResponse> list(
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader
+            @AuthenticationPrincipal AuthenticatedAccount account
     ) {
-        AccountId accountId = resolveAccount(authHeader);
+        AccountId accountId = resolveAccount(account);
         return listApiKeysQuery.list(accountId).stream().map(this::toSummary).toList();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> revoke(
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @AuthenticationPrincipal AuthenticatedAccount account,
             @PathVariable("id") UUID id
     ) {
-        AccountId accountId = resolveAccount(authHeader);
+        AccountId accountId = resolveAccount(account);
         revokeApiKeyUseCase.revoke(accountId, ApiKeyId.of(id), Instant.now());
         return ResponseEntity.noContent().build();
     }
 
-    // TODO Step 4: replace with @AuthenticationPrincipal AuthenticatedAccount once SecurityFilter is in place.
-    private AccountId resolveAccount(String authHeader) {
-        return verifyAccessTokenUseCase.verify(authHeader, Instant.now())
-                .map(AuthenticatedAccount::id)
-                .orElseThrow(() -> new TokenInvalidException("missing or invalid access token"));
+    private AccountId resolveAccount(AuthenticatedAccount account) {
+        if (account == null) {
+            throw new TokenInvalidException("missing or invalid access token");
+        }
+        return account.id();
     }
 
     private Set<ApiKeyScope> parseScopes(List<String> raw) {
