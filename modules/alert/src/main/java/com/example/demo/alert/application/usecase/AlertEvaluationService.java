@@ -16,6 +16,8 @@ import com.example.demo.alert.domain.signal.MarketSignal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Clock;
 
@@ -43,14 +45,31 @@ public class AlertEvaluationService implements EvaluateMarketSignalUseCase {
                 continue;
             }
             AlertFiring saved = saveAlertFiringPort.save(toFiring(rule, signal));
-            publishAlertFiringPort.publish(saved);
-            if (rule.getChannels().contains(Channel.SSE)) {
-                broadcastAlertFiringPort.broadcast(saved);
-            }
-            rule.getChannels().stream()
-                    .filter(channel -> channel != Channel.SSE)
-                    .forEach(channel -> sendAlertChannelPort.send(saved, channel));
+            dispatchAfterCommit(rule, saved);
         }
+    }
+
+    private void dispatchAfterCommit(AlertRule rule, AlertFiring saved) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    dispatch(rule, saved);
+                }
+            });
+        } else {
+            dispatch(rule, saved);
+        }
+    }
+
+    private void dispatch(AlertRule rule, AlertFiring saved) {
+        publishAlertFiringPort.publish(saved);
+        if (rule.getChannels().contains(Channel.SSE)) {
+            broadcastAlertFiringPort.broadcast(saved);
+        }
+        rule.getChannels().stream()
+                .filter(channel -> channel != Channel.SSE)
+                .forEach(channel -> sendAlertChannelPort.send(saved, channel));
     }
 
     private AlertFiring toFiring(AlertRule rule, MarketSignal signal) {

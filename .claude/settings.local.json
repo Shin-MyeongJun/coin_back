@@ -117,7 +117,17 @@
       "Bash(./gradlew.bat :api:test)",
       "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\" --tests \"com.example.demo.api.composition.*\" --tests \"com.example.demo.api.stream.consumer.*\" --tests \"com.example.demo.api.common.*\")",
       "Bash(./gradlew.bat compileJava compileTestJava)",
-      "Bash(./gradlew.bat :infra_shard:test :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\" --tests \"com.example.demo.api.composition.*\" --tests \"com.example.demo.api.stream.consumer.*\" --tests \"com.example.demo.api.common.*\")"
+      "Bash(./gradlew.bat :infra_shard:test :api:test --tests \"com.example.demo.api.config.security.*\" --tests \"com.example.demo.api.ApiArchitectureTest\" --tests \"com.example.demo.api.composition.*\" --tests \"com.example.demo.api.stream.consumer.*\" --tests \"com.example.demo.api.common.*\")",
+      "Bash(xargs grep -l \"Scheduler\")",
+      "Bash(xargs grep -l \"Scheduled\")",
+      "Bash(git switch *)",
+      "Bash(.\\\\gradlew.bat :alert:compileJava -q)",
+      "PowerShell(.\\\\gradlew.bat :alert:compileJava -q 2>&1 | Select-Object -Last 30)",
+      "Bash(./gradlew.bat :alert:compileJava -q)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(./gradlew.bat :alert:compileJava :alert:compileTestJava -q)",
+      "Bash(./gradlew.bat compileJava compileTestJava -q)",
+      "Bash(./gradlew.bat :alert:test :contracts:test -q)"
     ]
   }
 }

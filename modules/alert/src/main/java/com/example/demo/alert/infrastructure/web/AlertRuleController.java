@@ -7,6 +7,7 @@ import com.example.demo.alert.application.port.in.ToggleAlertRuleUseCase;
 import com.example.demo.alert.application.port.in.UpdateAlertRuleUseCase;
 import com.example.demo.alert.application.usecase.AlertRulePage;
 import com.example.demo.alert.domain.domain.AlertRule;
+import com.example.demo.alert.infrastructure.config.AlertProperties;
 import com.example.demo.alert.infrastructure.web.dto.AlertRuleRequest;
 import com.example.demo.alert.infrastructure.web.dto.AlertRuleResponse;
 import jakarta.validation.Valid;
@@ -36,6 +37,7 @@ public class AlertRuleController {
     private final DeleteAlertRuleUseCase deleteAlertRuleUseCase;
     private final ToggleAlertRuleUseCase toggleAlertRuleUseCase;
     private final QueryAlertRuleUseCase queryAlertRuleUseCase;
+    private final AlertProperties alertProperties;
 
     @GetMapping
     public RulePageResponse list(
@@ -55,7 +57,7 @@ public class AlertRuleController {
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @Valid @RequestBody AlertRuleRequest request
     ) {
-        AlertRule saved = registerAlertRuleUseCase.register(resolveUserId(userId), request.toCommand());
+        AlertRule saved = registerAlertRuleUseCase.register(resolveUserId(userId), request.toCommand(alertProperties));
         return ResponseEntity.created(URI.create("/api/v1/alert/rules/" + saved.getId()))
                 .body(AlertRuleResponse.from(saved));
     }
@@ -74,7 +76,7 @@ public class AlertRuleController {
             @PathVariable long id,
             @Valid @RequestBody AlertRuleRequest request
     ) {
-        return AlertRuleResponse.from(updateAlertRuleUseCase.update(resolveUserId(userId), id, request.toCommand()));
+        return AlertRuleResponse.from(updateAlertRuleUseCase.update(resolveUserId(userId), id, request.toCommand(alertProperties)));
     }
 
     @DeleteMapping("/{id}")

@@ -5,6 +5,7 @@ import com.example.demo.alert.domain.domain.AlertCondition;
 import com.example.demo.alert.domain.domain.Channel;
 import com.example.demo.alert.domain.domain.Operator;
 import com.example.demo.alert.domain.domain.TargetType;
+import com.example.demo.alert.infrastructure.config.AlertProperties;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -42,10 +43,8 @@ public record AlertRuleRequest(
 
         Boolean active
 ) {
-    public AlertRuleCommand toCommand() {
-        Set<Channel> normalizedChannels = channels == null || channels.isEmpty()
-                ? Set.of(Channel.SSE)
-                : Set.copyOf(channels);
+    public AlertRuleCommand toCommand(AlertProperties properties) {
+        Set<Channel> normalizedChannels = resolveChannels(properties);
         return new AlertRuleCommand(
                 label,
                 targetType,
@@ -55,5 +54,15 @@ public record AlertRuleRequest(
                 normalizedChannels,
                 active
         );
+    }
+
+    private Set<Channel> resolveChannels(AlertProperties properties) {
+        if (channels != null && !channels.isEmpty()) {
+            return Set.copyOf(channels);
+        }
+        if (properties != null && properties.defaultChannels() != null && !properties.defaultChannels().isEmpty()) {
+            return Set.copyOf(properties.defaultChannels());
+        }
+        return Set.of(Channel.SSE);
     }
 }
