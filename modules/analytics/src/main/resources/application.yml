@@ -4,6 +4,12 @@ app:
   heartbeat:
     enabled: true
 
+analytics:
+  outbox:
+    batch-size: ${ANALYTICS_OUTBOX_BATCH:200}
+    poll-interval-ms: ${ANALYTICS_OUTBOX_POLL_MS:500}
+    max-retry: ${ANALYTICS_OUTBOX_MAX_RETRY:10}
+
 spring:
   main:
     web-application-type: none

@@ -42,7 +42,6 @@ $ProjectByModule = @{
     "meta_data"         = ":meta_data"
     "market_data"       = ":market_data"
     "analytics"         = ":analytics"
-    "alert"             = ":alert"
     "api"               = ":api"
 }
 
@@ -55,7 +54,6 @@ $AllExecutableModules = @(
     "meta_data",
     "market_data",
     "analytics",
-    "alert",
     "api"
 )
 
@@ -80,7 +78,6 @@ $ModuleAliases = @{
     "market_data"       = "market_data"
     "market-data"       = "market_data"
     "analytics"         = "analytics"
-    "alert"             = "alert"
     "api"               = "api"
 }
 

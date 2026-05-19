@@ -1,10 +1,8 @@
 package com.example.demo.api.config;
 
-import com.example.demo.api.config.security.SecurityProperties;
 import com.example.demo.api.config.security.error.ProblemDetails;
 import com.example.demo.api.config.security.filter.ApiKeyAuthenticationFilter;
 import com.example.demo.api.config.security.filter.JwtAuthenticationFilter;
-import com.example.demo.api.config.security.filter.PrincipalSupport;
 import com.example.demo.api.config.security.filter.RateLimitFilter;
 import com.example.demo.api.config.security.filter.SseTicketFilter;
 import com.example.demo.api.config.security.ratelimit.RateLimiterPort;
@@ -13,9 +11,9 @@ import com.example.demo.user.application.port.in.AuthenticateApiKeyUseCase;
 import com.example.demo.user.application.port.in.LoadRateLimitPolicyQuery;
 import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,7 +22,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.time.Clock;
@@ -32,21 +30,17 @@ import java.time.Clock;
 /**
  * api 모듈 Spring Security 구성.
  *
- * <p>필터 체인 순서 (custom 필터는 Spring Security {@link AuthorizationFilter} 직전에 등록):
+ * <p>필터 체인 순서 (모두 {@link UsernamePasswordAuthenticationFilter} 앞에 등록):
  * <ol>
  *   <li>{@link SseTicketFilter}              — /api/v1/stream/** + ?t= 가 있을 때만 동작</li>
- *   <li>{@link JwtAuthenticationFilter}      — Authorization: Bearer ...</li>
+ *   <li>{@link JwtAuthenticationFilter}      — Authorization: Bearer ... (SSE 경로는 ?access_token= 쿼리 fallback)</li>
  *   <li>{@link ApiKeyAuthenticationFilter}   — Authorization: ApiKey ...</li>
  *   <li>{@link RateLimitFilter}              — principal 종류별 token bucket</li>
- *   <li>(Spring) AuthorizationFilter         — request attribute principal 기반 경로 인가</li>
+ *   <li>(Spring) UsernamePasswordAuthenticationFilter 이후 → AuthorizationFilter 가 SecurityContext 기반 인가 결정</li>
  * </ol>
- *
- * <p>SecurityContextHolder 의존을 최소화하기 위해
- * 인가 결정은 {@link PrincipalSupport} 의 request attribute 만으로 수행한다.
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     @Bean
@@ -96,7 +90,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CorsConfigurationSource corsConfigurationSource,
-                                           SecurityProperties properties,
                                            SseTicketFilter sseTicketFilter,
                                            JwtAuthenticationFilter jwtAuthenticationFilter,
                                            ApiKeyAuthenticationFilter apiKeyAuthenticationFilter,
@@ -114,55 +107,47 @@ public class SecurityConfig {
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> {
-                    // permitAll: 로그인/회원가입/refresh/sse-ticket 요청
-                    auth.requestMatchers(
+                    // public read endpoints (GET)
+                    auth.requestMatchers(HttpMethod.GET,
+                            "/api/v1/meta/**",
+                            "/api/v1/market/**",
+                            "/api/v1/analytics/**",
+                            "/api/v1/economic/**",
+                            "/api/v1/compose/**",
+                            "/api/v1/stream/**"
+                    ).permitAll();
+
+                    // auth bootstrap (POST)
+                    auth.requestMatchers(HttpMethod.POST,
                             "/api/v1/auth/signup",
                             "/api/v1/auth/login",
                             "/api/v1/auth/refresh"
                     ).permitAll();
 
-                    // sse-ticket 발급: 인증 필요 (JWT/ApiKey)
-                    auth.requestMatchers("/api/v1/auth/sse-ticket")
-                            .access(new PrincipalAuthorization());
-
-                    // 사용자 본인 자원: 인증 필요
+                    // ops endpoints
                     auth.requestMatchers(
-                            "/api/v1/auth/logout",
-                            "/api/v1/auth/me",
-                            "/api/v1/api-keys/**"
-                    ).access(new JwtPrincipalAuthorization());
-
-                    // SSE stream: ticket 으로만 인증 (필터에서 principal 주입됨)
-                    auth.requestMatchers("/api/v1/stream/**")
-                            .access(new PrincipalAuthorization());
-
-                    // 기존 read endpoints — public-read 토글
-                    String[] readPaths = {
-                            "/api/v1/meta/**",
-                            "/api/v1/market/**",
-                            "/api/v1/analytics/**",
-                            "/api/v1/economic/**",
-                            "/api/v1/compose/**"
-                    };
-                    if (properties.publicRead()) {
-                        auth.requestMatchers(readPaths).permitAll();
-                    } else {
-                        auth.requestMatchers(readPaths).access(new PrincipalAuthorization());
-                    }
-
-                    // actuator, openapi: 항상 허용 (운영 전 단계 — prod 에서는 별도 차단)
-                    auth.requestMatchers(
-                            "/actuator/**",
-                            "/v3/api-docs/**",
-                            "/swagger-ui/**",
-                            "/swagger-ui.html"
+                            "/actuator/health",
+                            "/actuator/prometheus"
                     ).permitAll();
 
-                    auth.anyRequest().permitAll();
+                    // admin
+                    auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN");
+
+                    // authenticated user-scope endpoints
+                    auth.requestMatchers(
+                            "/api/v1/auth/me",
+                            "/api/v1/auth/logout",
+                            "/api/v1/auth/sse-ticket",
+                            "/api/v1/api-keys/**",
+                            "/api/v1/watchlist/**",
+                            "/api/v1/alert/**"
+                    ).authenticated();
+
+                    auth.anyRequest().authenticated();
                 })
-                // 필터 등록 순서: 마지막에 register 된 것이 chain의 가장 늦은 위치(AuthorizationFilter 직전).
-                // before(AuthorizationFilter.class) 로 일관되게 등록하면, 추가 순서가 실제 실행 순서를 결정한다.
-                .addFilterBefore(sseTicketFilter, AuthorizationFilter.class)
+                // 모든 custom 필터는 UsernamePasswordAuthenticationFilter 앞에 등록.
+                // 추가 순서가 실제 실행 순서를 결정한다.
+                .addFilterBefore(sseTicketFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtAuthenticationFilter, SseTicketFilter.class)
                 .addFilterAfter(apiKeyAuthenticationFilter, JwtAuthenticationFilter.class)
                 .addFilterAfter(rateLimitFilter, ApiKeyAuthenticationFilter.class);

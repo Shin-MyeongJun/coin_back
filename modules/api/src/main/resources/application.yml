@@ -32,6 +32,10 @@ ys:
       refresh-ttl-seconds: ${JWT_REFRESH_TTL:1209600}
       issuer: ${JWT_ISSUER:ys-coin}
 
+api:
+  cors:
+    allowed-origins: ${API_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
 springdoc:
   swagger-ui:
     enabled: false
@@ -42,6 +46,10 @@ app:
   moduleName: api
   heartbeat:
     enabled: true
+  alert:
+    evaluator:
+      enabled: ${ALERT_EVALUATOR_ENABLED:false}
+      refresh-interval-ms: ${ALERT_RULE_REFRESH_MS:30000}
 
 management:
   endpoints:

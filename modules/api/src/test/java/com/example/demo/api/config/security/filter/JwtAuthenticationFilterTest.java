@@ -135,4 +135,113 @@ class JwtAuthenticationFilterTest {
         verify(chain).doFilter(req, res);
         verifyNoInteractions(verify);
     }
+
+    @Test
+    @DisplayName("SSE GET 경로(/api/v1/stream/**) + 헤더 미존재 시 ?access_token= 쿼리 fallback 으로 principal 주입")
+    void sseFallback_validQueryToken_injectsPrincipal() throws Exception {
+        AccountId id = AccountId.of(UUID.randomUUID());
+        AuthenticatedAccount account = new AuthenticatedAccount(
+                id, new Email("sse@example.com"), AccountTier.FREE);
+        given(verify.verify(eq("Bearer abc"), any(Instant.class)))
+                .willReturn(Optional.of(account));
+
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/v1/stream/ticks");
+        req.setParameter("access_token", "abc");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        verify(chain).doFilter(req, res);
+        AuthenticationPrincipal p = PrincipalSupport.current(req).orElseThrow();
+        assertThat(p).isInstanceOf(JwtPrincipal.class);
+        assertThat(((JwtPrincipal) p).accountId()).isEqualTo(id);
+    }
+
+    @Test
+    @DisplayName("Alert SSE 경로(/api/v1/alert/stream/**)도 ?access_token= fallback 허용")
+    void sseFallback_alertStreamPath_acceptsQueryToken() throws Exception {
+        AccountId id = AccountId.of(UUID.randomUUID());
+        AuthenticatedAccount account = new AuthenticatedAccount(
+                id, new Email("alert@example.com"), AccountTier.FREE);
+        given(verify.verify(eq("Bearer abc"), any(Instant.class)))
+                .willReturn(Optional.of(account));
+
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/v1/alert/stream/firings");
+        req.setParameter("access_token", "abc");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        verify(chain).doFilter(req, res);
+        assertThat(PrincipalSupport.current(req)).isPresent();
+    }
+
+    @Test
+    @DisplayName("SSE 경로에서 ?access_token= 가 유효하지 않으면 401 응답")
+    void sseFallback_invalidQueryToken_writes401() throws Exception {
+        given(verify.verify(any(), any())).willReturn(Optional.empty());
+
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/v1/stream/ticks");
+        req.setParameter("access_token", "expired");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        assertThat(res.getStatus()).isEqualTo(401);
+        assertThat(res.getContentType()).startsWith("application/problem+json");
+        verifyNoInteractions(chain);
+    }
+
+    @Test
+    @DisplayName("Non-SSE 경로(/api/v1/auth/me)는 ?access_token= 쿼리 fallback 을 무시한다")
+    void nonSsePath_queryTokenIgnored() throws Exception {
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/v1/auth/me");
+        req.setParameter("access_token", "abc");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        verify(chain).doFilter(req, res);
+        verifyNoInteractions(verify);
+        assertThat(PrincipalSupport.current(req)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("SSE 경로라도 POST 요청은 ?access_token= fallback 을 허용하지 않는다")
+    void sseFallback_nonGet_queryTokenIgnored() throws Exception {
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/api/v1/stream/ticks");
+        req.setParameter("access_token", "abc");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        verify(chain).doFilter(req, res);
+        verifyNoInteractions(verify);
+    }
+
+    @Test
+    @DisplayName("Authorization 헤더 Bearer 가 SSE 쿼리 fallback 보다 우선한다")
+    void headerWinsOverQueryFallback() throws Exception {
+        AccountId id = AccountId.of(UUID.randomUUID());
+        AuthenticatedAccount account = new AuthenticatedAccount(
+                id, new Email("h@example.com"), AccountTier.FREE);
+        given(verify.verify(eq("Bearer header-token"), any(Instant.class)))
+                .willReturn(Optional.of(account));
+
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/v1/stream/ticks");
+        req.addHeader("Authorization", "Bearer header-token");
+        req.setParameter("access_token", "query-token");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        sut.doFilter(req, res, chain);
+
+        verify(chain).doFilter(req, res);
+        assertThat(PrincipalSupport.current(req)).isPresent();
+    }
 }

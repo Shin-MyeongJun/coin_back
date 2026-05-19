@@ -10,6 +10,7 @@ import com.example.demo.analystics.domain.domain.key.TickKey;
 import com.example.demo.analystics.domain.partition_registry.TickPartitionRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -30,6 +31,7 @@ public class TickAnalyticsService implements TickAnalyticsUseCase {
     }
 
     @Override
+    @Transactional
     public void flushCandles(Interval interval) {
         var closed = registry.flushCandles(interval);
         if (!closed.isEmpty()) {
@@ -41,6 +43,7 @@ public class TickAnalyticsService implements TickAnalyticsUseCase {
     }
 
     @Override
+    @Transactional
     public void flushIndicators(Interval interval) {
         var closed = registry.flushIndicators(interval);
         if (!closed.isEmpty()) {

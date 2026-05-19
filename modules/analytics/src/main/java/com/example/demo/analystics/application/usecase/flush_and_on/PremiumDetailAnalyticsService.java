@@ -10,6 +10,7 @@ import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.analystics.domain.partition_registry.PremiumDetailPartitionRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class PremiumDetailAnalyticsService implements PremiumDetailAnalyticsUseC
     }
 
     @Override
+    @Transactional
     public void flushCandles(Interval interval) {
         var closed = registry.flushCandles(interval);
         if (!closed.isEmpty()) {

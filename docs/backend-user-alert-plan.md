@@ -80,7 +80,7 @@ permitAll:
 authenticated:
   /api/v1/me
   /api/v1/watchlist/**
-  /api/v1/alerts/**
+  /api/v1/alert/**
 
 ADMIN:
   /api/v1/admin/**
@@ -125,7 +125,7 @@ com.example.demo.user
 
 - Watchlist
 - AlertRule
-- AlertTriggerHistory
+- AlertFiring (코드 기준 이름; 이전 초안의 `AlertTriggerHistory`)
 - Alert evaluator domain service
 - active rule cache/store
 
@@ -505,7 +505,7 @@ modules/alert/src/main/java/com/example/demo/alert/
   domain/
     WatchlistItem.java
     AlertRule.java
-    AlertTriggerHistory.java
+    AlertFiring.java                 (코드 기준 이름; 이전 초안의 AlertTriggerHistory)
     AlertTargetType.java
     AlertMetric.java
     AlertOperator.java
@@ -547,15 +547,15 @@ modules/alert/src/main/java/com/example/demo/alert/
       entity/
         WatchlistItemEntity.java
         AlertRuleEntity.java
-        AlertTriggerHistoryEntity.java
+        AlertFiringEntity.java           (코드 기준 이름; 이전 초안의 AlertTriggerHistoryEntity)
       mapper/
         WatchlistItemEntityMapper.java
         AlertRuleEntityMapper.java
-        AlertTriggerHistoryEntityMapper.java
+        AlertFiringEntityMapper.java     (코드 기준 이름; 이전 초안의 AlertTriggerHistoryEntityMapper)
       repo/
         WatchlistItemJpaRepository.java
         AlertRuleJpaRepository.java
-        AlertTriggerHistoryJpaRepository.java
+        AlertFiringJpaRepository.java    (코드 기준 이름; 이전 초안의 AlertTriggerHistoryJpaRepository)
       querydsl/
         WatchlistQueryDslRepository.java
         AlertRuleQueryDslRepository.java
@@ -669,11 +669,11 @@ DELETE /api/v1/watchlist/{watchlistItemId}
 ### 7.3 AlertRule endpoints
 
 ```text
-GET    /api/v1/alerts/rules?keyword=&targetType=&metric=&enabled=&page=&size=
-POST   /api/v1/alerts/rules
-PUT    /api/v1/alerts/rules/{ruleId}
-PATCH  /api/v1/alerts/rules/{ruleId}/enabled
-DELETE /api/v1/alerts/rules/{ruleId}
+GET    /api/v1/alert/rules?keyword=&targetType=&metric=&enabled=&page=&size=
+POST   /api/v1/alert/rules
+PUT    /api/v1/alert/rules/{ruleId}
+PATCH  /api/v1/alert/rules/{ruleId}/enabled
+DELETE /api/v1/alert/rules/{ruleId}
 ```
 
 응답은 기존 `OffsetPage<T>` 재사용.
@@ -681,7 +681,7 @@ DELETE /api/v1/alerts/rules/{ruleId}
 ### 7.4 AlertHistory endpoints
 
 ```text
-GET /api/v1/alerts/history?cursor=&limit=&ruleId=
+GET /api/v1/alert/firings?cursor=&limit=&ruleId=
 ```
 
 응답은 기존 `CursorPage<T>` 재사용.
@@ -727,7 +727,7 @@ modules/api/src/main/java/com/example/demo/api/security/
 주의:
 
 - `GET /api/v1/stream/**`은 처음에는 permitAll로 둡니다.
-- 나중에 사용자별 private alert stream이 생기면 `/api/v1/alerts/stream` 같은 별도 authenticated endpoint로 추가합니다.
+- 나중에 사용자별 private alert stream이 생기면 `/api/v1/stream/alerts` 같은 별도 authenticated endpoint로 추가합니다 (코드 기준 경로).
 
 ---
 
@@ -756,7 +756,7 @@ Kafka market-data.premium
   -> PremiumAlertBridge
   -> EvaluatePremiumAlertUseCase
   -> AlertEvaluator
-  -> AlertTriggerHistory save
+  -> AlertFiring save
 ```
 
 API bridge 파일:
@@ -972,7 +972,7 @@ git switch -c codex/user-alert-backend
 
 구현:
 
-- AlertTriggerHistory domain
+- AlertFiring domain (코드 기준 이름; 이전 초안의 AlertTriggerHistory)
 - entity/repo/mapper
 - cursor query
 - AlertHistoryController
@@ -984,21 +984,24 @@ git switch -c codex/user-alert-backend
 - filter by ruleId
 - user ownership
 
-### Step 7. Premium evaluator
+### Step 7. Premium evaluator — **DONE (Bundle B 머지)**
 
-구현:
+구현 (코드에 존재):
 
 - `AlertEvaluator`
 - `AlertCooldownPolicy`
 - `InMemoryActiveAlertRuleStore`
 - `ActiveAlertRuleRefreshScheduler`
 - `EvaluatePremiumAlertUseCase`
-- `PremiumAlertBridge` in API
+- `PremiumAlertBridge` in `:api`
 
-초기 지원:
+지원 metric (코드 기준, 2026-05-19):
 
 - `BUY_PREMIUM_RATE`
 - `SELL_PREMIUM_RATE`
+
+지원 operator (1차 범위):
+
 - `GREATER_THAN`
 - `GREATER_THAN_OR_EQUAL`
 - `LESS_THAN`
@@ -1007,6 +1010,7 @@ git switch -c codex/user-alert-backend
 주의:
 
 - `CROSSES_ABOVE`, `CROSSES_BELOW`는 previous value state가 필요하므로 MVP에서는 reject하거나 disabled 처리합니다.
+- coin_front 가 가정하는 `LAST_PRICE` / `RSI` / `MACD` / `BOLLINGER_*` 는 현재 `AlertMetric` enum 에 없습니다. 결정 후보는 `docs/notes/alert-metric-gap.md` 참고.
 - `snapshot_json`에는 원본 `PremiumMessage` 요약을 저장합니다.
 
 테스트:
@@ -1099,7 +1103,7 @@ POST /api/v1/watchlist
 ### Create AlertRule
 
 ```json
-POST /api/v1/alerts/rules
+POST /api/v1/alert/rules
 {
   "name": "BTC buy premium above 5%",
   "targetType": "PREMIUM",
@@ -1117,7 +1121,7 @@ POST /api/v1/alerts/rules
 ### AlertHistory Page
 
 ```json
-GET /api/v1/alerts/history?cursor=1000&limit=20
+GET /api/v1/alert/firings?cursor=1000&limit=20
 ```
 
 ```json

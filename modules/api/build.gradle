@@ -30,6 +30,7 @@ dependencies {
     implementation project(':analytics_query')
     implementation project(':economic_query')
     implementation project(':user')
+    implementation project(':alert')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

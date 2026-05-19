@@ -10,6 +10,7 @@ import com.example.demo.analystics.domain.domain.key.PremiumKey;
 import com.example.demo.analystics.domain.partition_registry.PremiumPartitionRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -31,6 +32,7 @@ public class PremiumAnalyticsService implements PremiumAnalyticsUseCase {
     }
 
     @Override
+    @Transactional
     public void flushCandles(Interval interval) {
         var closed = registry.flushCandles(interval);
         if (!closed.isEmpty()) {
@@ -42,6 +44,7 @@ public class PremiumAnalyticsService implements PremiumAnalyticsUseCase {
     }
 
     @Override
+    @Transactional
     public void flushIndicators(Interval interval) {
         var closed = registry.flushIndicators(interval);
         if (!closed.isEmpty()) {
