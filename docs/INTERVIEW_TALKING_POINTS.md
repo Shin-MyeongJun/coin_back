@@ -316,9 +316,9 @@ MVP에서 의도적으로 제외한 항목이다. 기능 누락이 아니라 범
 | proto/gRPC/schema registry | JVM 단일 환경에서 Java record + JSON으로 충분. 다언어 클라이언트 요건 발생 시 확장 후보. |
 | 경제지표 실시간 downstream | 경제지표 수집·저장·REST 조회는 있다. analytics/SSE 연결은 없다. 경제지표 발표 주기가 market data보다 길어 MVP 실시간성 데모 범위 밖으로 판단했다. |
 | 프론트엔드 대시보드 | `coin_front` 별도 프로젝트에서 담당. API 컨벤션 합의는 완료됐다. |
-| 인증(JWT)/API Key/알람/워치리스트 백엔드 모듈 | `SecurityFilterChain`이 `permitAll()` 상태. 외부 클라이언트 단계 진입 시 추가. `CLAUDE.md §14.3`에 백엔드 작업 대기 항목으로 정리했다. |
+| 인증(JWT)/API Key/알람/워치리스트 백엔드 모듈 | 구현됨. public read/SSE와 JWT account private endpoint가 분리되어 있고, `/api/v1/stream/alerts`는 public stream에서 제외됐다. |
 | CI/CD 파이프라인 | 미구성. 로컬 Gradle 검증만. |
-| query 모듈 SQL 실행 통합 테스트 | Testcontainers 기반 실제 PostgreSQL 실행 검증이 없다. `CLAUDE.md §9`에 별도 보강 후보로 명시했다. |
+| query 모듈 SQL 실행 통합 테스트 | Testcontainers 기반 실제 PostgreSQL 검증은 `docker` tag / `dockerTest`로 분리했다. Docker 없는 기본 `test`에서는 제외된다. |
 
 ---
 
@@ -334,13 +334,13 @@ MVP에서 의도적으로 제외한 항목이다. 기능 누락이 아니라 범
 의도적으로 유지하고 있다. 기존 코드에 녹아 있어서 rename은 별도 PR로 분리해서 진행해야 한다. 기능 작업에 섞으면 diff가 뒤섞인다. `CLAUDE.md §8`에 목록과 사유가 있다.
 
 **query 모듈 SQL 실행 통합 테스트 갭**
-`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query` 4종에 SQL 실행 검증이 없다. mapper 단위 테스트와 파라미터 단위 테스트는 있다. Testcontainers 기반 실제 PostgreSQL 실행 검증을 추가해야 한다.
+`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query` 4종의 SQL 실행 검증은 Testcontainers 기반 `dockerTest`로 분리되어 있다. 기본 `test`에서는 빠지므로 CI에 Docker job을 별도로 붙여야 한다.
 
 **CI/CD 미구성**
 GitHub Actions로 컴파일/단위 테스트 자동화가 필요하다는 걸 인지하고 있다. 현재는 로컬에서 `.\gradlew.bat compileJava`, `compileTestJava`를 수동으로 돌린다.
 
 **인증/인가 미완성**
-`SecurityFilterChain`이 모든 요청을 `permitAll()`로 허용한다. 외부 클라이언트 단계에서 API Key, JWT를 추가할 계획이다. SSE endpoint에서 URL 쿼리 토큰 방식을 쓸지는 `CLAUDE.md §14.3`에 논의 항목으로 남아 있다.
+`SecurityFilterChain`은 public GET 조회/public SSE와 JWT account private endpoint를 분리한다. API key principal은 account controller에 직접 들어가지 않으며, SSE용 URL query token fallback은 JWT 기반 stream 연결에 사용한다.
 
 **Redis 단일 장애점 (analytics state)**
 analytics partition state 복원이 Redis에만 의존한다. Redis가 다운되면 rebalance 시 state를 복원할 방법이 없다. Kafka replay fallback(analytics.* 24h retention 활용)은 구현되어 있지 않다.

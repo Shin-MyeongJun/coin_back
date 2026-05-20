@@ -72,15 +72,23 @@ permitAll:
   GET /api/v1/analytics/**
   GET /api/v1/economic/**
   GET /api/v1/compose/**
-  GET /api/v1/stream/**
+  GET /api/v1/stream/ticks
+  GET /api/v1/stream/premium
+  GET /api/v1/stream/premium-detail/raw
+  GET /api/v1/stream/candles/close
+  GET /api/v1/stream/indicators/close
   POST /api/v1/auth/register
   POST /api/v1/auth/login
   /actuator/health
 
 authenticated:
+  /api/v1/auth/sse-ticket
+
+JWT account only:
   /api/v1/me
   /api/v1/watchlist/**
   /api/v1/alert/**
+  /api/v1/stream/alerts
 
 ADMIN:
   /api/v1/admin/**
@@ -511,8 +519,8 @@ modules/alert/src/main/java/com/example/demo/alert/
     AlertOperator.java
     AlertEvaluationResult.java
   domain/service/
-    AlertEvaluator.java
-    AlertCooldownPolicy.java
+    RuleMatcher.java
+    CooldownDecision.java
   application/
     dto/
       AlertRuleSearchCondition.java
@@ -526,7 +534,7 @@ modules/alert/src/main/java/com/example/demo/alert/
       DeleteAlertRuleUseCase.java
       SearchAlertRuleUseCase.java
       SearchAlertHistoryUseCase.java
-      EvaluatePremiumAlertUseCase.java
+      EvaluateMarketSignalUseCase.java
     port/out/
       LoadWatchlistPort.java
       SaveWatchlistPort.java
@@ -536,12 +544,15 @@ modules/alert/src/main/java/com/example/demo/alert/
       DeleteAlertRulePort.java
       LoadAlertHistoryPort.java
       SaveAlertHistoryPort.java
-      ActiveAlertRuleStorePort.java
+      ActiveRuleCachePort.java
+      CooldownGuardPort.java
+      PublishAlertFiringPort.java
+      BroadcastAlertFiringPort.java
     usecase/
       WatchlistService.java
       AlertRuleService.java
       AlertHistoryService.java
-      EvaluatePremiumAlertService.java
+      AlertEvaluationService.java
   infrastructure/
     persistence/
       entity/
@@ -565,9 +576,8 @@ modules/alert/src/main/java/com/example/demo/alert/
         AlertRulePersistenceAdapter.java
         AlertHistoryPersistenceAdapter.java
     cache/
-      InMemoryActiveAlertRuleStore.java
-    scheduler/
-      ActiveAlertRuleRefreshScheduler.java
+      ActiveRuleInMemoryCache.java
+      AlertCooldownRedisAdapter.java
 ```
 
 ### 6.1 Alert Target
@@ -717,7 +727,11 @@ modules/api/src/main/java/com/example/demo/api/security/
             "/api/v1/analytics/**",
             "/api/v1/economic/**",
             "/api/v1/compose/**",
-            "/api/v1/stream/**").permitAll()
+            "/api/v1/stream/ticks",
+            "/api/v1/stream/premium",
+            "/api/v1/stream/premium-detail/raw",
+            "/api/v1/stream/candles/close",
+            "/api/v1/stream/indicators/close").permitAll()
     .requestMatchers("/actuator/health").permitAll()
     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
     .anyRequest().authenticated()
@@ -726,8 +740,9 @@ modules/api/src/main/java/com/example/demo/api/security/
 
 주의:
 
-- `GET /api/v1/stream/**`은 처음에는 permitAll로 둡니다.
-- 나중에 사용자별 private alert stream이 생기면 `/api/v1/stream/alerts` 같은 별도 authenticated endpoint로 추가합니다 (코드 기준 경로).
+- `GET /api/v1/stream/**` 전체를 permitAll로 두지 않습니다.
+- `/api/v1/stream/alerts`는 private alert stream이므로 JWT account principal 전용입니다.
+- API key principal은 `/api/v1/auth/sse-ticket` 같은 명시 endpoint에서만 허용하고, account controller가 null `AuthenticatedAccount`로 실행되지 않게 SecurityConfig에서 차단합니다.
 
 ---
 
@@ -743,49 +758,29 @@ modules/api/src/main/java/com/example/demo/api/security/
 - 보안/권한/CRUD/search/pagination 검증 가능
 - 프런트가 Alert UI를 만들 수 있는 API 계약 확보
 
-### 9.2 2차: API stream bridge
+### 9.2 Alert evaluation runtime path
 
-기존 `api` 모듈은 이미 Kafka premium topic을 소비해 `MarketDataStream.premiumSink`로 흘립니다.
-
-새 Kafka consumer를 만들지 않고, API 내부에서 sink를 구독해 alert evaluator로 넘깁니다.
+API 내부 `MarketDataStream.premiumSink`를 다시 구독하는 `PremiumAlertBridge` 경로는 제거했습니다. Alert 평가는 `:alert` 모듈의 Kafka consumer가 `EvaluateMarketSignalUseCase`로 넘기는 단일 경로입니다.
 
 ```text
 Kafka market-data.premium
-  -> PremiumStreamConsumer
-  -> MarketDataStream.premiumSink
-  -> PremiumAlertBridge
-  -> EvaluatePremiumAlertUseCase
-  -> AlertEvaluator
+  -> PremiumAlertConsumer
+  -> PremiumMessageToSignal
+  -> EvaluateMarketSignalUseCase
+  -> ActiveRuleCachePort + CooldownGuardPort
   -> AlertFiring save
+  -> alert.firing publish + SSE/channel dispatch after commit
 ```
-
-API bridge 파일:
-
-```text
-modules/api/src/main/java/com/example/demo/api/alert/PremiumAlertBridge.java
-```
-
-property:
-
-```yaml
-app:
-  alert:
-    evaluator:
-      enabled: ${ALERT_EVALUATOR_ENABLED:false}
-```
-
-초기 기본값은 `false`를 권장합니다. CRUD 검증 후 켭니다.
 
 ### 9.3 중복 발화 리스크
 
-현재 API Kafka stream consumer는 UUID group id를 사용합니다. API 인스턴스가 여러 개면 모든 인스턴스가 같은 premium event를 받아 alert를 중복 발화할 수 있습니다.
+현재 API Kafka stream consumer는 UUID group id를 사용하므로 public SSE fanout 용도로만 사용합니다. Alert evaluator는 이 sink를 구독하지 않습니다.
 
-MVP 단일 API 인스턴스에서는 허용 가능합니다.
+Alert consumer는 `alert.premium`, `alert.tick`, `alert.premium-detail`, `alert.*-indicator`처럼 stable group id를 사용합니다. multi-instance에서도 Kafka consumer group 기준으로 partition이 분배되며, API 인스턴스 수 때문에 같은 premium event가 중복 평가되는 구조는 아닙니다.
 
 운영 보강 후보:
 
 - `:alert_worker` 별도 실행 모듈
-- stable consumer group
 - Redis distributed lock
 - DB unique event key
 - outbox pattern
@@ -988,12 +983,10 @@ git switch -c codex/user-alert-backend
 
 구현 (코드에 존재):
 
-- `AlertEvaluator`
-- `AlertCooldownPolicy`
-- `InMemoryActiveAlertRuleStore`
-- `ActiveAlertRuleRefreshScheduler`
-- `EvaluatePremiumAlertUseCase`
-- `PremiumAlertBridge` in `:api`
+- `EvaluateMarketSignalUseCase`
+- `ActiveRuleCachePort`
+- `CooldownGuardPort`
+- `AlertEvaluationService`
 
 지원 metric (코드 기준, 2026-05-19):
 
@@ -1032,8 +1025,8 @@ git switch -c codex/user-alert-backend
 
 - 기존 market data pipeline 영향 없음
 - 새 보호 endpoint 목록
-- alert evaluator는 기본 disabled
-- multi-instance 중복 발화 리스크
+- alert evaluator는 Kafka consumer -> `EvaluateMarketSignalUseCase` 단일 경로
+- API stream bridge 제거로 multi-instance 중복 발화 리스크 축소
 
 ### Step 9. 최종 검증
 

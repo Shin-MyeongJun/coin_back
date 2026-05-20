@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class AnalyticsOutboxPublisher {
     }
 
     @Scheduled(fixedDelayString = "${analytics.outbox.poll-interval-ms:500}")
+    @Transactional
     public void publishPending() {
         List<AnalyticsOutboxRecord> pending = loadPort.loadPending(batchSize, maxRetry);
         if (pending.isEmpty()) {

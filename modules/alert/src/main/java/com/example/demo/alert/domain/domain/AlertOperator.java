@@ -30,13 +30,13 @@ public enum AlertOperator {
     CROSSES_ABOVE {
         @Override
         public boolean apply(BigDecimal observed, BigDecimal threshold) {
-            throw new IllegalArgumentException("CROSSES_ABOVE is not supported by AlertEvaluator");
+            throw new IllegalArgumentException("CROSSES_ABOVE is not supported by rule matching");
         }
     },
     CROSSES_BELOW {
         @Override
         public boolean apply(BigDecimal observed, BigDecimal threshold) {
-            throw new IllegalArgumentException("CROSSES_BELOW is not supported by AlertEvaluator");
+            throw new IllegalArgumentException("CROSSES_BELOW is not supported by rule matching");
         }
     };
 
@@ -48,7 +48,7 @@ public enum AlertOperator {
             case GTE -> GREATER_THAN_OR_EQUAL;
             case LT -> LESS_THAN;
             case LTE -> LESS_THAN_OR_EQUAL;
-            case EQ -> throw new IllegalArgumentException("Operator EQ is not supported by AlertEvaluator");
+            case EQ -> throw new IllegalArgumentException("Operator EQ is not supported by rule matching");
         };
     }
 }

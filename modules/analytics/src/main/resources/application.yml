@@ -29,7 +29,9 @@ spring:
     stream:
       defaultBinder: null
   flyway:
-    enabled: false
+    # Keep local default disabled until the full analytics base schema is migration-managed.
+    # Set ANALYTICS_FLYWAY_ENABLED=true in environments that apply db/migration/V100__analytics_outbox.sql.
+    enabled: ${ANALYTICS_FLYWAY_ENABLED:false}
     locations: classpath:db/migration
     baseline-on-migrate: true
   datasource:
@@ -42,7 +44,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update} # local default; use validate/none outside local
+      # local default; use validate/none outside local after migrations have been applied
+      ddl-auto: ${JPA_DDL_AUTO:update}
 
     show-sql: false
     properties:

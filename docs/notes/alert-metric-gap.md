@@ -1,6 +1,6 @@
 # AlertMetric ↔ analytics indicator 갭 평가
 
-> 작성일: 2026-05-19  
+> 작성일: 2026-05-19
 > 범위: 이 노트는 **결정 권고**만 다룹니다. 코드 변경은 본 번들에서 수행하지 않습니다.
 
 ## 1. 현재 상태 (코드 기준)
@@ -16,7 +16,7 @@ public enum AlertMetric {
 }
 ```
 
-실제 enum 값은 위 두 개뿐입니다. 본 번들 작성 시점의 evaluator 구현 (`AlertEvaluator#extractValue`)도 두 metric만 분기합니다.
+실제 enum 값은 위 두 개뿐입니다. 현재 alert 평가는 `RuleMatcher` + `EvaluateMarketSignalUseCase` 경로를 사용하며, market signal로 변환 가능한 metric도 위 두 개에 한정됩니다.
 
 이전 작업 메모/계획 문서(예: 이 번들 task description, coin_front 가정안)에서 언급된 `LAST_PRICE`, `RSI`, `MACD`, `BOLLINGER_UPPER`, `BOLLINGER_LOWER` 는 **아직 enum 에 추가되지 않았습니다.**
 

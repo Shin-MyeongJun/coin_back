@@ -7,10 +7,15 @@ import com.example.demo.api.config.security.SecurityConfigSliceTest.StubProtecte
 import com.example.demo.api.config.security.SecurityConfigSliceTest.StubPublicController;
 import com.example.demo.api.config.security.SecurityConfigSliceTest.StubStreamController;
 import com.example.demo.user.application.port.in.AuthenticatedAccount;
+import com.example.demo.user.application.port.in.AuthenticatedApiKey;
+import com.example.demo.user.application.port.in.AuthenticateApiKeyUseCase;
 import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.example.demo.user.domain.domain.AccountId;
 import com.example.demo.user.domain.domain.AccountTier;
+import com.example.demo.user.domain.domain.ApiKeyId;
+import com.example.demo.user.domain.domain.ApiKeyScope;
 import com.example.demo.user.domain.domain.Email;
+import com.example.demo.user.domain.domain.RateLimitPolicy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +67,7 @@ class SecurityConfigSliceTest {
 
     @Autowired MockMvc mvc;
     @Autowired VerifyAccessTokenUseCase verifyAccessTokenUseCase;
+    @Autowired AuthenticateApiKeyUseCase authenticateApiKeyUseCase;
 
     @Test
     @DisplayName("GET /api/v1/market/ticks/latest/1 — permitAll, 200")
@@ -95,6 +102,15 @@ class SecurityConfigSliceTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/watchlist with ApiKey — 403 (JWT account only)")
+    void watchlist_withApiKey_returns403() throws Exception {
+        givenValidApiKey("valid-api-key");
+        mvc.perform(get("/api/v1/watchlist")
+                        .header("Authorization", "ApiKey valid-api-key"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("GET /api/v1/alert/rules without token — 401")
     void alertRules_withoutToken_returns401() throws Exception {
         mvc.perform(get("/api/v1/alert/rules"))
@@ -110,6 +126,34 @@ class SecurityConfigSliceTest {
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk())
                 .andExpect(content().string("stream-ok"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/stream/ticks without token — 200 (public stream)")
+    void streamTicks_withoutToken_returns200() throws Exception {
+        mvc.perform(get("/api/v1/stream/ticks")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().string("stream-ok"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/stream/alerts without token — 401")
+    void alertStream_withoutToken_returns401() throws Exception {
+        mvc.perform(get("/api/v1/stream/alerts")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/stream/alerts?access_token=valid — 200 (private JWT stream)")
+    void alertStream_withValidQueryToken_returns200() throws Exception {
+        givenValidToken("valid-token");
+        mvc.perform(get("/api/v1/stream/alerts")
+                        .param("access_token", "valid-token")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().string("alert-stream-ok"));
     }
 
     @Test
@@ -130,6 +174,18 @@ class SecurityConfigSliceTest {
         );
         given(verifyAccessTokenUseCase.verify(eq("Bearer " + token), any(Instant.class)))
                 .willReturn(Optional.of(account));
+    }
+
+    private void givenValidApiKey(String token) {
+        AuthenticatedApiKey apiKey = new AuthenticatedApiKey(
+                ApiKeyId.generate(),
+                AccountId.of(UUID.randomUUID()),
+                AccountTier.PRO,
+                Set.of(ApiKeyScope.READ_PRIVATE),
+                new RateLimitPolicy(120, 100_000, 4)
+        );
+        given(authenticateApiKeyUseCase.authenticate(eq("ApiKey " + token), any(), any(Instant.class)))
+                .willReturn(Optional.of(apiKey));
     }
 
     @RestController
@@ -169,6 +225,11 @@ class SecurityConfigSliceTest {
         @GetMapping("/ticks")
         public String ticks() {
             return "stream-ok";
+        }
+
+        @GetMapping("/alerts")
+        public String alerts() {
+            return "alert-stream-ok";
         }
     }
 }

@@ -46,10 +46,6 @@ app:
   moduleName: api
   heartbeat:
     enabled: true
-  alert:
-    evaluator:
-      enabled: ${ALERT_EVALUATOR_ENABLED:false}
-      refresh-interval-ms: ${ALERT_RULE_REFRESH_MS:30000}
 
 management:
   endpoints:

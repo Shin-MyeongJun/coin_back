@@ -1,7 +1,6 @@
 package com.example.demo.analystics.infrastructure.persistence.repo;
 
 import com.example.demo.analystics.infrastructure.persistence.entity.AnalyticsOutboxEntity;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,13 +10,18 @@ import java.util.List;
 
 public interface AnalyticsOutboxJpaRepository extends JpaRepository<AnalyticsOutboxEntity, Long> {
 
-    @Query("""
-            SELECT a FROM AnalyticsOutboxEntity a
-            WHERE a.publishedAt IS NULL
-              AND a.retryCount < :maxRetry
-            ORDER BY a.id ASC
-            """)
-    List<AnalyticsOutboxEntity> findPending(@Param("maxRetry") int maxRetry, Pageable pageable);
+    @Query(value = """
+            SELECT *
+              FROM analytics_outbox
+             WHERE published_at IS NULL
+               AND retry_count < :maxRetry
+             ORDER BY id ASC
+             FOR UPDATE SKIP LOCKED
+             LIMIT :batchSize
+            """, nativeQuery = true)
+    List<AnalyticsOutboxEntity> findPendingForUpdateSkipLocked(
+            @Param("maxRetry") int maxRetry,
+            @Param("batchSize") int batchSize);
 
     @Modifying
     @Query("""

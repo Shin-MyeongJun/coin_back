@@ -57,6 +57,23 @@ subprojects {
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
     }
+
+    tasks.named('test', Test).configure {
+        useJUnitPlatform {
+            excludeTags 'docker'
+        }
+    }
+
+    tasks.register('dockerTest', Test) {
+        description = 'Runs Docker/Testcontainers-backed tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        shouldRunAfter tasks.named('test')
+        useJUnitPlatform {
+            includeTags 'docker'
+        }
+    }
 }
 
 configure([

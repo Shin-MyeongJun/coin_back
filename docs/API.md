@@ -176,7 +176,7 @@ curl.exe "http://localhost:8080/api/v1/compose/market-overview/9001?base=E2EBTC&
 
 ## SSE Stream API
 
-All SSE endpoints return `text/event-stream`.
+All SSE endpoints return `text/event-stream`. Market/analytics streams below are public read streams. The alert stream is a private JWT account stream and is not part of the public `/api/v1/stream/*` permit-list.
 
 | Method | Path | Parameters | Kafka source | Event names |
 | --- | --- | --- | --- | --- |
@@ -185,6 +185,7 @@ All SSE endpoints return `text/event-stream`.
 | `GET` | `/api/v1/stream/premium-detail/raw` | - | `market-data.premium-detail` | `connected`, `premium-detail` |
 | `GET` | `/api/v1/stream/candles/close` | optional `type`, default `tick` | `analytics.*-candle` | `connected`, `tick-candle`, `premium-candle`, `premium-detail-candle` |
 | `GET` | `/api/v1/stream/indicators/close` | optional `type`, default `tick` | `analytics.*-indicator` | `connected`, `tick-indicator`, `premium-indicator` |
+| `GET` | `/api/v1/stream/alerts` | JWT `Authorization: Bearer ...` or `?access_token=` | `alert.firing` / in-process SSE registry | `alert-firing` |
 
 Supported candle `type`:
 

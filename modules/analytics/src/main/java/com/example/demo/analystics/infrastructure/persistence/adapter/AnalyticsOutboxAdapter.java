@@ -8,8 +8,6 @@ import com.example.demo.analystics.infrastructure.persistence.entity.AnalyticsOu
 import com.example.demo.analystics.infrastructure.persistence.mapper.AnalyticsOutboxEntityMapper;
 import com.example.demo.analystics.infrastructure.persistence.repo.AnalyticsOutboxJpaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,8 +26,7 @@ public class AnalyticsOutboxAdapter implements SaveOutboxRecordPort, LoadPending
 
     @Override
     public List<AnalyticsOutboxRecord> loadPending(int batchSize, int maxRetry) {
-        Pageable page = PageRequest.of(0, batchSize);
-        List<AnalyticsOutboxEntity> entities = repo.findPending(maxRetry, page);
+        List<AnalyticsOutboxEntity> entities = repo.findPendingForUpdateSkipLocked(maxRetry, batchSize);
         return entities.stream().map(mapper::toDomain).toList();
     }
 

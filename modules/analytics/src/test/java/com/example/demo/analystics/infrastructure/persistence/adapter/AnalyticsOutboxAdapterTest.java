@@ -11,13 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -75,15 +72,13 @@ class AnalyticsOutboxAdapterTest {
                 .publishedAt(null)
                 .retryCount(2)
                 .build();
-        given(repo.findPending(eq(10), any(Pageable.class))).willReturn(List.of(entity));
+        given(repo.findPendingForUpdateSkipLocked(eq(10), eq(50))).willReturn(List.of(entity));
 
         // when
         List<AnalyticsOutboxRecord> result = sut.loadPending(50, 10);
 
         // then
-        ArgumentCaptor<Pageable> pageCaptor = ArgumentCaptor.forClass(Pageable.class);
-        then(repo).should().findPending(eq(10), pageCaptor.capture());
-        assertThat(pageCaptor.getValue()).isEqualTo(PageRequest.of(0, 50));
+        then(repo).should().findPendingForUpdateSkipLocked(10, 50);
         assertThat(result).hasSize(1);
         AnalyticsOutboxRecord r = result.get(0);
         assertThat(r.id()).isEqualTo(11L);

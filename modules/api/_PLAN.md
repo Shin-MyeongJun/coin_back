@@ -15,7 +15,7 @@
 | 헥사고날 구조 | 본 모듈은 **어댑터 레이어**. UseCase 정의는 query 모듈에 있고, api 모듈은 그 UseCase를 호출하는 컨트롤러 + 합성 서비스만 보유 |
 | DI | 생성자 주입만 (`@RequiredArgsConstructor` + `private final`) |
 | 응답 객체 | 불변 → `record`. 응답 envelope/페이징 wrapper도 `record` |
-| 인증·인가 | 1단계: `SecurityFilterChain` 빈만 두고 `permitAll()`. CSRF disable, CORS dev 허용. 2단계(외부 클라이언트): API Key. 3단계(트레이딩): JWT |
+| 인증·인가 | public GET 조회와 public SSE는 `permitAll`, 계정 소유 endpoint와 `/api/v1/stream/alerts`는 JWT account principal 전용. `/api/v1/auth/sse-ticket`은 JWT/API key bootstrap 허용 |
 | 실시간 채널 | SSE (`SseEmitter`) + `Sinks.Many<T>` fanout. WebSocket은 미도입, 필요 시 같은 Sink 구독으로 추가 |
 | Kafka 구독 | api 모듈이 Kafka consumer 직접 소유 (조회 전용 그룹). 다중 인스턴스 스케일아웃 시 Redis Pub/Sub 브릿지로 전환 검토 |
 | 응답 컨벤션 — 페이징 | 시계열 = cursor (`?cursor={epochMs}&limit=`), 메타/리스트 = offset (`?page=&size=`) |
@@ -78,7 +78,7 @@ modules/api/
     ├── java/com/example/demo/api/
     │   ├── ApiApplication.java                                           [DONE]  @SpringBootApplication, main
     │   └── config/
-    │       ├── SecurityConfig.java                                       [DONE]  SecurityFilterChain, permitAll, CSRF disable
+    │       ├── SecurityConfig.java                                       [DONE]  public read permitAll + JWT account private endpoints
     │       ├── CorsConfig.java                                           [DONE]  dev 프로파일 와일드카드, prod 화이트리스트
     │       ├── OpenApiConfig.java                                        [DONE]  springdoc, dev 프로파일에서만 swagger-ui
     │       ├── JacksonConfig.java                                        [DONE]  epoch ms 시간 직렬화, BigDecimal 문자열
@@ -273,6 +273,7 @@ modules/api/src/main/java/com/example/demo/api/
 | GET | `/api/v1/stream/premium` | `market-data.premium` |
 | GET | `/api/v1/stream/candles/close` | `analytics.tick-candle` / `analytics.premium-candle` (?type=) |
 | GET | `/api/v1/stream/indicators/close` | `analytics.tick-indicator` / `analytics.premium-indicator` (?type=) |
+| GET | `/api/v1/stream/alerts` | private alert stream, JWT account only |
 
 ### 파일 트리
 

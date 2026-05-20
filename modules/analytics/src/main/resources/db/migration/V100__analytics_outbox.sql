@@ -3,6 +3,8 @@
 -- additions and to stay well clear of unrelated module migrations.
 -- :analytics currently runs with spring.flyway.enabled=false and JPA_DDL_AUTO=update;
 -- this file is the canonical reference DDL for when Flyway is enabled here.
+-- Multi-instance publisher coordination uses SELECT ... FOR UPDATE SKIP LOCKED,
+-- so no extra claimed_at/owner columns are required in this version.
 CREATE SEQUENCE IF NOT EXISTS analytics_outbox_seq INCREMENT BY 50 START WITH 1;
 
 CREATE TABLE IF NOT EXISTS analytics_outbox (

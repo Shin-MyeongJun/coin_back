@@ -1,6 +1,7 @@
 package com.example.demo.market_data_query.infrastructure.persistence.integration;
 
 import com.example.demo.infra_shard.sql.SqlLoader;
+import org.junit.jupiter.api.Tag;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -28,7 +29,8 @@ import javax.sql.DataSource;
 )
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-@Testcontainers
+@Tag("docker")
+@Testcontainers(disabledWithoutDocker = true)
 @ContextConfiguration(classes = AbstractPostgresIntegrationTest.TestApp.class)
 abstract class AbstractPostgresIntegrationTest {
 

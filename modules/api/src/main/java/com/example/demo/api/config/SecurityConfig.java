@@ -8,6 +8,7 @@ import com.example.demo.api.config.security.filter.SseTicketFilter;
 import com.example.demo.api.config.security.ratelimit.RateLimiterPort;
 import com.example.demo.api.config.security.ssetoken.ConsumeSseTicketPort;
 import com.example.demo.user.application.port.in.AuthenticateApiKeyUseCase;
+import com.example.demo.user.application.port.in.AuthenticatedAccount;
 import com.example.demo.user.application.port.in.LoadRateLimitPolicyQuery;
 import com.example.demo.user.application.port.in.VerifyAccessTokenUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,7 +35,7 @@ import java.time.Clock;
  *
  * <p>필터 체인 순서 (모두 {@link UsernamePasswordAuthenticationFilter} 앞에 등록):
  * <ol>
- *   <li>{@link SseTicketFilter}              — /api/v1/stream/** + ?t= 가 있을 때만 동작</li>
+ *   <li>{@link SseTicketFilter}              — public /api/v1/stream/** + ?t= 가 있을 때만 동작</li>
  *   <li>{@link JwtAuthenticationFilter}      — Authorization: Bearer ... (SSE 경로는 ?access_token= 쿼리 fallback)</li>
  *   <li>{@link ApiKeyAuthenticationFilter}   — Authorization: ApiKey ...</li>
  *   <li>{@link RateLimitFilter}              — principal 종류별 token bucket</li>
@@ -114,7 +117,11 @@ public class SecurityConfig {
                             "/api/v1/analytics/**",
                             "/api/v1/economic/**",
                             "/api/v1/compose/**",
-                            "/api/v1/stream/**"
+                            "/api/v1/stream/ticks",
+                            "/api/v1/stream/premium",
+                            "/api/v1/stream/premium-detail/raw",
+                            "/api/v1/stream/candles/close",
+                            "/api/v1/stream/indicators/close"
                     ).permitAll();
 
                     // auth bootstrap (POST)
@@ -133,15 +140,21 @@ public class SecurityConfig {
                     // admin
                     auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN");
 
-                    // authenticated user-scope endpoints
+                    // authenticated SSE ticket bootstrap. JWT and API key principals are both accepted.
+                    auth.requestMatchers("/api/v1/auth/sse-ticket").authenticated();
+
+                    // JWT-account-only endpoints. API key principals are intentionally rejected here
+                    // so controllers never receive a null AuthenticatedAccount.
                     auth.requestMatchers(
                             "/api/v1/auth/me",
                             "/api/v1/auth/logout",
-                            "/api/v1/auth/sse-ticket",
                             "/api/v1/api-keys/**",
                             "/api/v1/watchlist/**",
-                            "/api/v1/alert/**"
-                    ).authenticated();
+                            "/api/v1/alert/**",
+                            "/api/v1/stream/alerts",
+                            "/api/v1/stream/alerts/**"
+                    ).access((authentication, context) ->
+                            new AuthorizationDecision(isJwtAccount(authentication.get())));
 
                     auth.anyRequest().authenticated();
                 })
@@ -153,5 +166,11 @@ public class SecurityConfig {
                 .addFilterAfter(rateLimitFilter, ApiKeyAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    private static boolean isJwtAccount(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof AuthenticatedAccount;
     }
 }

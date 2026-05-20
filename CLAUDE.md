@@ -168,6 +168,7 @@ api
        /api/v1/stream/premium
        /api/v1/stream/candles/close       (?type=tick|premium)
        /api/v1/stream/indicators/close    (?type=tick|premium)
+       /api/v1/stream/alerts              (private JWT account stream)
 ```
 
 응답 컨벤션 (프론트 합의 기준 — §14 참조):
@@ -312,13 +313,13 @@ Spring 규칙:
 2. `infra_heartbeat/build.gradle`: `implementation implementation(project(...))` 형태가 남아 있습니다. 현재 컴파일은 통과하지만 정리 대상입니다.
 3. application.yml 중복과 하드코딩: 주요 실행 모듈의 Kafka bootstrap, 거래소/FRED endpoint, `ddl-auto`는 env fallback 형태로 정리했습니다. 새 설정은 `KAFKA_BOOTSTRAP_SERVERS`/`KAFKA_SERVERS`, `JPA_DDL_AUTO`, 거래소별 `*_BASE_URL`/`*_WS_URL` 환경변수를 우선합니다. 다만 각 모듈에 중복된 거래소 설정 블록 자체는 아직 남아 있어 별도 공통화 후보입니다.
 4. contracts 불일치 가능성: Java record와 proto가 공존합니다. Kafka JSON 직렬화 기준은 Java record입니다.
-5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있고, flush 시점에 DB write 이후 Kafka publish까지 이어집니다. Kafka publish 실패 처리를 위한 outbox 패턴은 Bundle D로 도입되었습니다 (`AnalyticsOutboxEntity`, `AnalyticsOutboxPublisher`, 스키마는 `modules/analytics/src/main/resources/db/migration/V100__analytics_outbox.sql`). 단, `:analytics` 모듈은 현재 `spring.flyway.enabled=false` + `JPA_DDL_AUTO=update` 운영이라 V100은 reference DDL 역할이며, Flyway 활성화 시점에 실제로 실행됩니다.
+5. analytics event payload: candle/indicator message record는 analytics `Close*` domain 형태를 따라 채워져 있고, flush 시점에 DB write 이후 Kafka publish까지 이어집니다. Kafka publish 실패 처리를 위한 outbox 패턴은 Bundle D로 도입되었습니다 (`AnalyticsOutboxEntity`, `AnalyticsOutboxPublisher`, 스키마는 `modules/analytics/src/main/resources/db/migration/V100__analytics_outbox.sql`). `:analytics` 모듈은 로컬 기본값으로 `ANALYTICS_FLYWAY_ENABLED=false` + `JPA_DDL_AUTO=update`를 유지합니다. 운영형 환경에서는 V100을 Flyway 또는 외부 migration 파이프라인으로 먼저 적용한 뒤 `JPA_DDL_AUTO=validate|none`을 사용하세요. multi-instance 중복 발행은 `AnalyticsOutboxJpaRepository.findPendingForUpdateSkipLocked()`의 `FOR UPDATE SKIP LOCKED`와 `AnalyticsOutboxPublisher.publishPending()` 트랜잭션으로 같은 pending row를 동시에 집지 못하게 막습니다. Kafka 전송 성공 후 DB mark 전 프로세스 종료 같은 경우는 여전히 at-least-once 범위입니다.
 6. economic publisher: `EcoIndPublisher.publish()`는 `economic-ind.indicator` Kafka 발행까지 구현되어 있습니다. 다만 MVP 내 downstream consumer/API stream은 아직 없으므로 필요 시 별도 read/stream 통합이 필요합니다.
-7. query modules test gap: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)에 persistence mapper 및 SQL adapter 파라미터 단위 테스트를 추가했습니다. 아직 실제 PostgreSQL/Testcontainers 기반 SQL 실행 검증은 별도 보강 후보입니다.
+7. query modules Docker tests: query 4종(`market_data_query`, `meta_data_query`, `analytics_query`, `economic_query`)의 PostgreSQL/Testcontainers 기반 SQL 통합 테스트는 JUnit tag `docker`로 분리했습니다. 기본 `test` 태스크에서는 제외되며, Docker 환경에서 `:market_data_query:dockerTest`처럼 모듈별 `dockerTest`로 실행합니다.
 8. trading: 소스가 없는 placeholder입니다.
 9. `TickBuffer.flush()` 관련 예전 문서의 버그는 현재 코드에서 해결되어 있습니다. `flush()`가 snapshot 후 `buffer.clear()`를 호출합니다.
-10. **api 모듈은 `permitAll`**: 현재 `SecurityFilterChain`이 모든 요청을 허용합니다. 외부 클라이언트 단계 진입 시 §14 합의에 따른 인증/CORS 보강이 필요합니다.
-11. Alert evaluator / Premium bridge: 구현 완료 (Bundle B 머지). `AlertEvaluator`, `AlertCooldownPolicy`, `InMemoryActiveAlertRuleStore`, `ActiveAlertRuleRefreshScheduler`, `EvaluatePremiumAlertUseCase`, `PremiumAlertBridge` 가 코드에 존재합니다. `AlertMetric` enum은 현 시점 `BUY_PREMIUM_RATE` / `SELL_PREMIUM_RATE`만 지원 — coin_front 가 가정하는 `LAST_PRICE`/`RSI`/`MACD`/`BOLLINGER_*`와의 갭은 `docs/notes/alert-metric-gap.md` 참고.
+10. API security: public GET 조회와 public market/analytics SSE만 `permitAll`입니다. `/api/v1/watchlist/**`, `/api/v1/alert/**`, `/api/v1/api-keys/**`, `/api/v1/auth/me|logout`, `/api/v1/stream/alerts`는 JWT account principal 전용입니다. API key principal은 `/api/v1/auth/sse-ticket` 같은 명시 endpoint에서만 허용하고, account controller가 `AuthenticatedAccount == null` 상태로 실행되지 않게 SecurityConfig에서 차단합니다.
+11. Alert evaluator 경로: PremiumAlertBridge 기반 API 내부 sink 구독 경로는 제거했습니다. alert 평가는 Kafka consumer(`market-data.*`, `analytics.*-indicator`)가 `EvaluateMarketSignalUseCase`로 넘기는 단일 경로입니다. `AlertMetric` enum은 현 시점 `BUY_PREMIUM_RATE` / `SELL_PREMIUM_RATE`만 지원 — coin_front 가 가정하는 `LAST_PRICE`/`RSI`/`MACD`/`BOLLINGER_*`와의 갭은 `docs/notes/alert-metric-gap.md` 참고.
 12. Flyway 버전 관리: `:user` (V1, V2) 와 `:alert` (V10, V11, V12) 가 모두 `:api` 의존성으로 들어와 `classpath:db/migration` 하나에 합쳐집니다. 버전 충돌을 피하려고 `:alert` 는 V10 이상, `:analytics` outbox 는 V100 이상으로 채번합니다. 새 모듈/마이그레이션 추가 시 같은 채번 규칙을 따르세요.
 
 ---
@@ -352,7 +353,7 @@ Spring 규칙:
 .\scripts\run\start-runtime.ps1 -All
 ```
 
-전체 테스트는 Testcontainers, Kafka, PostgreSQL, Redis 상태에 영향을 받을 수 있습니다. 실패 시 먼저 실패한 모듈과 외부 의존성을 분리해서 확인하세요.
+전체 테스트는 Kafka, PostgreSQL, Redis 상태에 영향을 받을 수 있습니다. query 모듈의 PostgreSQL/Testcontainers 통합 테스트는 기본 `test`에서 제외되며 Docker 환경에서 `.\gradlew.bat :market_data_query:dockerTest :meta_data_query:dockerTest :analytics_query:dockerTest :economic_query:dockerTest`처럼 별도로 실행하세요.
 
 ---
 
@@ -451,9 +452,9 @@ coin_front는 Next.js 15 / Vite + React 19, TailwindCSS + shadcn/ui, lightweight
 - `/api/v1/analytics/*` — `analytics_query` 9 UseCase (캔들·지표·screener·downsample·latest)
 - `/api/v1/economic/*` — `economic_query` 6 UseCase
 - `/api/v1/compose/*` — 합성 엔드포인트 3종 (market-overview, chart, dashboard)
-- `/api/v1/stream/*` — SSE 4종 (ticks, premium, candles/close, indicators/close)
+- `/api/v1/stream/*` — public SSE 4종 (ticks, premium, candles/close, indicators/close)
 - `/api/v1/watchlist/*` — `:alert` watchlist (add / remove / search) (백엔드 구현 완료)
-- `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts` — `:alert` 모듈 (백엔드 구현 완료, Bundle B 머지)
+- `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts` — `:alert` 모듈 (JWT account 전용 private endpoint)
 
 전체 매핑은 `modules/api/_PLAN.md`를 정본으로 합니다.
 
@@ -505,5 +506,5 @@ coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 �
 - Kafka consume: `market-data.tick`, `market-data.premium`, `market-data.premium-detail`, `analytics.tick-indicator`, `analytics.premium-indicator`.
 - Kafka publish: `alert.firing` (`com.example.demo.contracts.message.alert.AlertFiringMessage`).
 - Redis cooldown key: `RedisKeys.alertCooldown(env, ruleId)` → `ys:{env}:v1:alert:cooldown:{ruleId}`.
-- REST endpoints 는 `:api` 런타임에서 노출됩니다: `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts`, `/api/v1/watchlist/*`.
+- REST endpoints 는 `:api` 런타임에서 노출됩니다: `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts`, `/api/v1/watchlist/*`. 이 endpoint들은 JWT account principal 전용입니다.
 - Flyway 마이그레이션: `modules/alert/src/main/resources/db/migration/V10__alert_rule.sql`, `V11__alert_firing.sql`, `V12__watchlist_item.sql`. V1~V9 는 `:user` (V1/V2) 와 충돌 회피를 위해 비워 두었습니다.
