@@ -33,6 +33,14 @@ jmh {
     resultFormat = 'JSON'
     resultsFile = layout.buildDirectory.file('reports/jmh/results.json').get().asFile
     profilers = ['gc']
+
+    // ex) .\gradlew.bat :benchmarks:jmh -Pjmh.includes=ExchangeDtoBenchmark
+    //     .\gradlew.bat :benchmarks:jmh -Pjmh.includes=TickMessageBenchmark
+    //     .\gradlew.bat :benchmarks:jmh -Pjmh.includes=ExchangeDto,TickMessage  (콤마 분리 다중 패턴)
+    def includesProp = project.findProperty('jmh.includes')
+    if (includesProp != null && includesProp.toString().trim()) {
+        includes = includesProp.toString().split(',').collect { it.trim() }.findAll { it } as List
+    }
 }
 
 tasks.register('jmhSummary') {
@@ -64,12 +72,17 @@ tasks.register('jmhSummary') {
         ]
 
         def parsedRows = rows.collect { row ->
-            def benchmarkName = row.benchmark.tokenize('.').last()
+            def tokens = row.benchmark.tokenize('.')
+            def methodName = tokens.last()
+            def className = tokens.size() >= 2 ? tokens[-2] : 'Unknown'
             def parserName = row.params?.parser ?: 'UNKNOWN'
             def primary = row.primaryMetric
             def allocation = row.secondaryMetrics?.'gc.alloc.rate.norm'
             [
-                    scenario  : benchmarkName,
+                    className : className,
+                    method    : methodName,
+                    scenario  : methodName,
+                    group     : classifyGroup(className, methodName),
                     parser    : parserName,
                     parserName: parserLabels[parserName] ?: parserName,
                     mode      : row.mode,
@@ -84,7 +97,7 @@ tasks.register('jmhSummary') {
         byScenarioMode.each { key, groupRows ->
             def jackson = groupRows.find { it.parser == 'JACKSON' }
             groupRows.each { row ->
-                if (jackson == null || jackson.score == 0G) {
+                if (jackson == null || jackson.score == null || jackson.score == 0G || row.score == null) {
                     row.multiplier = null
                 } else if (row.mode == 'avgt') {
                     row.multiplier = jackson.score.divide(row.score, 10, java.math.RoundingMode.HALF_UP)
@@ -94,9 +107,28 @@ tasks.register('jmhSummary') {
             }
         }
 
-        def summaryRows = byScenarioMode['tickMessageDeserialize|thrpt'] ?: []
-        def summaryByParser = summaryRows.collectEntries { row ->
-            [(row.parser): row.multiplier]
+        def groupOrder = ['exchangeDto', 'tickMessageAsIs', 'tickMessageOptimized', 'legacy']
+        def groupTitles = [
+                exchangeDto        : 'Exchange DTO Deserialization (운영 재현)',
+                tickMessageAsIs    : 'TickMessage — Current Operational Path (AsIs)',
+                tickMessageOptimized: 'TickMessage — Optimal Path (Optimized)',
+                legacy             : 'Legacy JsonParserBenchmark (@Deprecated, 비교용)'
+        ]
+        def groupNotes = [
+                exchangeDto        : '운영 hot path 그대로 — Jsoniter 는 hand-written codec 미등록, DSL-JSON 은 어댑터 없음.',
+                tickMessageAsIs    : '운영 코드가 지금 그대로 호출한다고 가정한 측정 — Jsoniter 는 reflection, DSL-JSON 은 `DslTickMessage` 어댑터 왕복.',
+                tickMessageOptimized: 'Optimized 경로 — Jsoniter 는 hand-written codec 직접 호출, DSL-JSON 은 `TickMessage` 에 직접 적용된 `@CompiledJson` descriptor (별도 PR 필요).',
+                legacy             : '비대칭 측정 — 분리 후 결과와 직접 비교용. 다음 측정 라운드 이후 제거 예정.'
+        ]
+
+        def primaryRow = rows.first()
+        def measurement = measurementSummary(primaryRow)
+        def weakMeasurement = isWeakMeasurement(primaryRow)
+
+        def asIsRows = parsedRows.findAll { it.group == 'tickMessageAsIs' && it.mode == 'thrpt' }
+        def summaryByParser = asIsRows.groupBy { it.parser }.collectEntries { parser, list ->
+            def primaryMethod = list.find { it.scenario == 'tickMessageDeserializeAsIs' }
+            [(parser): primaryMethod?.multiplier]
         }
         def environment = [
                 "JDK ${JavaVersion.current()}",
@@ -105,11 +137,8 @@ tasks.register('jmhSummary') {
                 System.getenv('PROCESSOR_IDENTIFIER')
         ].findAll { it != null && it.toString().trim() }
                 .join(', ')
-        def summary = "요약: tickMessageDeserialize throughput 기준 Jackson 1.00x / Jsoniter ${formatMultiplier(summaryByParser['JSONITER'])} / DSL-JSON ${formatMultiplier(summaryByParser['DSL_JSON'])} (모드: throughput, ${environment})"
-        def measurement = measurementSummary(rows.first())
-        def weakMeasurement = isWeakMeasurement(rows.first())
+        def summary = "요약(AsIs / tickMessageDeserializeAsIs throughput): Jackson 1.00x / Jsoniter ${formatMultiplier(summaryByParser['JSONITER'])} / DSL-JSON ${formatMultiplier(summaryByParser['DSL_JSON'])} (모드: throughput, ${environment})"
 
-        def scenarios = parsedRows*.scenario.unique().sort()
         def markdown = new StringBuilder()
         markdown << summary << System.lineSeparator()
         markdown << System.lineSeparator()
@@ -117,7 +146,7 @@ tasks.register('jmhSummary') {
         markdown << System.lineSeparator()
         markdown << "- 결과 파일: `modules/benchmarks/build/reports/jmh/results.json`" << System.lineSeparator()
         markdown << "- GC 프로파일러: `gc.alloc.rate.norm` 기준 B/op" << System.lineSeparator()
-        markdown << "- Jackson 대비 배수: throughput은 `parser / Jackson`, average time은 `Jackson / parser`" << System.lineSeparator()
+        markdown << "- Jackson 대비 배수: throughput 은 `parser / Jackson`, average time 은 `Jackson / parser`" << System.lineSeparator()
         markdown << "- 측정 조건: ${measurement}" << System.lineSeparator()
         if (weakMeasurement) {
             markdown << System.lineSeparator()
@@ -125,17 +154,69 @@ tasks.register('jmhSummary') {
         }
         markdown << System.lineSeparator()
 
-        scenarios.each { scenario ->
-            markdown << "## ${scenario}" << System.lineSeparator()
+        groupOrder.each { group ->
+            def groupRows = parsedRows.findAll { it.group == group }
+            if (groupRows.isEmpty()) {
+                return
+            }
+            markdown << "## ${groupTitles[group]}" << System.lineSeparator()
             markdown << System.lineSeparator()
-            markdown << "| Parser | Mode | Score (ops/us) | Error | Allocation (B/op) | Jackson 대비 배수 |" << System.lineSeparator()
-            markdown << "| --- | --- | ---: | ---: | ---: | ---: |" << System.lineSeparator()
+            markdown << "${groupNotes[group]}" << System.lineSeparator()
+            markdown << System.lineSeparator()
 
-            parsedRows.findAll { it.scenario == scenario }
-                    .sort { a, b -> a.mode <=> b.mode ?: a.parserName <=> b.parserName }
-                    .each { row ->
-                        markdown << "| ${row.parserName} | ${row.modeName} | ${formatDecimal(row.score)} | ${formatDecimal(row.error)} | ${formatDecimal(row.allocation)} | ${formatMultiplier(row.multiplier)} |" << System.lineSeparator()
-                    }
+            def scenarios = groupRows*.scenario.unique().sort()
+            scenarios.each { scenario ->
+                markdown << "### ${scenario}" << System.lineSeparator()
+                markdown << System.lineSeparator()
+                markdown << "| Parser | Mode | Score (ops/us) | Error | Allocation (B/op) | Jackson 대비 배수 |" << System.lineSeparator()
+                markdown << "| --- | --- | ---: | ---: | ---: | ---: |" << System.lineSeparator()
+
+                groupRows.findAll { it.scenario == scenario }
+                        .sort { a, b -> a.mode <=> b.mode ?: a.parserName <=> b.parserName }
+                        .each { row ->
+                            markdown << "| ${row.parserName} | ${row.modeName} | ${formatDecimal(row.score)} | ${formatDecimal(row.error)} | ${formatDecimal(row.allocation)} | ${formatMultiplier(row.multiplier)} |" << System.lineSeparator()
+                        }
+                markdown << System.lineSeparator()
+            }
+        }
+
+        // AsIs vs Optimized gap (TickMessage 한정)
+        def asIsByKey = [:]
+        parsedRows.findAll { it.group == 'tickMessageAsIs' }.each { row ->
+            def key = "${stripVariantSuffix(row.scenario)}|${row.parser}|${row.mode}".toString()
+            asIsByKey[key] = row
+        }
+        def optimizedByKey = [:]
+        parsedRows.findAll { it.group == 'tickMessageOptimized' }.each { row ->
+            def key = "${stripVariantSuffix(row.scenario)}|${row.parser}|${row.mode}".toString()
+            optimizedByKey[key] = row
+        }
+        def gapKeys = (asIsByKey.keySet() + optimizedByKey.keySet()) as List
+        gapKeys = gapKeys.unique().sort()
+        if (!gapKeys.isEmpty()) {
+            markdown << "## AsIs vs Optimized Gap (TickMessage)" << System.lineSeparator()
+            markdown << System.lineSeparator()
+            markdown << "처리량(throughput)은 `Optimized / AsIs`, 평균시간(avgt)은 `AsIs / Optimized` 로 계산한 운영 전환 시 기대 배수." << System.lineSeparator()
+            markdown << System.lineSeparator()
+            markdown << "| Scenario | Parser | Mode | AsIs Score | Optimized Score | 배수 |" << System.lineSeparator()
+            markdown << "| --- | --- | --- | ---: | ---: | ---: |" << System.lineSeparator()
+            gapKeys.each { key ->
+                def parts = key.toString().split('\\|')
+                def scenarioBase = parts[0]
+                def parser = parts[1]
+                def mode = parts[2]
+                def asIs = asIsByKey[key]
+                def optimized = optimizedByKey[key]
+                def asIsScore = asIs?.score
+                def optimizedScore = optimized?.score
+                def multiplier = null
+                if (asIsScore != null && optimizedScore != null && asIsScore != 0G && optimizedScore != 0G) {
+                    multiplier = (mode == 'avgt')
+                            ? asIsScore.divide(optimizedScore, 10, java.math.RoundingMode.HALF_UP)
+                            : optimizedScore.divide(asIsScore, 10, java.math.RoundingMode.HALF_UP)
+                }
+                markdown << "| ${scenarioBase} | ${parserLabels[parser] ?: parser} | ${modeLabels[mode] ?: mode} | ${formatDecimal(asIsScore)} | ${formatDecimal(optimizedScore)} | ${formatMultiplier(multiplier)} |" << System.lineSeparator()
+            }
             markdown << System.lineSeparator()
         }
 
@@ -143,6 +224,26 @@ tasks.register('jmhSummary') {
         outputFile.parentFile.mkdirs()
         outputFile.setText(markdown.toString(), 'UTF-8')
     }
+}
+
+private static String classifyGroup(String className, String methodName) {
+    if (className == 'ExchangeDtoBenchmark') {
+        return 'exchangeDto'
+    }
+    if (className == 'TickMessageBenchmark') {
+        return methodName.endsWith('Optimized') ? 'tickMessageOptimized' : 'tickMessageAsIs'
+    }
+    return 'legacy'
+}
+
+private static String stripVariantSuffix(String method) {
+    if (method.endsWith('AsIs')) {
+        return method.substring(0, method.length() - 'AsIs'.length())
+    }
+    if (method.endsWith('Optimized')) {
+        return method.substring(0, method.length() - 'Optimized'.length())
+    }
+    return method
 }
 
 private static String formatDecimal(Object value) {

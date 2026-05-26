@@ -154,7 +154,9 @@
       "Bash(./gradlew.bat :api:test --tests \"com.example.demo.api.config.security.SecurityConfigSliceTest\")",
       "Bash(./gradlew.bat :api:compileJava :api:test :alert:compileJava --rerun-tasks)",
       "Bash(./gradlew.bat :api:compileTestJava :alert:compileTestJava :analytics:compileTestJava --no-daemon)",
-      "Bash(./gradlew.bat :api:test --tests \"*Flyway*\" --no-daemon)"
+      "Bash(./gradlew.bat :api:test --tests \"*Flyway*\" --no-daemon)",
+      "Bash(./gradlew.bat :benchmarks:compileJmhJava --console=plain)",
+      "Bash(./gradlew.bat :benchmarks:tasks --group=reporting --console=plain)"
     ]
   }
 }

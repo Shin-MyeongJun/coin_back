@@ -35,6 +35,25 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * @deprecated 비교 비대칭 문제로 {@link ExchangeDtoBenchmark} (운영 재현) 와
+ *             {@link TickMessageBenchmark} (AsIs/Optimized 두 변형) 로 분리되었다.
+ *             남겨 두는 이유는 다음 측정 라운드에서 분리 전/후 결과를 직접 비교하기 위함이고,
+ *             1주일 후 또는 별도 PR 에서 삭제 예정이다.
+ *             TODO(2026-06-02): 분리 후 한 차례 비교 측정이 끝나면 본 클래스를 제거한다.
+ *             <p>알려진 비대칭:
+ *             <ul>
+ *                 <li>DSL-JSON 은 {@code TickMessage} 측정에서만 {@link DslTickMessage} 어댑터를
+ *                     거쳐 변환 비용이 포함되고, 다른 두 파서는 변환이 없다.</li>
+ *                 <li>Jsoniter 는 record 처리용 hand-written codec 을 등록해 측정하지만,
+ *                     운영 {@link com.example.demo.infra_shard.json.JsonUtil#fromJson} 은 reflection
+ *                     경로라 record 처리 실패 가능성이 있다.</li>
+ *                 <li>batch1000 fixture 가 동일 JSON 의 단조 반복이라 CPU 캐시 효과로
+ *                     처리량이 부풀려진다.</li>
+ *                 <li>운영 DTO 측정과 contracts record 측정이 같은 클래스에 섞여 있다.</li>
+ *             </ul>
+ */
+@Deprecated(since = "2026-05-26", forRemoval = true)
 @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
