@@ -21,6 +21,11 @@ ext {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'jacoco'
+
+    jacoco {
+        toolVersion = "0.8.12"
+    }
 
     java {
         toolchain {
@@ -59,9 +64,26 @@ subprojects {
     }
 
     tasks.named('test', Test).configure {
+        finalizedBy 'jacocoTestReport'
         useJUnitPlatform {
             excludeTags 'docker'
         }
+    }
+
+    tasks.named('jacocoTestReport').configure {
+        mustRunAfter tasks.named('test')
+        reports {
+            xml.required = true
+            html.required = true
+        }
+        classDirectories.setFrom(sourceSets.main.output.asFileTree.matching {
+            exclude '**/dto/**',
+                    '**/config/**',
+                    '**/*Application*',
+                    '**/messaging/config/**',
+                    '**/*Properties*',
+                    '**/*Configuration*'
+        })
     }
 
     tasks.register('dockerTest', Test) {
@@ -91,3 +113,5 @@ configure([
         runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     }
 }
+
+apply from: "${rootDir}/gradle/portfolio-stats.gradle"

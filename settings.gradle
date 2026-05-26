@@ -1,6 +1,7 @@
 rootProject.name = 'demo'
 
 include ':contracts',
+        ':benchmarks',
         ':infra_upbit',':infra_binance', ':infra_shard','infra_heartbeat' ,
         ':ingestion_exchange_shard',':upbit_ingestion', ':binance_ingestion',
         ':economic_ind_shard',':fred',':crawling',
@@ -13,6 +14,7 @@ include ':contracts',
 
 
 project(':contracts').projectDir = file('modules/contracts')
+project(':benchmarks').projectDir = file('modules/benchmarks')
 project(':infra_shard').projectDir = file('modules/infra_shard')
 project(':infra_heartbeat').projectDir = file('modules/infra_heartbeat')
 project(':infra_upbit').projectDir = file('modules/infra_exchange/upbit')

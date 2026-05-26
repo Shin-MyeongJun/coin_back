@@ -8,6 +8,7 @@ Included:
 
 - Prometheus
 - Grafana
+- Grafana image renderer for `/render/d-solo/...` screenshot capture
 - Kafka consumer lag through `kafka-exporter`
 - Redis memory, key count, command throughput, and latency signals through `redis-exporter`
 - API JVM/HTTP/application metrics through `/actuator/prometheus`
@@ -15,7 +16,6 @@ Included:
 Not included yet:
 
 - heartbeat domain gauges from `infra_heartbeat`
-- Grafana panels for application-level metrics
 
 ## Run
 
@@ -52,6 +52,7 @@ Grafana is provisioned automatically with:
 
 - Data source: `Prometheus`
 - Dashboard: `CoinData Infra Overview`
+- Dashboard: `CoinData API Overview`
 
 The dashboard focuses on metrics that do not require app-module changes:
 
@@ -66,6 +67,19 @@ The dashboard focuses on metrics that do not require app-module changes:
 
 The Prometheus config also includes a `coindata-api` scrape target for `host.docker.internal:8080`.
 That target is expected to be down until the API module is running locally.
+
+The API dashboard includes JVM memory, GC pause, process CPU, HTTP request p95, and Kafka consumer throughput panels. Some panels can be empty until the API is running and the corresponding Micrometer metrics are exposed.
+
+## Screenshot capture
+
+The observability overlay wires Grafana to `grafana-image-renderer`, so Render API URLs such as `/render/d-solo/coindata-infra-overview/coindata-infra-overview?...` can produce PNG files.
+
+Portfolio benchmark capture scripts live under `scripts/load`:
+
+```powershell
+.\scripts\load\capture-grafana.ps1
+.\scripts\load\run-full-benchmark.ps1
+```
 
 ## Later module-level additions
 

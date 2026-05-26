@@ -1,0 +1,478 @@
+{
+    "generatedAt": "2026-05-26T14:13:52+09:00",
+    "modules": [
+        {
+            "module": ":contracts",
+            "projectDir": "modules/contracts",
+            "tests": 3,
+            "passed": 3,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 0.14,
+            "lineCovered": 2,
+            "lineMissed": 3972,
+            "lineCoverage": 0.1,
+            "testResultFiles": 1,
+            "coverageReport": "modules/contracts/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":infra_upbit",
+            "projectDir": "modules/infra_exchange/upbit",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/infra_exchange/upbit/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":infra_binance",
+            "projectDir": "modules/infra_exchange/binance",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/infra_exchange/binance/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":infra_shard",
+            "projectDir": "modules/infra_shard",
+            "tests": 26,
+            "passed": 26,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 0.05,
+            "lineCovered": 28,
+            "lineMissed": 87,
+            "lineCoverage": 24.3,
+            "testResultFiles": 1,
+            "coverageReport": "modules/infra_shard/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":infra_heartbeat",
+            "projectDir": "modules/infra_heartbeat",
+            "tests": 6,
+            "passed": 6,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 0.04,
+            "lineCovered": 124,
+            "lineMissed": 125,
+            "lineCoverage": 49.8,
+            "testResultFiles": 3,
+            "coverageReport": "modules/infra_heartbeat/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":ingestion_exchange_shard",
+            "projectDir": "modules/ingection/exchange/ingestion_exchange_shard",
+            "tests": 10,
+            "passed": 10,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.36,
+            "lineCovered": 27,
+            "lineMissed": 61,
+            "lineCoverage": 30.7,
+            "testResultFiles": 6,
+            "coverageReport": "modules/ingection/exchange/ingestion_exchange_shard/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":upbit_ingestion",
+            "projectDir": "modules/ingection/exchange/upbit_ingestion",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/ingection/exchange/upbit_ingestion/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":binance_ingestion",
+            "projectDir": "modules/ingection/exchange/binance_ingestion",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/ingection/exchange/binance_ingestion/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":economic_ind_shard",
+            "projectDir": "modules/economic/economic_ind/economic_ind_shard",
+            "tests": 23,
+            "passed": 23,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.51,
+            "lineCovered": 135,
+            "lineMissed": 99,
+            "lineCoverage": 57.7,
+            "testResultFiles": 11,
+            "coverageReport": "modules/economic/economic_ind/economic_ind_shard/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":fred",
+            "projectDir": "modules/economic/economic_ind/fred",
+            "tests": 9,
+            "passed": 9,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.22,
+            "lineCovered": 65,
+            "lineMissed": 38,
+            "lineCoverage": 63.1,
+            "testResultFiles": 4,
+            "coverageReport": "modules/economic/economic_ind/fred/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":crawling",
+            "projectDir": "modules/economic/economic_ind/crawling",
+            "tests": 5,
+            "passed": 5,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.46,
+            "lineCovered": 44,
+            "lineMissed": 81,
+            "lineCoverage": 35.2,
+            "testResultFiles": 2,
+            "coverageReport": "modules/economic/economic_ind/crawling/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":fx_ingestion",
+            "projectDir": "modules/ingection/fx_ingestion",
+            "tests": 7,
+            "passed": 7,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.63,
+            "lineCovered": 20,
+            "lineMissed": 27,
+            "lineCoverage": 42.6,
+            "testResultFiles": 5,
+            "coverageReport": "modules/ingection/fx_ingestion/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":market_data",
+            "projectDir": "modules/market_data",
+            "tests": 119,
+            "passed": 106,
+            "failures": 10,
+            "errors": 0,
+            "failed": 10,
+            "skipped": 3,
+            "passRate": 89.1,
+            "timeSeconds": 3.17,
+            "lineCovered": 444,
+            "lineMissed": 121,
+            "lineCoverage": 78.6,
+            "testResultFiles": 41,
+            "coverageReport": "modules/market_data/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":meta_data",
+            "projectDir": "modules/meta_data",
+            "tests": 18,
+            "passed": 18,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.59,
+            "lineCovered": 81,
+            "lineMissed": 21,
+            "lineCoverage": 79.4,
+            "testResultFiles": 9,
+            "coverageReport": "modules/meta_data/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":trading",
+            "projectDir": "modules/trading",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/trading/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":analytics",
+            "projectDir": "modules/analytics",
+            "tests": 94,
+            "passed": 91,
+            "failures": 3,
+            "errors": 0,
+            "failed": 3,
+            "skipped": 0,
+            "passRate": 96.8,
+            "timeSeconds": 2.65,
+            "lineCovered": 661,
+            "lineMissed": 1027,
+            "lineCoverage": 39.2,
+            "testResultFiles": 27,
+            "coverageReport": "modules/analytics/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":user",
+            "projectDir": "modules/user",
+            "tests": 66,
+            "passed": 66,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 3.85,
+            "lineCovered": 492,
+            "lineMissed": 171,
+            "lineCoverage": 74.2,
+            "testResultFiles": 16,
+            "coverageReport": "modules/user/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":alert",
+            "projectDir": "modules/alert",
+            "tests": 0,
+            "passed": 0,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": null,
+            "timeSeconds": 0.00,
+            "lineCovered": 0,
+            "lineMissed": 0,
+            "lineCoverage": null,
+            "testResultFiles": 0,
+            "coverageReport": "modules/alert/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":market_data_query",
+            "projectDir": "modules/query/market_data_query",
+            "tests": 2,
+            "passed": 2,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.22,
+            "lineCovered": 5,
+            "lineMissed": 165,
+            "lineCoverage": 2.9,
+            "testResultFiles": 1,
+            "coverageReport": "modules/query/market_data_query/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":meta_data_query",
+            "projectDir": "modules/query/meta_data_query",
+            "tests": 2,
+            "passed": 2,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.24,
+            "lineCovered": 9,
+            "lineMissed": 61,
+            "lineCoverage": 12.9,
+            "testResultFiles": 1,
+            "coverageReport": "modules/query/meta_data_query/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":analytics_query",
+            "projectDir": "modules/query/analytics_query",
+            "tests": 2,
+            "passed": 2,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.28,
+            "lineCovered": 10,
+            "lineMissed": 379,
+            "lineCoverage": 2.6,
+            "testResultFiles": 1,
+            "coverageReport": "modules/query/analytics_query/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":economic_query",
+            "projectDir": "modules/query/economic_query",
+            "tests": 2,
+            "passed": 2,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 1.21,
+            "lineCovered": 16,
+            "lineMissed": 37,
+            "lineCoverage": 30.2,
+            "testResultFiles": 1,
+            "coverageReport": "modules/query/economic_query/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        },
+        {
+            "module": ":api",
+            "projectDir": "modules/api",
+            "tests": 86,
+            "passed": 86,
+            "failures": 0,
+            "errors": 0,
+            "failed": 0,
+            "skipped": 0,
+            "passRate": 100.0,
+            "timeSeconds": 3.38,
+            "lineCovered": 89,
+            "lineMissed": 254,
+            "lineCoverage": 25.9,
+            "testResultFiles": 23,
+            "coverageReport": "modules/api/build/reports/jacoco/test/jacocoTestReport.xml",
+            "parseErrors": [
+
+            ]
+        }
+    ],
+    "total": {
+        "tests": 480,
+        "passed": 464,
+        "failures": 13,
+        "errors": 0,
+        "failed": 13,
+        "skipped": 3,
+        "passRate": 96.7,
+        "timeSeconds": 27.00,
+        "lineCovered": 2252,
+        "lineMissed": 6726,
+        "lineCoverage": 25.1
+    }
+}

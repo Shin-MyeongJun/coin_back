@@ -1,0 +1,342 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import groovy.xml.XmlSlurper
+
+def portfolioOutputDir = rootProject.file('docs/portfolio')
+def coverageStatsFile = rootProject.layout.buildDirectory.file('portfolio-stats/coverage-stats.json')
+
+def toLong = { Object value ->
+    try {
+        return value == null || value.toString().trim().isEmpty() ? 0L : new BigDecimal(value.toString()).longValue()
+    } catch (Exception ignored) {
+        return 0L
+    }
+}
+
+def toDecimal = { Object value ->
+    try {
+        return value == null || value.toString().trim().isEmpty() ? BigDecimal.ZERO : new BigDecimal(value.toString())
+    } catch (Exception ignored) {
+        return BigDecimal.ZERO
+    }
+}
+
+def roundDecimal = { Number value, int scale ->
+    BigDecimal.valueOf((value ?: 0.0d) as double).setScale(scale, java.math.RoundingMode.HALF_UP)
+}
+
+def relativePath = { File file ->
+    try {
+        return rootProject.projectDir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+    } catch (Exception ignored) {
+        return file.path.replace('\\', '/')
+    }
+}
+
+def modulePathsInSettingsOrder = {
+    def settingsFile = rootProject.file('settings.gradle')
+    def fallback = rootProject.subprojects.collect { it.path }.sort()
+    if (!settingsFile.exists()) {
+        return fallback
+    }
+
+    def settingsText = settingsFile.getText('UTF-8')
+    def includeMatcher = settingsText =~ /(?s)\binclude\s+(.+?)(?:\r?\n\s*\r?\n|$)/
+    if (!includeMatcher.find()) {
+        return fallback
+    }
+
+    def knownPaths = rootProject.subprojects.collectEntries { [(it.path): it] }
+    def orderedPaths = []
+    (includeMatcher.group(1) =~ /['"]([^'"]+)['"]/).each { match ->
+        def rawPath = match[1].trim()
+        if (rawPath) {
+            def projectPath = (rawPath.startsWith(':') ? rawPath : ":${rawPath}").toString()
+            if (knownPaths.containsKey(projectPath) && !orderedPaths.contains(projectPath)) {
+                orderedPaths << projectPath
+            }
+        }
+    }
+
+    def missingKnownPaths = fallback.findAll { !orderedPaths.contains(it) }
+    return orderedPaths + missingKnownPaths
+}
+
+def parseTestResults = { Project project ->
+    def result = [
+            tests          : 0L,
+            failures       : 0L,
+            errors         : 0L,
+            skipped        : 0L,
+            timeSeconds    : BigDecimal.ZERO,
+            testResultFiles: 0,
+            parseErrors    : []
+    ]
+    def resultDir = project.layout.buildDirectory.dir('test-results/test').get().asFile
+    if (!resultDir.exists()) {
+        return result
+    }
+
+    rootProject.fileTree(dir: resultDir, include: '*.xml').files.sort { it.name }.each { File xmlFile ->
+        result.testResultFiles++
+        try {
+            def root = new XmlSlurper(false, false, true).parse(xmlFile)
+            def suites = []
+            if (root.name() == 'testsuite') {
+                suites << root
+            } else if (root.name() == 'testsuites') {
+                suites.addAll(root.testsuite)
+            } else {
+                suites.addAll(root.depthFirst().findAll { it.name() == 'testsuite' })
+            }
+
+            suites.each { suite ->
+                result.tests += toLong(suite.attributes()['tests'])
+                result.failures += toLong(suite.attributes()['failures'])
+                result.errors += toLong(suite.attributes()['errors'])
+                result.skipped += toLong(suite.attributes()['skipped'])
+                result.timeSeconds += toDecimal(suite.attributes()['time'])
+            }
+        } catch (Exception ignored) {
+            result.parseErrors << relativePath(xmlFile)
+        }
+    }
+
+    return result
+}
+
+def parseCoverageReport = { Project project ->
+    def reportFile = project.layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml').get().asFile
+    def result = [
+            covered     : 0L,
+            missed      : 0L,
+            coverage    : null,
+            reportPath  : relativePath(reportFile),
+            reportExists: reportFile.exists(),
+            parseErrors : []
+    ]
+    if (!reportFile.exists()) {
+        return result
+    }
+
+    try {
+        def reportXml = reportFile.getText('UTF-8').replaceFirst(/(?s)<!DOCTYPE[^>]*>/, '')
+        def report = new XmlSlurper(false, false).parseText(reportXml)
+        def lineCounters = report.counter.findAll { it.attributes()['type'] == 'LINE' }
+        if (lineCounters.size() == 0) {
+            result.parseErrors << "${relativePath(reportFile)}: missing LINE counter"
+            return result
+        }
+
+        def lineCounter = lineCounters[0]
+        result.covered = toLong(lineCounter.attributes()['covered'])
+        result.missed = toLong(lineCounter.attributes()['missed'])
+        def total = result.covered + result.missed
+        result.coverage = total > 0L ? (result.covered * 100.0d / total) : null
+    } catch (Exception ignored) {
+        result.parseErrors << relativePath(reportFile)
+    }
+
+    return result
+}
+
+def formatPercent = { Object value ->
+    value == null ? 'N/A' : String.format(Locale.US, '%.1f%%', value as double)
+}
+
+def formatSeconds = { Object value ->
+    String.format(Locale.US, '%.2f', (value ?: BigDecimal.ZERO) as BigDecimal)
+}
+
+def failedCell = { long failed ->
+    failed > 0L ? "<span style=\"color:#c62828\">${failed}</span>" : "${failed}"
+}
+
+def prettyJson = { Object payload ->
+    JsonOutput.prettyPrint(JsonOutput.toJson(payload))
+            .readLines()
+            .collect { it.trim().isEmpty() ? '' : it }
+            .join(System.lineSeparator()) + System.lineSeparator()
+}
+
+def skipIntegration = providers.gradleProperty('skipIntegration').map {
+    it.equalsIgnoreCase('true')
+}.getOrElse(false)
+
+if (skipIntegration) {
+    rootProject.subprojects { Project project ->
+        project.tasks.withType(Test).configureEach {
+            systemProperty 'skipIntegration', 'true'
+            useJUnitPlatform {
+                excludeTags 'docker', 'integration', 'it'
+            }
+            filter {
+                excludeTestsMatching '*IT'
+                excludeTestsMatching '*IntegrationTest'
+            }
+        }
+    }
+}
+
+def allTestTasks = rootProject.subprojects.collect { it.tasks.named('test') }
+def allJacocoReportTasks = rootProject.subprojects.collect { it.tasks.named('jacocoTestReport') }
+
+tasks.register('coverageAggregate') {
+    group = 'verification'
+    description = 'Aggregates line coverage from subproject Jacoco XML reports.'
+    dependsOn allTestTasks
+    dependsOn allJacocoReportTasks
+
+    doLast {
+        def modules = modulePathsInSettingsOrder().collect { String projectPath ->
+            def project = rootProject.project(projectPath)
+            def coverage = parseCoverageReport(project)
+            return [
+                    module      : project.path,
+                    projectDir  : relativePath(project.projectDir),
+                    lineCovered : coverage.covered,
+                    lineMissed  : coverage.missed,
+                    lineCoverage: coverage.coverage == null ? null : roundDecimal(coverage.coverage, 1),
+                    reportPath  : coverage.reportPath,
+                    reportExists: coverage.reportExists,
+                    parseErrors : coverage.parseErrors
+            ]
+        }
+
+        def totalCovered = modules.sum { it.lineCovered as Long } ?: 0L
+        def totalMissed = modules.sum { it.lineMissed as Long } ?: 0L
+        def totalLines = totalCovered + totalMissed
+        def payload = [
+                generatedAt: new Date().format("yyyy-MM-dd'T'HH:mm:ssXXX"),
+                modules    : modules,
+                total      : [
+                        lineCovered : totalCovered,
+                        lineMissed  : totalMissed,
+                        lineCoverage: totalLines > 0L ? roundDecimal(totalCovered * 100.0d / totalLines, 1) : null
+                ]
+        ]
+
+        def outputFile = coverageStatsFile.get().asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.setText(prettyJson(payload), 'UTF-8')
+    }
+}
+
+tasks.register('testStats') {
+    group = 'verification'
+    description = 'Generates portfolio-ready test statistics in Markdown and JSON.'
+    dependsOn tasks.named('coverageAggregate')
+
+    doLast {
+        def coveragePayload = coverageStatsFile.get().asFile.exists()
+                ? new JsonSlurper().parse(coverageStatsFile.get().asFile)
+                : [modules: [], total: [lineCovered: 0L, lineMissed: 0L, lineCoverage: null]]
+        def coverageByModule = coveragePayload.modules.collectEntries { [(it.module): it] }
+
+        def rows = modulePathsInSettingsOrder().collect { String projectPath ->
+            def project = rootProject.project(projectPath)
+            def testResult = parseTestResults(project)
+            def failed = testResult.failures + testResult.errors
+            def passed = Math.max(0L, testResult.tests - failed - testResult.skipped)
+            def coverage = coverageByModule[project.path]
+            def passRate = testResult.tests > 0L ? (passed * 100.0d / testResult.tests) : null
+
+            return [
+                    module         : project.path,
+                    projectDir     : relativePath(project.projectDir),
+                    tests          : testResult.tests,
+                    passed         : passed,
+                    failures       : testResult.failures,
+                    errors         : testResult.errors,
+                    failed         : failed,
+                    skipped        : testResult.skipped,
+                    passRate       : passRate == null ? null : roundDecimal(passRate, 1),
+                    timeSeconds    : roundDecimal(testResult.timeSeconds, 2),
+                    lineCovered    : (coverage?.lineCovered ?: 0L) as Long,
+                    lineMissed     : (coverage?.lineMissed ?: 0L) as Long,
+                    lineCoverage   : coverage?.lineCoverage,
+                    testResultFiles: testResult.testResultFiles,
+                    coverageReport : coverage?.reportPath,
+                    parseErrors    : testResult.parseErrors + (coverage?.parseErrors ?: [])
+            ]
+        }
+
+        def totalTests = rows.sum { it.tests as Long } ?: 0L
+        def totalPassed = rows.sum { it.passed as Long } ?: 0L
+        def totalFailures = rows.sum { it.failures as Long } ?: 0L
+        def totalErrors = rows.sum { it.errors as Long } ?: 0L
+        def totalFailed = rows.sum { it.failed as Long } ?: 0L
+        def totalSkipped = rows.sum { it.skipped as Long } ?: 0L
+        def totalTime = rows.sum { it.timeSeconds as BigDecimal } ?: BigDecimal.ZERO
+        def totalCovered = rows.sum { it.lineCovered as Long } ?: 0L
+        def totalMissed = rows.sum { it.lineMissed as Long } ?: 0L
+        def totalLines = totalCovered + totalMissed
+        def totalCoverage = totalLines > 0L ? roundDecimal(totalCovered * 100.0d / totalLines, 1) : null
+
+        def total = [
+                tests       : totalTests,
+                passed      : totalPassed,
+                failures    : totalFailures,
+                errors      : totalErrors,
+                failed      : totalFailed,
+                skipped     : totalSkipped,
+                passRate    : totalTests > 0L ? roundDecimal(totalPassed * 100.0d / totalTests, 1) : null,
+                timeSeconds : roundDecimal(totalTime, 2),
+                lineCovered : totalCovered,
+                lineMissed  : totalMissed,
+                lineCoverage: totalCoverage
+        ]
+
+        portfolioOutputDir.mkdirs()
+        def markdownFile = new File(portfolioOutputDir, 'test-stats.md')
+        def jsonFile = new File(portfolioOutputDir, 'test-stats.json')
+
+        def markdown = new StringBuilder()
+        markdown << "<!-- Generated by .\\gradlew.bat portfolioStats. Do not edit by hand. -->${System.lineSeparator()}"
+        markdown << "| Module | Tests | Passed | Failed | Skipped | Coverage (line) | Time(s) |${System.lineSeparator()}"
+        markdown << "| --- | ---: | ---: | ---: | ---: | ---: | ---: |${System.lineSeparator()}"
+        rows.each { row ->
+            markdown << "| ${row.module} | ${row.tests} | ${row.passed} | ${failedCell(row.failed as Long)} | ${row.skipped} | ${formatPercent(row.lineCoverage)} | ${formatSeconds(row.timeSeconds)} |${System.lineSeparator()}"
+        }
+        markdown << "| **Total** | **${total.tests}** | **${total.passed}** | **${failedCell(total.failed as Long)}** | **${total.skipped}** | **${formatPercent(total.lineCoverage)}** | **${formatSeconds(total.timeSeconds)}** |${System.lineSeparator()}"
+        markdownFile.setText(markdown.toString(), 'UTF-8')
+
+        def payload = [
+                generatedAt: new Date().format("yyyy-MM-dd'T'HH:mm:ssXXX"),
+                modules    : rows,
+                total      : total
+        ]
+        jsonFile.setText(prettyJson(payload), 'UTF-8')
+    }
+}
+
+tasks.register('portfolioStats') {
+    group = 'verification'
+    description = 'Runs tests/Jacoco and writes portfolio test statistics.'
+    dependsOn tasks.named('coverageAggregate')
+    dependsOn tasks.named('testStats')
+
+    doLast {
+        def jsonFile = new File(portfolioOutputDir, 'test-stats.json')
+        if (!jsonFile.exists()) {
+            println "Total: 0 tests, 0 passed, 0 failed, line coverage N/A"
+            return
+        }
+
+        def payload = new JsonSlurper().parse(jsonFile)
+        def coverage = payload.total.lineCoverage == null
+                ? 'N/A'
+                : String.format(Locale.US, '%.1f%%', payload.total.lineCoverage as double)
+        println "Total: ${payload.total.tests} tests, ${payload.total.passed} passed, ${payload.total.failed} failed, line coverage ${coverage}"
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if ([':portfolioStats', ':testStats', ':coverageAggregate'].any { graph.hasTask(it) }) {
+        rootProject.subprojects { Project project ->
+            project.tasks.withType(Test).configureEach {
+                ignoreFailures = true
+            }
+        }
+    }
+}

@@ -508,3 +508,13 @@ coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 �
 - Redis cooldown key: `RedisKeys.alertCooldown(env, ruleId)` → `ys:{env}:v1:alert:cooldown:{ruleId}`.
 - REST endpoints 는 `:api` 런타임에서 노출됩니다: `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts`, `/api/v1/watchlist/*`. 이 endpoint들은 JWT account principal 전용입니다.
 - Flyway 마이그레이션: `modules/alert/src/main/resources/db/migration/V10__alert_rule.sql`, `V11__alert_firing.sql`, `V12__watchlist_item.sql`. V1~V9 는 `:user` (V1/V2) 와 충돌 회피를 위해 비워 두었습니다.
+
+---
+
+## 17. Benchmarks module update (2026-05-26)
+
+- `:benchmarks` 는 JSON 파서 교체 결정 근거를 만들기 위한 JMH 전용 모듈입니다. 도메인/애플리케이션 런타임 모듈이 아니므로 Hexagonal Architecture 경계를 적용하지 않고, `modules/benchmarks/src/jmh/java` 아래 plain JVM benchmark 로 격리합니다.
+- 의존성은 `:contracts`, `:infra_shard`, `:infra_upbit`, `:infra_binance` 를 기준으로 하며, Jackson/ObjectMapper, Jsoniter(`JsonUtil.fromJson`), DSL-JSON(`DslJsonParserManager.parse`) 경로를 같은 fixture 로 비교합니다. 거래소 raw 파싱 벤치는 실제 DSL-JSON 등록 대상인 `UpbitOrderbookDto` 와 `BinanceStreamFormat<BinanceBookTickerDto>` 를 사용합니다.
+- Kafka 토픽 신설과 Redis key 사용은 없습니다.
+- 결과 파일은 `modules/benchmarks/build/reports/jmh/results.json`, 포트폴리오 요약 문서는 `docs/portfolio/json-parser-benchmark.md` 입니다. 요약 생성은 `.\gradlew.bat :benchmarks:jmhSummary` 를 사용합니다.
+- sanity 실행은 `.\gradlew.bat :benchmarks:jmh -Pjmh.iterations=2 -Pjmh.fork=1` 로 수행할 수 있고, 정식 수치는 사용자가 수동 실행한 결과를 사용합니다.
