@@ -38,6 +38,10 @@ subprojects {
     }
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
+        // Spring MVC resolves @PathVariable/@RequestParam names from bytecode parameter names.
+        // The Spring Boot Gradle plugin adds this automatically, but library modules (e.g. :alert)
+        // that drop the boot plugin would otherwise lose parameter names and fail param binding.
+        options.compilerArgs.add("-parameters")
     }
 
     // ✅ 핵심: BOM import를 서브프로젝트에 적용
