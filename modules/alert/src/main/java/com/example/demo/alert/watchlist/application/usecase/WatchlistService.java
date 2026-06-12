@@ -7,12 +7,12 @@ import com.example.demo.alert.watchlist.application.port.out.DeleteWatchlistPort
 import com.example.demo.alert.watchlist.application.port.out.LoadWatchlistPort;
 import com.example.demo.alert.watchlist.application.port.out.SaveWatchlistPort;
 import com.example.demo.alert.watchlist.domain.domain.WatchlistItem;
+import com.example.demo.alert.watchlist.domain.exception.WatchlistItemNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class WatchlistService implements AddWatchlistItemUseCase, RemoveWatchlis
     @Transactional
     public void remove(String userId, long id) {
         loadWatchlistPort.findByIdForUser(id, userId)
-                .orElseThrow(() -> new NoSuchElementException("watchlist item not found: " + id));
+                .orElseThrow(() -> new WatchlistItemNotFoundException(id));
         deleteWatchlistPort.deleteById(id);
     }
 

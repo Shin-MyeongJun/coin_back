@@ -1,5 +1,7 @@
 package com.example.demo.alert.infrastructure.web.exception;
 
+import com.example.demo.alert.domain.exception.AlertRuleNotFoundException;
+import com.example.demo.alert.watchlist.domain.exception.WatchlistItemNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,7 +13,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.net.URI;
-import java.util.NoSuchElementException;
 
 @RestControllerAdvice(basePackages = "com.example.demo.alert.infrastructure.web")
 public class AlertExceptionHandler {
@@ -45,9 +46,14 @@ public class AlertExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "bad-request", "Bad Request", ex.getMessage(), request);
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ProblemDetail handleNotFound(NoSuchElementException ex, HttpServletRequest request) {
-        return build(HttpStatus.NOT_FOUND, "not-found", "Not Found", ex.getMessage(), request);
+    @ExceptionHandler(AlertRuleNotFoundException.class)
+    public ProblemDetail handleAlertRuleNotFound(AlertRuleNotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "alert-rule-not-found", "Alert Rule Not Found", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(WatchlistItemNotFoundException.class)
+    public ProblemDetail handleWatchlistItemNotFound(WatchlistItemNotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "watchlist-item-not-found", "Watchlist Item Not Found", ex.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)

@@ -9,12 +9,12 @@ import com.example.demo.alert.application.port.out.DeleteAlertRulePort;
 import com.example.demo.alert.application.port.out.LoadAlertRulePort;
 import com.example.demo.alert.application.port.out.SaveAlertRulePort;
 import com.example.demo.alert.domain.domain.AlertRule;
+import com.example.demo.alert.domain.exception.AlertRuleNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class AlertRuleCommandService implements RegisterAlertRuleUseCase, Update
     @Transactional
     public AlertRule update(String userId, long id, AlertRuleCommand command) {
         AlertRule current = loadAlertRulePort.findByIdForUser(id, userId)
-                .orElseThrow(() -> new NoSuchElementException("alert rule not found: " + id));
+                .orElseThrow(() -> new AlertRuleNotFoundException(id));
         AlertRule next = new AlertRule(
                 current.getId(),
                 current.getUserId(),
@@ -75,7 +75,7 @@ public class AlertRuleCommandService implements RegisterAlertRuleUseCase, Update
     @Transactional
     public void delete(String userId, long id) {
         loadAlertRulePort.findByIdForUser(id, userId)
-                .orElseThrow(() -> new NoSuchElementException("alert rule not found: " + id));
+                .orElseThrow(() -> new AlertRuleNotFoundException(id));
         deleteAlertRulePort.deleteById(id);
         activeRuleCachePort.invalidate();
     }
@@ -84,7 +84,7 @@ public class AlertRuleCommandService implements RegisterAlertRuleUseCase, Update
     @Transactional
     public AlertRule toggle(String userId, long id) {
         AlertRule current = loadAlertRulePort.findByIdForUser(id, userId)
-                .orElseThrow(() -> new NoSuchElementException("alert rule not found: " + id));
+                .orElseThrow(() -> new AlertRuleNotFoundException(id));
         current.toggleActive();
         AlertRule saved = saveAlertRulePort.save(current.withUpdatedAt(clock.millis()));
         activeRuleCachePort.invalidate();
