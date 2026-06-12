@@ -160,7 +160,19 @@
       "Bash(.\\\\gradlew.bat :binance_ingestion:compileJava :ingestion_exchange_shard:compileJava)",
       "Bash(./gradlew.bat :binance_ingestion:compileJava :ingestion_exchange_shard:compileJava)",
       "Bash(./gradlew.bat :ingestion_exchange_shard:test --tests \"com.example.demo.ingestion.exchange.application.TickRawHandlerTest\" :binance_ingestion:test --tests \"com.example.demo.ingestion.exchange.infra.BinanceParserParityTest\")",
-      "PowerShell(Resolve-Path *)"
+      "PowerShell(Resolve-Path *)",
+      "PowerShell(git switch *)",
+      "PowerShell(git grep *)",
+      "PowerShell(.\\\\gradlew.bat :alert:assemble :user:assemble :api:assemble -q 2>&1 | Select-Object -Last 30)",
+      "PowerShell(.\\\\gradlew.bat :alert:assemble :user:assemble :api:assemble; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(.\\\\gradlew.bat :api:test; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(Write-Output \"=== NoSuchElementException in alert/src/main \\(expect 0\\) ===\"; git grep -n \"NoSuchElementException\" -- \"modules/alert/src/main\"; Write-Output \"EXIT=$LASTEXITCODE \\(1 = no matches = good\\)\")",
+      "PowerShell(.\\\\gradlew.bat :alert:test :api:test; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(.\\\\gradlew.bat :alert:test; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(.\\\\gradlew.bat :alert:test :api:test :user:test; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(git reset *)",
+      "PowerShell(.\\\\gradlew.bat compileJava compileTestJava; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(git *)"
     ]
   }
 }
