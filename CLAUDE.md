@@ -1,6 +1,7 @@
 # CoinData Platform Project Context
 
 > 2026-05-13 기준으로 실제 Gradle 설정, 모듈 소스, 패키지, Kafka 토픽, 애플리케이션 진입점, 주요 리스크, 프론트엔드 연계 항목을 점검해 갱신한 문서입니다. Claude 및 다른 AI 에이전트는 이 파일을 프로젝트 기준 문서로 먼저 읽으세요.
+> 2026-06-12 P1 하드닝: env 판별자 프로퍼티 `app.env` 통일, `:alert` 라이브러리 빌드 정리, alert 도메인 not-found 예외 추가 반영 (§0, §16, §18).
 > 이전 갱신: 2026-05-10 (모듈 구조·Kafka·Redis·MVP 제외 항목 1차 정비).
 
 ---
@@ -10,10 +11,13 @@
 - 기준 경로: `C:\Users\smj\Desktop\COIN_SERVER\demo`
 - 빌드: Java 21, Gradle 8.4, Spring Boot 3.4.5, Spring Cloud 2024.0.1, Spring Modulith 1.3.5
 - 확인한 범위: `settings.gradle`, 루트 및 모듈 `build.gradle`, `src/main/java`, `src/test/java`, `application.yml`, 주요 Kafka producer/consumer, Redis key generator, `modules/api/_PLAN.md` 진행 상태, `coin_front/docs/PLAN.md` 인터페이스 합의
-- 검증 명령 (2026-05-10 통과, 이후 컴파일 영향 변경 없음):
+- 검증 명령 (2026-06-12 P1 하드닝 시 통과):
   - `.\gradlew.bat compileJava` 성공
   - `.\gradlew.bat compileTestJava` 성공
-- 미실행 범위: 전체 `test`는 Kafka/PostgreSQL/Redis/Testcontainers 의존도가 있어 이번 문서 갱신 범위에서는 실행하지 않았습니다.
+  - `.\gradlew.bat :alert:test :api:test :user:test` 성공
+  - `.\gradlew.bat :alert:assemble :user:assemble :api:assemble` 성공 (`:alert`/`:user`는 bootJar 미생성, `:api`만 bootJar 유지)
+- 미실행 범위: 전체 `test`는 Kafka/PostgreSQL/Redis/Testcontainers 의존도가 있어 이번 범위에서는 실행하지 않았습니다.
+- Redis 키 패턴(§6) 변경 없음: P1에서는 env 판별자 **프로퍼티 키만** `app.env`로 통일했고, 키 문자열 포맷(`ys:{env}:v1:...`)은 그대로입니다.
 
 ---
 
@@ -508,6 +512,8 @@ coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 �
 - Redis cooldown key: `RedisKeys.alertCooldown(env, ruleId)` → `ys:{env}:v1:alert:cooldown:{ruleId}`.
 - REST endpoints 는 `:api` 런타임에서 노출됩니다: `/api/v1/alert/rules`, `/api/v1/alert/firings`, `/api/v1/stream/alerts`, `/api/v1/watchlist/*`. 이 endpoint들은 JWT account principal 전용입니다.
 - Flyway 마이그레이션: `modules/alert/src/main/resources/db/migration/V10__alert_rule.sql`, `V11__alert_firing.sql`, `V12__watchlist_item.sql`. V1~V9 는 `:user` (V1/V2) 와 충돌 회피를 위해 비워 두었습니다.
+- 빌드 (2026-06-12): `:alert/build.gradle` 은 `org.springframework.boot` 플러그인을 적용하지 않고 `id 'java-library'` 만 둡니다 (`:user`, `:contracts`, `:infra_shard` 와 동일). main class 가 없으므로 bootJar 는 비활성이며, dependency-management/BOM 은 루트 `subprojects` 가 공급합니다. 컨트롤러의 unnamed `@PathVariable`/`@RequestParam` 바인딩을 위해 `-parameters` 컴파일 플래그는 루트 `subprojects { tasks.withType(JavaCompile) }` 에서 전 모듈 공통으로 부여합니다.
+- 예외 매핑 (2026-06-12): not-found 는 도메인 예외 `com.example.demo.alert.domain.exception.AlertRuleNotFoundException`, `com.example.demo.alert.watchlist.domain.exception.WatchlistItemNotFoundException` 를 사용합니다. `infrastructure/web/exception/AlertExceptionHandler` (RFC 7807 `ProblemDetail`, `@RestControllerAdvice(basePackages="com.example.demo.alert.infrastructure.web")`) 가 두 예외를 404 로 매핑합니다. `findByIdForUser` empty 는 "미존재"와 "타 사용자 소유"를 구분하지 않고 모두 404 (존재 비노출, 403 미사용). 기존 `java.util.NoSuchElementException` 매핑은 도메인 예외로 대체되어 제거되었습니다.
 
 ---
 
@@ -518,3 +524,15 @@ coin_front 상단 글로벌 인디케이터 바는 일부 외부 API를 직접 �
 - Kafka 토픽 신설과 Redis key 사용은 없습니다.
 - 결과 파일은 `modules/benchmarks/build/reports/jmh/results.json`, 포트폴리오 요약 문서는 `docs/portfolio/json-parser-benchmark.md` 입니다. 요약 생성은 `.\gradlew.bat :benchmarks:jmhSummary` 를 사용합니다.
 - sanity 실행은 `.\gradlew.bat :benchmarks:jmh -Pjmh.iterations=2 -Pjmh.fork=1` 로 수행할 수 있고, 정식 수치는 사용자가 수동 실행한 결과를 사용합니다.
+
+---
+
+## 18. P1 하드닝 (2026-06-12)
+
+세 개의 독립 패키지를 패키지별 커밋으로 적용했습니다.
+
+- **env 판별자 통일 (A)**: Redis 네임스페이스 env 를 읽는 `RateLimitFilter`, `RedisSseTicketStoreAdapter` 의 `@Value` 를 `${ys.env:${YS_ENV:local}}` → `${app.env:local}` 로 바꿔 나머지 모듈(`market_data`, `analytics`, `user`)과 동일한 `app.env` 단일 키로 통일했습니다. `:api` 테스트 프로퍼티도 `app.env=test` 로 변경. **Redis 키 문자열 포맷(§6)은 불변** — 프로퍼티 키만 통일했습니다. `ys.auth.*`, `ys.security.*` 설정 네임스페이스는 env 판별자가 아니므로 그대로 둡니다.
+- **alert 도메인 예외 + RFC7807 (B)**: §16 "예외 매핑" 참조. 단위 테스트 `AlertRuleCommandServiceTest`, 슬라이스 테스트 `AlertRuleControllerErrorTest`(+ slice anchor `AlertTestApplication`) 추가.
+- **alert 라이브러리 빌드 정리 (C)**: §16 "빌드" 참조. `:alert` boot 플러그인 제거 + 루트 `-parameters` 공통 부여.
+- 검증: `:alert:test :api:test :user:test`, `:alert:assemble :user:assemble :api:assemble`, `compileJava`/`compileTestJava` 모두 통과.
+- 미적용: 핸드오프가 참조한 `02_PROJECT_CONTEXT.md` 는 저장소에 존재하지 않아 동기화 대상에서 제외했습니다. `:alert` build.gradle 의존성 다이어트(`spring-boot-starter-security`, `org.postgresql:postgresql` runtimeOnly 전환 등)는 "한 번에 한 가지" 원칙에 따라 별도 과제로 남깁니다 (§9-1).
