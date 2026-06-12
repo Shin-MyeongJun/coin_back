@@ -2,7 +2,6 @@ package com.example.demo.market_data.domain.buffer;
 
 import com.example.demo.market_data.domain.domain.Tick;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -62,22 +61,6 @@ class TickBufferTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).bid()).isEqualByComparingTo(new BigDecimal("51000"));
-    }
-
-    @Test
-    @Disabled("COIN-BUG-001 수정 후 더 이상 유효하지 않음 — 다음 PR 에서 삭제 예정")
-    @DisplayName("현재 동작 검증 — flush 후 다시 flush해도 동일 데이터 반환(clear 없음)")
-    void flush_twice_returnsSameData() {
-        // given
-        sut.add(tick(1L, "50000", "50100"));
-
-        // when
-        List<Tick> first  = sut.flush();
-        List<Tick> second = sut.flush();
-
-        // then — 버퍼가 비워지지 않으므로 두 번째도 동일 결과
-        assertThat(first).hasSize(1);
-        assertThat(second).hasSize(1);
     }
 
     @Test

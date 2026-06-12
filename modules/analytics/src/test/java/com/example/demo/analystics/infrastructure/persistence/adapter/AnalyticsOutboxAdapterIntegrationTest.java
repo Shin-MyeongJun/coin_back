@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.aot.DisabledInAotMode;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -108,6 +110,7 @@ class AnalyticsOutboxAdapterIntegrationTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @DisplayName("@Transactional 내부 save 다건은 commit 후 모두 조회되며, 롤백 시 모두 사라진다")
     void transactional_savesCommitTogether_andRollbackTogether() {
         // commit case

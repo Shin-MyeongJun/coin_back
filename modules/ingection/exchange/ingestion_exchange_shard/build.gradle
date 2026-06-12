@@ -54,6 +54,8 @@ dependencies {
 
 	//postgresql
 
+	//metric
+	implementation 'io.micrometer:micrometer-core'
 
 	//inner project shard
 	implementation(project(":contracts"))

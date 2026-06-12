@@ -156,7 +156,11 @@
       "Bash(./gradlew.bat :api:compileTestJava :alert:compileTestJava :analytics:compileTestJava --no-daemon)",
       "Bash(./gradlew.bat :api:test --tests \"*Flyway*\" --no-daemon)",
       "Bash(./gradlew.bat :benchmarks:compileJmhJava --console=plain)",
-      "Bash(./gradlew.bat :benchmarks:tasks --group=reporting --console=plain)"
+      "Bash(./gradlew.bat :benchmarks:tasks --group=reporting --console=plain)",
+      "Bash(.\\\\gradlew.bat :binance_ingestion:compileJava :ingestion_exchange_shard:compileJava)",
+      "Bash(./gradlew.bat :binance_ingestion:compileJava :ingestion_exchange_shard:compileJava)",
+      "Bash(./gradlew.bat :ingestion_exchange_shard:test --tests \"com.example.demo.ingestion.exchange.application.TickRawHandlerTest\" :binance_ingestion:test --tests \"com.example.demo.ingestion.exchange.infra.BinanceParserParityTest\")",
+      "PowerShell(Resolve-Path *)"
     ]
   }
 }

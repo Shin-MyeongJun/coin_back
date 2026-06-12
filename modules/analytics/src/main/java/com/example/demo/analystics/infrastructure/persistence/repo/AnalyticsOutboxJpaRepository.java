@@ -23,7 +23,7 @@ public interface AnalyticsOutboxJpaRepository extends JpaRepository<AnalyticsOut
             @Param("maxRetry") int maxRetry,
             @Param("batchSize") int batchSize);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE AnalyticsOutboxEntity a
                SET a.publishedAt = :publishedAt
@@ -31,7 +31,7 @@ public interface AnalyticsOutboxJpaRepository extends JpaRepository<AnalyticsOut
             """)
     int markPublished(@Param("id") Long id, @Param("publishedAt") Long publishedAt);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE AnalyticsOutboxEntity a
                SET a.retryCount = a.retryCount + 1

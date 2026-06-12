@@ -3,7 +3,6 @@ package com.example.demo.market_data.domain.buffer;
 import com.example.demo.market_data.domain.domain.Premium;
 import com.example.demo.market_data.domain.service.PremiumKeyParser;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -62,19 +61,4 @@ class PremiumBufferTest {
         assertThat(result.get(0).bid()).isEqualByComparingTo(new BigDecimal("2.0"));
     }
 
-    @Test
-    @Disabled("COIN-BUG-001 수정 후 더 이상 유효하지 않음 — 다음 PR 에서 삭제 예정")
-    @DisplayName("현재 동작 — flush 후 재flush도 동일 데이터 반환(clear 없음)")
-    void flush_twice_returnsSameData() {
-        // given
-        sut.add(premium("BTC", 10L, 20L, "1.5", "1.6"));
-
-        // when
-        List<Premium> first  = sut.flush();
-        List<Premium> second = sut.flush();
-
-        // then
-        assertThat(first).hasSize(1);
-        assertThat(second).hasSize(1);
-    }
 }

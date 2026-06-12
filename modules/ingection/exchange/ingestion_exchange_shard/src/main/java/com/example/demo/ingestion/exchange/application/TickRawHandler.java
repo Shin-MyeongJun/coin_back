@@ -15,9 +15,10 @@ public class TickRawHandler<RAW>  implements HandleMarketRawUseCase<RAW> {
     private final RawToMessage<RAW, TickRawMessage> parser;
     private final RawPublishPort<TickRawMessage> publisher;
 
+
     @Override
     public void process(RAW raw) {
-        TickRawMessage tm = parser.toMessage(raw,null);
+        TickRawMessage tm = parser.toMessage(raw, null);
         publisher.publish(tm);
     }
 }

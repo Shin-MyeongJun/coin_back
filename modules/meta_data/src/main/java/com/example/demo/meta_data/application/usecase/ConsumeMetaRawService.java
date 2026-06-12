@@ -11,10 +11,12 @@ import com.example.demo.meta_data.application.port.out.PublishMetaPort;
 import com.example.demo.meta_data.infrastructure.persistence.entity.ExchangeEntity;
 import com.example.demo.meta_data.infrastructure.persistence.entity.MarketCodeEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ConsumeMetaRawService implements ConsumeMetaRawUseCase {
 
     private final MessageToDomain<MarketCodeRawMessage, ExchangeEntity> exchangeRawMapper;
@@ -34,16 +36,16 @@ public class ConsumeMetaRawService implements ConsumeMetaRawUseCase {
     public void handle(MarketCodeRawMessage raw) {
         ExchangeEntity en =  exchangeRawMapper.toDomain(raw);
         MarketCodeEntity mn = marketCodeRawMapper.toDomain(raw);
-        System.out.println("mapping");
+        log.debug("market code raw mapped");
 
         ExchangeEntity enm =  exchangeSaveService.handle(en);
         mn.getKey().setExchangeId(enm.getId());// 방안 생각하기
         MarketCodeEntity mnm = marketCodeSaveService.handle(mn);
-        System.out.println("db handling");
+        log.debug("market code metadata saved");
 
         exchangePublishPort.publish(exchangeEntityMapper.toMessage(enm));
         marketCodePublishPort.publish(marketCodeEntityMapper.toMessage(mnm));
-        System.out.println("kafak producing");
+        log.debug("market code metadata published");
 
     }
 }

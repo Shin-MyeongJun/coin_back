@@ -4,6 +4,7 @@ package com.example.demo.infre_exchange.client.impl;
 import com.binance.connector.client.utils.WebSocketConnection;
 import com.example.demo.infra_shard.connector.exchange.interfaces.ExchangeWebSocket;
 import com.example.demo.infre_exchange.config.BinanceProperties;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -12,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 public class BinanceFutureWebSocketImpl implements ExchangeWebSocket<String> {
 
     private  final BinanceProperties properties;
@@ -64,13 +66,13 @@ public class BinanceFutureWebSocketImpl implements ExchangeWebSocket<String> {
         }
         webSocket = new WebSocketConnection(
                 response -> {
-                    log("WebSocket Connected");
+                    logWebSocket("WebSocket Connected");
                 },
                 onMessage::accept,
-                (code, reason) -> log("WebSocket Closing: " + code + " / " + reason),
-                (code, reason) -> log("WebSocket Closed: " + code + " / " + reason),
+                (code, reason) -> logWebSocket("WebSocket Closing: " + code + " / " + reason),
+                (code, reason) -> logWebSocket("WebSocket Closed: " + code + " / " + reason),
                 (t, r) -> {
-                    log("WebSocket Error: " + t.getMessage());
+                    log.warn("WebSocket Error", t);
                 },
                 request,
                 client
@@ -88,8 +90,8 @@ public class BinanceFutureWebSocketImpl implements ExchangeWebSocket<String> {
         return "wss://fstream.binance.com/stream?streams=" + streams;
     }
 
-    private void log(String s) {
-        System.out.println("[ShardManager] " + s);
+    private void logWebSocket(String s) {
+        log.info("[ShardManager] {}", s);
     }
 
 

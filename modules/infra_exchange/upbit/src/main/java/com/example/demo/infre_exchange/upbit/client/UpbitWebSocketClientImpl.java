@@ -12,9 +12,13 @@ import okio.ByteString;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class UpbitWebSocketClientImpl implements ExchangeWebSocket<ByteString> {
+
+    private static final Logger log = Logger.getLogger(UpbitWebSocketClientImpl.class.getName());
 
     private final UpbitProperties props;
     private final UpbitAuthTokenProvider authTokenProvider;
@@ -87,13 +91,12 @@ public class UpbitWebSocketClientImpl implements ExchangeWebSocket<ByteString> {
 
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-                System.err.println("WebSocket failed: " + t.getMessage());
+                log.log(Level.WARNING, "WebSocket failed", t);
             }
 
             @Override
             public void onClosing(WebSocket webSocket, int code, String reason) {
-                System.out.println(code);
-                System.out.println(reason);
+                log.info(() -> "WebSocket closing: code=" + code + ", reason=" + reason);
             }
 
         });

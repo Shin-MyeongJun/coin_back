@@ -56,6 +56,7 @@ dependencies {
 
 
 
+
 	//inner project shard
 	implementation(project(":contracts"))
 	implementation(project(":infra_shard"))
@@ -63,4 +64,22 @@ dependencies {
 	implementation(project(":infra_binance"))
 	implementation(project(":ingestion_exchange_shard"))
 
+
+
+}
+afterEvaluate {
+	tasks.matching { it.name.toLowerCase().contains('aot') }.configureEach {
+		enabled = false
+	}
+}
+
+tasks.named('bootRun') {
+	if (project.hasProperty('jvmArgs')) {
+		jvmArgs = project.property('jvmArgs').toString().split(' ').findAll { it.length() > 0 }
+	}
+	systemProperty 'spring.aot.enabled', 'false'
+}
+
+bootRun {
+	systemProperty 'spring.aot.enabled', 'false'
 }

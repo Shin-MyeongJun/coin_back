@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -45,6 +46,7 @@ class TickLatestRedisWriteAdapterTest {
     @BeforeEach
     void setUp() {
         sut = new TickLatestRedisWriteAdapter(redisTemplate);
+        ReflectionTestUtils.setField(sut, "env", "local");
         redisTemplate.execute((RedisCallback<Void>) conn -> { conn.serverCommands().flushAll(); return null; });
     }
 
