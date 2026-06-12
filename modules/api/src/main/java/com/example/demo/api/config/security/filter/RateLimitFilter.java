@@ -42,7 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Clock clock;
     private final ObjectMapper objectMapper;
 
-    @Value("${ys.env:${YS_ENV:local}}")
+    @Value("${app.env:local}")
     private String env;
 
     @Value("${ys.security.rate-limit.anonymous-rpm:30}")

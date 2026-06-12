@@ -18,7 +18,7 @@ public class RedisSseTicketStoreAdapter implements ConsumeSseTicketPort {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${ys.env:${YS_ENV:local}}")
+    @Value("${app.env:local}")
     private String env;
 
     @Override
