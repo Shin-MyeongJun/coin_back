@@ -5,8 +5,20 @@ app:
     sub-type: crawling
 
 spring:
+  config:
+    import:
+      - "optional:file:${COIN_ENV_FILE:.env}[.properties]"
+      - "optional:file:../.env[.properties]"
+      - "optional:file:../../.env[.properties]"
+      - "optional:file:../../../.env[.properties]"
+      - "optional:file:../../../../.env[.properties]"
+  main:
+    web-application-type: none
+  docker:
+    compose:
+      enabled: false
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
@@ -14,20 +26,20 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/coindb}
-    username: ${DB_USER:${DB_USERNAME:postgres}}
-    password: ${DB_PASSWORD:${DB_PASS:postgres}}
+    url: ${APP_DB_URL}
+    username: ${APP_DB_USERNAME}
+    password: ${APP_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${JPA_DDL_AUTO:update}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 crawling-eco:
   burst:

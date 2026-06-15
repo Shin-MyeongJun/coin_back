@@ -1,6 +1,6 @@
 spring:
   datasource:
-    password: ${DB_PASSWORD}
+    password: ${APP_DB_PASSWORD}
 
 springdoc:
   swagger-ui:

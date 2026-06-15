@@ -1,11 +1,13 @@
 package com.example.demo.ingestion.economic.economic_ind.infrastructure.cache;
 
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicSchedule;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class EcoScheduleCache {
     Map<EconomicSchedule,Long> ScheduleIdCache = new ConcurrentHashMap<>();
     Map<Long,EconomicSchedule>  ScheduleCache = new ConcurrentHashMap<>();

@@ -5,8 +5,39 @@ app:
     sub-type: fred
 
 spring:
+  config:
+    import:
+      - "optional:file:${COIN_ENV_FILE:.env}[.properties]"
+      - "optional:file:../.env[.properties]"
+      - "optional:file:../../.env[.properties]"
+      - "optional:file:../../../.env[.properties]"
+      - "optional:file:../../../../.env[.properties]"
+  main:
+    web-application-type: none
+  docker:
+    compose:
+      enabled: false
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  datasource:
+    url: ${APP_DB_URL}
+    username: ${APP_DB_USERNAME}
+    password: ${APP_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 12
+    #      driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update} # local default; use validate/none outside local
+
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 1000
+        order_inserts: true
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 fred:
  api-key: ${FRED_API_KEY}

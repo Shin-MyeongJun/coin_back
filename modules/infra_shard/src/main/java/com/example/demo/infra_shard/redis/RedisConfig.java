@@ -15,8 +15,8 @@ public class RedisConfig {
     private final int port;
 
     public RedisConfig(
-            @Value("${spring.data.redis.host:${REDIS_HOST:localhost}}") String host,
-            @Value("${spring.data.redis.port:${REDIS_PORT:6379}}") int port
+            @Value("${spring.data.redis.host:${REDIS_HOST}}") String host,
+            @Value("${spring.data.redis.port:${REDIS_PORT}}") int port
     ) {
         this.host = host;
         this.port = port;

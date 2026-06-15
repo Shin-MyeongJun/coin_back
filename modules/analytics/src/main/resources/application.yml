@@ -11,6 +11,13 @@ analytics:
     max-retry: ${ANALYTICS_OUTBOX_MAX_RETRY:10}
 
 spring:
+  config:
+    import:
+      - "optional:file:${COIN_ENV_FILE:.env}[.properties]"
+      - "optional:file:../.env[.properties]"
+      - "optional:file:../../.env[.properties]"
+      - "optional:file:../../../.env[.properties]"
+      - "optional:file:../../../../.env[.properties]"
   main:
     web-application-type: none
   session:
@@ -21,10 +28,10 @@ spring:
     compose:
       enabled: false
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
-    admin:
-      properties:
-        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+      admin:
+        properties:
+          bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS}
   cloud:
     stream:
       defaultBinder: null
@@ -35,9 +42,9 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true}
-    username: ${DB_USER:db_manager}
-    password: ${DB_PASSWORD}
+    url: ${APP_DB_URL}
+    username: ${APP_DB_USERNAME}
+    password: ${APP_DB_PASSWORD}
     hikari:
       maximum-pool-size: 12
     #      driver-class-name: org.postgresql.Driver

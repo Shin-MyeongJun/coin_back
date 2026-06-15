@@ -1,13 +1,13 @@
 package com.example.demo.ingestion.economic.economic_ind.application.usecase;
 
+import com.example.demo.infra_shard.messaging.mapper.RawToDomain;
 import com.example.demo.ingestion.economic.economic_ind.application.port.in.SyncScheduleUseCase;
 import com.example.demo.ingestion.economic.economic_ind.application.port.out.FlushAndSaveEconomicValuePort;
-import com.example.demo.ingestion.economic.economic_ind.application.port.out.LoadRawIndDataPort;
+import com.example.demo.ingestion.economic.economic_ind.application.port.out.LoadRawIndSchedulePort;
 import com.example.demo.ingestion.economic.economic_ind.application.port.out.ReadEcoIndCodePort;
 import com.example.demo.ingestion.economic.economic_ind.application.port.out.ReadScheduledEcoPort;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicIndicatorCode;
 import com.example.demo.ingestion.economic.economic_ind.domain.EconomicSchedule;
-import com.example.demo.infra_shard.messaging.mapper.RawToDomain;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -19,13 +19,13 @@ public abstract class SyncScheduleService<RAW> implements SyncScheduleUseCase {
     private final ReadEcoIndCodePort readEcoIndCodePort;
     private final FlushAndSaveEconomicValuePort<EconomicIndicatorCode> writeEcoIndCodePort;
     private final FlushAndSaveEconomicValuePort<EconomicSchedule> writeScheduleSPort;
-    private final LoadRawIndDataPort<RAW> getters;
+    private final LoadRawIndSchedulePort<RAW> getters;
     private final RawToDomain<RAW, EconomicSchedule> rawToDomain;
 
     @Override
     public void sync() {
         // 1. 외부 데이터 조회 → 도메인 변환
-        List<EconomicSchedule> fetchedSchedules = getters.getRaws()
+        List<EconomicSchedule> fetchedSchedules = getters.getRawSchedules()
                 .stream()
                 .map(raw -> rawToDomain.toDomain(raw, null))
                 .toList();

@@ -55,22 +55,18 @@ Exchange WebSocket/API
 Docker 인프라를 먼저 실행합니다.
 
 ```powershell
-cd docker
-docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
-cd ..
+docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d
 ```
 
 로컬 실행 시 공통 환경변수를 맞춥니다.
 
 ```powershell
-$env:DB_URL="jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true"
-$env:DB_USER="db_manager"
-$env:DB_PASSWORD="10200411"
-$env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
-$env:UPBIT_OPEN_API_ACCESS_KEY="dummy"
-$env:UPBIT_OPEN_API_SECRET_KEY="dummy"
-$env:BINANCE_OPEN_API_ACCESS_KEY="dummy"
-$env:BINANCE_OPEN_API_SECRET_KEY="dummy"
+Get-Content .env |
+  Where-Object { $_ -and -not $_.TrimStart().StartsWith("#") -and $_.Contains("=") } |
+  ForEach-Object {
+    $name, $value = $_ -split "=", 2
+    [Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
+  }
 ```
 
 핵심 모듈은 별도 터미널에서 실행합니다.

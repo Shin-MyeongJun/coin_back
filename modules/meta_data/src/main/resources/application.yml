@@ -4,37 +4,44 @@ app:
     enabled: true
 
 spring:
-    main:
-        web-application-type: none
-    session:
+  config:
+    import:
+      - "optional:file:${COIN_ENV_FILE:.env}[.properties]"
+      - "optional:file:../.env[.properties]"
+      - "optional:file:../../.env[.properties]"
+      - "optional:file:../../../.env[.properties]"
+      - "optional:file:../../../../.env[.properties]"
+  main:
+    web-application-type: none
+  session:
       store-type: none
-    application:
+  application:
         name: demo
-    docker:
+  docker:
       compose:
         enabled: false
-    kafka:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+  kafka:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
       admin:
         properties:
-          bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
-    cloud:
+          bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  cloud:
       stream:
         defaultBinder: null
-    flyway:
+  flyway:
       enabled: false
       locations: classpath:db/migration
       baseline-on-migrate: true
 
-    datasource:
-      url: ${DB_URL:jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true}
-      username: ${DB_USER:db_manager}
-      password: ${DB_PASSWORD}
+  datasource:
+      url: ${APP_DB_URL}
+      username: ${APP_DB_USERNAME}
+      password: ${APP_DB_PASSWORD}
       hikari:
         maximum-pool-size: 12
       #      driver-class-name: org.postgresql.Driver
 
-    jpa:
+  jpa:
         hibernate:
           ddl-auto: ${JPA_DDL_AUTO:update} # local default; use validate/none outside local
 
@@ -47,14 +54,14 @@ spring:
             format_sql: true
             dialect: org.hibernate.dialect.PostgreSQLDialect
 
-    profiles:
+  profiles:
         active: local
-    task:
+  task:
       scheduling:
         pool:
           size: 8
 
-    autoconfigure:
+  autoconfigure:
       exclude: #에외 나중에 제거하기
        # - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration #kafka
 

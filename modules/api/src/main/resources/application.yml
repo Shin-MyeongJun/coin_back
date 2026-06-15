@@ -2,12 +2,22 @@ server:
   port: ${API_SERVER_PORT:8080}
 
 spring:
+  config:
+    import:
+      - "optional:file:${COIN_ENV_FILE:.env}[.properties]"
+      - "optional:file:../.env[.properties]"
+      - "optional:file:../../.env[.properties]"
+      - "optional:file:../../../.env[.properties]"
+      - "optional:file:../../../../.env[.properties]"
+  docker:
+    compose:
+      enabled: false
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:${KAFKA_SERVERS:localhost:9092}}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/coindb}
-    username: ${DB_USER:${DB_USERNAME:postgres}}
-    password: ${DB_PASSWORD:${DB_PASS:}}
+    url: ${APP_DB_URL}
+    username: ${APP_DB_USERNAME}
+    password: ${APP_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

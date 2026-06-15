@@ -38,9 +38,7 @@ Kafka에 market data event를 넣으면 DB/Redis/Kafka/API SSE까지 이어진�
 저장소 루트에서 실행합니다.
 
 ```powershell
-cd docker
-docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
-cd ..
+docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d
 ```
 
 상태 확인:
@@ -49,7 +47,7 @@ cd ..
 docker ps
 docker exec redis redis-cli ping
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
-docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -c "\dt"
+docker exec -e PGPASSWORD=$env:APP_DB_PASSWORD postgres_db psql -U $env:APP_DB_USERNAME -d $env:APP_DB_NAME -c "\dt"
 ```
 
 `redis-cli ping` 결과가 `PONG`이면 Redis는 정상입니다.
@@ -59,17 +57,15 @@ docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -
 핵심 모듈 실행 전에 같은 터미널 또는 각 터미널에 아래 값을 넣습니다.
 
 ```powershell
-$env:DB_URL="jdbc:postgresql://localhost:5432/coin_data?reWriteBatchedInserts=true"
-$env:DB_USER="db_manager"
-$env:DB_PASSWORD="10200411"
-$env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
-$env:UPBIT_OPEN_API_ACCESS_KEY="dummy"
-$env:UPBIT_OPEN_API_SECRET_KEY="dummy"
-$env:BINANCE_OPEN_API_ACCESS_KEY="dummy"
-$env:BINANCE_OPEN_API_SECRET_KEY="dummy"
+Get-Content .env |
+  Where-Object { $_ -and -not $_.TrimStart().StartsWith("#") -and $_.Contains("=") } |
+  ForEach-Object {
+    $name, $value = $_ -split "=", 2
+    [Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
+  }
 ```
 
-주의: API의 기본 datasource URL은 `coindb`이므로, API를 수동 실행할 때는 `DB_URL`을 `coin_data`로 명시하는 편이 안전합니다.
+주의: API의 datasource URL은 `.env`의 `APP_DB_URL`에서만 주입됩니다.
 
 ## Start Core Modules
 
@@ -224,10 +220,10 @@ docker exec redis redis-cli --scan --pattern "ys:local:v1:*"
 PostgreSQL counts:
 
 ```powershell
-docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -c "select count(*) from tick;"
-docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -c "select count(*) from premium;"
-docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -c "select count(*) from tick_candle;"
-docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -c "select count(*) from premium_indicator;"
+docker exec -e PGPASSWORD=$env:APP_DB_PASSWORD postgres_db psql -U $env:APP_DB_USERNAME -d $env:APP_DB_NAME -c "select count(*) from tick;"
+docker exec -e PGPASSWORD=$env:APP_DB_PASSWORD postgres_db psql -U $env:APP_DB_USERNAME -d $env:APP_DB_NAME -c "select count(*) from premium;"
+docker exec -e PGPASSWORD=$env:APP_DB_PASSWORD postgres_db psql -U $env:APP_DB_USERNAME -d $env:APP_DB_NAME -c "select count(*) from tick_candle;"
+docker exec -e PGPASSWORD=$env:APP_DB_PASSWORD postgres_db psql -U $env:APP_DB_USERNAME -d $env:APP_DB_NAME -c "select count(*) from premium_indicator;"
 ```
 
 ## Troubleshooting
@@ -235,7 +231,7 @@ docker exec -e PGPASSWORD=10200411 postgres_db psql -U db_manager -d coin_data -
 ### API health fails
 
 - API가 실행 중인지 확인합니다.
-- `DB_URL`, `DB_USER`, `DB_PASSWORD`가 `coin_data` DB를 가리키는지 확인합니다.
+- `APP_DB_URL`, `APP_DB_USERNAME`, `APP_DB_PASSWORD`가 `coin_data` DB를 가리키는지 확인합니다.
 - `docker ps`에서 `postgres_db`, `redis`, `kafka`가 모두 Up인지 확인합니다.
 
 ### SSE connects but no event arrives
