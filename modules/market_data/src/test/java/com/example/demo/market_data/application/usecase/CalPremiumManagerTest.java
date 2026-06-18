@@ -272,7 +272,7 @@ class CalPremiumManagerTest {
         given(exchangeGetter.get(20L)).willReturn(Optional.of(ex("Binance", "USDT")));
         given(exchangeGetter.get(10L)).willReturn(Optional.of(ex("Upbit", "KRW")));
         given(fxGetter.get(new FxKey("USD", "KRW")))
-                .willReturn(Optional.of(fx("USD", "KRW", "0.000725")));
+                .willReturn(Optional.of(fx("USD", "KRW", "1325")));
 
         sut.cal(1L);
 
@@ -299,7 +299,7 @@ class CalPremiumManagerTest {
         BigDecimal askA = new BigDecimal("50100000"); // Upbit ask (KRW)
         BigDecimal bidB = new BigDecimal("36000");    // Binance bid (USD) — idB=2L
         BigDecimal askB = new BigDecimal("36100");    // Binance ask (USD)
-        BigDecimal fxVal = new BigDecimal("0.000725"); // 1 KRW = 0.000725 USD
+        BigDecimal fxVal = new BigDecimal("1325"); // KRW per USD
 
         given(codeGetter.get(1L)).willReturn(Optional.of(mc(10L, "BTC")));
         given(codeGetter.get(2L)).willReturn(Optional.of(mc(20L, "BTC")));
@@ -308,25 +308,22 @@ class CalPremiumManagerTest {
         given(exchangeGetter.get(20L)).willReturn(Optional.of(ex("Binance", "USDT")));
         given(exchangeGetter.get(10L)).willReturn(Optional.of(ex("Upbit", "KRW")));
         given(fxGetter.get(new FxKey("USD", "KRW")))
-                .willReturn(Optional.of(fx("USD", "KRW", "0.000725")));
+                .willReturn(Optional.of(fx("USD", "KRW", "1325")));
 
         sut.cal(1L);
 
         // when
         sut.cal(2L);
 
-        // then — 공식: bid = (b.bid*fxB)/(a.ask*fxA) - 1) * 100
-        // a = baseTick(idB=2L): bid=36000, ask=36100, fxA=1
-        // b = compareTick(idA=1L): bid=50000000, ask=50100000, fxB=0.000725
-        BigDecimal fxA = BigDecimal.ONE;
-        BigDecimal expectedBid = bidA.multiply(fxVal)
-                .divide(askB.multiply(fxA), 8, RoundingMode.HALF_UP)
-                .subtract(BigDecimal.ONE)
-                .multiply(BigDecimal.valueOf(100));
-        BigDecimal expectedAsk = askA.multiply(fxVal)
-                .divide(bidB.multiply(fxA), 8, RoundingMode.HALF_UP)
-                .subtract(BigDecimal.ONE)
-                .multiply(BigDecimal.valueOf(100));
+        // then — a=Binance(USD) leg × val, b=Upbit(KRW) leg × 1 → 공통 KRW
+        // bid = (b.bid * 1) / (a.ask * val) - 1) * 100
+        // ask = (b.ask * 1) / (a.bid * val) - 1) * 100
+        BigDecimal expectedBid = bidA                                   // b.bid (Upbit) × 1
+                .divide(askB.multiply(fxVal), 8, RoundingMode.HALF_UP)  // a.ask (Binance) × val
+                .subtract(BigDecimal.ONE).multiply(BigDecimal.valueOf(100));
+        BigDecimal expectedAsk = askA                                   // b.ask (Upbit) × 1
+                .divide(bidB.multiply(fxVal), 8, RoundingMode.HALF_UP)  // a.bid (Binance) × val
+                .subtract(BigDecimal.ONE).multiply(BigDecimal.valueOf(100));
 
         then(buffer).should(times(1)).add(premiumCaptor.capture());
         Premium captured = premiumCaptor.getValue();

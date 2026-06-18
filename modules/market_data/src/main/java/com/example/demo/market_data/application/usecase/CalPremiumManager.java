@@ -87,11 +87,16 @@ public class CalPremiumManager implements CalPremiumUseCase {
         String quoteA =normalize(exA.quote());
         String quoteB =normalize(exB.quote());
 
-        if(filtering(quoteA,quoteB)){
-            BigDecimal fxA = BigDecimal.ONE;
-            Optional<Fx> fxBOpt = fxGetter.get(new FxKey(quoteA,quoteB));
-            if(fxBOpt.isEmpty()){return;}
-            BigDecimal fxB = fxBOpt.get().val();
+        if (filtering(quoteA, quoteB)) {
+            Optional<Fx> fxOpt = fxGetter.get(new FxKey(quoteA, quoteB));
+            if (fxOpt.isEmpty()) { return; }
+            Fx fx = fxOpt.get();
+
+            // fx.val(): 1 fx.base == val fx.compare (예: USD/KRW → 1 USD = 1325 KRW).
+            // 두 호가를 fx.compare 통화로 환산한다: base 통화 leg × val, compare 통화 leg × 1.
+            BigDecimal fxA = toCompareCurrency(quoteA, fx);
+            BigDecimal fxB = toCompareCurrency(quoteB, fx);
+            if (fxA == null || fxB == null) { return; }
 
             BigDecimal bidA = a.bid();
             BigDecimal askA = a.ask();
@@ -99,14 +104,14 @@ public class CalPremiumManager implements CalPremiumUseCase {
             BigDecimal bidB = b.bid();
             BigDecimal askB = b.ask();
 
+            Long currentTimeMillis = System.currentTimeMillis();
 
+            Premium premium = makePremium(symbol, baseId, compareId,
+                    bidA.multiply(fxA), askA.multiply(fxA),
+                    bidB.multiply(fxB), askB.multiply(fxB), currentTimeMillis);
+            PremiumDetail premiumDetail = makePremiumDetail(symbol, baseId, compareId,
+                    bidA, askA, fxA, bidB, askB, fxB, currentTimeMillis);
 
-            Long currentTimeMillis =System.currentTimeMillis();
-
-            Premium premium = makePremium( symbol, baseId, compareId, bidA.multiply(fxA), askA.multiply(fxA),
-                    bidB.multiply(fxB), askB.multiply(fxB),currentTimeMillis);
-            PremiumDetail premiumDetail =makePremiumDetail( symbol, baseId, compareId, bidA, askA, fxA, bidB,
-                    askB, fxB,currentTimeMillis);
             buffer.add(premium);
             detailBuffer.add(premiumDetail);
             premiumPublisher.process(premium);
@@ -144,6 +149,18 @@ public class CalPremiumManager implements CalPremiumUseCase {
     private boolean filtering(String quoteA , String quoteB){
         if(quoteA  == null || quoteB == null) return false;
         return !quoteA.equals(quoteB);
+    }
+
+    /**
+     * 호가 통화를 FX 쌍의 compare 통화로 환산하는 배수.
+     *  - quote == fx.base    → val  (base → compare)
+     *  - quote == fx.compare → 1    (compare → compare)
+     *  - 그 외               → null (환산 불가, 호출부에서 스킵)
+     */
+    private BigDecimal toCompareCurrency(String quote, Fx fx) {
+        if (quote.equals(fx.base()))    return fx.val();
+        if (quote.equals(fx.compare())) return BigDecimal.ONE;
+        return null;
     }
 
 
