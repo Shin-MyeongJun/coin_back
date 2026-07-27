@@ -15,11 +15,19 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Configuration
 @EntityScan(basePackages = {
         "com.example.demo.user",
-        "com.example.demo.alert"
+        "com.example.demo.alert",
+        "com.example.demo.analytics_query",
+        "com.example.demo.market_data_query",
+        "com.example.demo.meta_data_query",
+        "com.example.demo.economic_query"
 })
 @EnableJpaRepositories(basePackages = {
         "com.example.demo.user",
-        "com.example.demo.alert"
+        "com.example.demo.alert",
+        "com.example.demo.analytics_query",
+        "com.example.demo.market_data_query",
+        "com.example.demo.meta_data_query",
+        "com.example.demo.economic_query"
 })
 public class JpaConfig {
 }
